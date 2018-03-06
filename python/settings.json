@@ -1,0 +1,15 @@
+{
+    "socket_host":"127.0.0.1",
+    "socket_port":5000,
+    "modbus_host":"127.0.0.1",
+    "modbus_port":502,
+    "modbus_slave_num":1,
+    "modbus_timeout":1.0,
+    "modbus_sleep_inteval":0.125,
+    "pin_assignments": {
+        "prev": 8934,
+        "f1" : 8935,
+        "f2" : 8936,
+        "f3" : 8944
+    }
+}
