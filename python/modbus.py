@@ -60,9 +60,9 @@ class ModbusThread(Thread):
         
         while True:
             #Run the server
-            #Reset coils to 0.
+            #Reset coil_data to 0.
             for run in coil_runs:
-                run.reset_coils()
+                run.reset_coil_data()
             
             self.pressed_data_lock.acquire()
 
@@ -73,7 +73,7 @@ class ModbusThread(Thread):
                     for run in coil_runs:
                         if run.contains_coil(pin):
                             run.set_pin(pin, 1)
-                            break;
+                            break
                 else:
                     print("Invalid key " + key + " received, ignoring.")
     
@@ -81,8 +81,8 @@ class ModbusThread(Thread):
             print('Starting send data:')
             #Send all coil data to the PLC
             for run in coil_runs:
-                print(run.coils)
-                self.master.execute(self.opts['modbus_slave_num'], cst.WRITE_MULTIPLE_COILS, run.min_coil, output_value=run.coils)
+                print(run.coil_data)
+                self.master.execute(self.opts['modbus_slave_num'], cst.WRITE_MULTIPLE_COILS, run.min_coil, output_value=run.coil_data)
             
             print('Ending send data')
             #Sleep for a user defined amount of time
@@ -92,7 +92,7 @@ class CoilRun:
     def __init__(self, initial_coil):
         self.min_coil = initial_coil
         self.max_coil = initial_coil
-        self.coils = [0]
+        self.coil_data = [0]
 
     def num_coils(self):
         return self.max_coil - self.min_coil + 1
@@ -104,7 +104,7 @@ class CoilRun:
             self.min_coil -= 1
         else:
             return False
-        self.coils.append(0)
+        self.coil_data.append(0)
         return True
     
     def set_pin(self, pin, val):
@@ -112,13 +112,13 @@ class CoilRun:
             return False
         
         coil_index = pin - self.min_coil
-        self.coils[coil_index] = val
+        self.coil_data[coil_index] = val
 
     def contains_coil(self, pin_number):
             return (pin_number <= self.max_coil and pin_number >= self.min_coil)
     
-    def reset_coils(self):
+    def reset_coil_data(self):
         '''
         reset all coils to 0.
         '''
-        self.coils = [0 for x in range(self.num_coils())]
+        self.coil_data = [0 for x in range(self.num_coils())]
