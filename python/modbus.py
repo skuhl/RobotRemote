@@ -10,6 +10,7 @@ class ModbusThread(Thread):
         #Pressed data is a list of strings, and is modified by both threads. Thus, a lock is needed.
         self.pressed_data = pressed_data
         self.pressed_data_lock = pressed_data_lock
+        self.should_die = False
         #Setup modbus master
         def on_after_recv(data):
             master, bytes_data = data
@@ -58,7 +59,7 @@ class ModbusThread(Thread):
                 elif not coil_runs[-1].contains_coil(val):
                     coil_runs.append(CoilRun(val))
         
-        while True:
+        while not self.should_die:
             #Run the server
             #Reset coil_data to 0.
             for run in coil_runs:
@@ -78,16 +79,21 @@ class ModbusThread(Thread):
                     print("Invalid key " + key + " received, ignoring.")
     
             self.pressed_data_lock.release()
-            print('Starting send data:')
+            #print('Starting send data:')
             #Send all coil data to the PLC
-            for run in coil_runs:
-                print(run.coil_data)
-                self.master.execute(self.opts['modbus_slave_num'], cst.WRITE_MULTIPLE_COILS, run.min_coil, output_value=run.coil_data)
+            #for run in coil_runs:
+            #    print(run.coil_data)
+                #self.master.execute(self.opts['modbus_slave_num'], cst.WRITE_MULTIPLE_COILS, run.min_coil, output_value=run.coil_data)
             
-            print('Ending send data')
+            #print('Ending send data')
             #Sleep for a user defined amount of time
             time.sleep(self.opts['modbus_sleep_inteval'])
 
+    def kill():
+        self.should_die = True
+        
+#Represents a "run" of contiguous coils. This is so we can send coil data in
+#Batches instead of one at a time.
 class CoilRun:
     def __init__(self, initial_coil):
         self.min_coil = initial_coil

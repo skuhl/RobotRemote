@@ -3,16 +3,26 @@ from threading import Lock
 from socket import socket
 import json
 
+SETTINGS_FILE = 'settings.json'
+
 def main():
     pressed_data = []
     pressed_data_lock = Lock()
 
-    opts = get_options('settings.json')
+    opts = get_options(SETTINGS_FILE)
+    if(opts == None):
+        #an error occured, exit
+        return
+
     modbusThread = ModbusThread(opts, pressed_data, pressed_data_lock)
     
     modbusThread.start()
-
+    #TODO make this socket server a seperate thread.
+    #It would make it easier to intercept whether one
+    #thread has 
     start_socket(opts, pressed_data, pressed_data_lock)
+
+    modbusThread.kill()    
 
 def get_options(filename):
     file_dump = ''
@@ -34,24 +44,30 @@ def start_socket(opts, pressed_data, pressed_data_lock):
         listening_socket.bind((opts['socket_host'], opts['socket_port']))
         #0 so that we only accept 1 connection at a time. (others are rejected)
         listening_socket.listen(0)
+        try:
+            while True:
+                client, addr = listening_socket.accept()
+                with client:
+                    cur_recv = ' '
+                    msg = ''
+                    while cur_recv != '':
+                        cur_recv = client.recv(256).decode('utf-8')
+                        msg += cur_recv
 
-        while True:
-            client, addr = listening_socket.accept()
-            with client:
-                cur_recv = ' '
-                msg = ''
-                while cur_recv != '':
-                    cur_recv = client.recv(256).decode('utf-8')
-                    msg += cur_recv
+                print("Receive message: " + msg)
 
-            print("Receive message: " + msg)
+                pressed_data_lock.acquire()
 
-            pressed_data_lock.acquire()
+                pressed_data.clear()
+                pressed_data.extend(list(json.loads(msg)['pressed']))
 
-            pressed_data.clear()
-            pressed_data.extend(list(json.loads(msg)['pressed']))
-
-            pressed_data_lock.release()
-
+                pressed_data_lock.release()
+        except herror as err:
+            errno, errstr = err
+            print('Scoket Error (' + errno + '): ' + errstr)
+        else:
+            print('Some socket error occured.')
+    #If this area is reached, we have reached an error. Return to the caller
+    #and have them handle it.
 if __name__ == '__main__':
     main()
