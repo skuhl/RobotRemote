@@ -1,10 +1,13 @@
 #python based ignores
-*.pyc
+*.py[cod]
 python/__pycache__/
+python/lib/
+python/include/
+python/pip-selfcheck.json
 
 #node ignores
 node_modules/
-npm-debug.log
+node/npm-debug.log
 package-lock.json
 
 #ignore vscode files
