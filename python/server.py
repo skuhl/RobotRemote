@@ -19,7 +19,7 @@ def main():
     modbusThread.start()
     #TODO make this socket server a seperate thread.
     #It would make it easier to intercept whether one
-    #thread has 
+    #thread has died/failed.
     start_socket(opts, pressed_data, pressed_data_lock)
 
     modbusThread.kill()    
