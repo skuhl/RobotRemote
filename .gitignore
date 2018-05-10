@@ -5,6 +5,7 @@ python/lib/
 python/include/
 python/pip-selfcheck.json
 python/bin
+*.whl
 
 #node ignores
 node_modules/
