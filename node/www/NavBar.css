@@ -1,0 +1,25 @@
+  ul {
+      list-style-type:none;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background-color: #E8BF28;
+      position: -webkit-sticky; /* Safari */
+      position: sticky;
+      top: 0;
+  }
+  li {
+      float: left;
+      font-family:'Lucida Sans', Geneva, Verdana, sans-serif;
+  }
+  li a {
+    display: block;
+    color: black;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+  }
+  li a:hover{
+    color: #E8BF28;
+    background-color: black;
+  }
