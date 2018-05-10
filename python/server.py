@@ -21,7 +21,6 @@ def main():
     #TODO make this socket server a seperate thread.
     #It would make it easier to intercept whether one
     #thread has died/failed.
-    authenticate_server(None, opts)
     start_socket(opts, pressed_data, pressed_data_lock)
     
     if not opts["disable_modbus"]:
