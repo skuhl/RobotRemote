@@ -43,7 +43,8 @@ class ModbusThread(Thread):
         coil_runs = []
         coil_pins = []
         for key in self.opts['pin_assignments']:
-            coil_pins.append(self.opts['pin_assignments'][key])
+            if not self.opts['pin_assignments'][key] != 0:
+                coil_pins.append(self.opts['pin_assignments'][key] - 1)
         
         #Sort in ascending order
         coil_pins.sort()
@@ -83,7 +84,7 @@ class ModbusThread(Thread):
             #Send all coil data to the PLC
             #for run in coil_runs:
             #    print(run.coil_data)
-                #self.master.execute(self.opts['modbus_slave_num'], cst.WRITE_MULTIPLE_COILS, run.min_coil, output_value=run.coil_data)
+            self.master.execute(self.opts['modbus_slave_num'], cst.WRITE_MULTIPLE_COILS, run.min_coil, output_value=run.coil_data)
             
             #print('Ending send data')
             #Sleep for a user defined amount of time
