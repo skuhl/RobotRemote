@@ -1,6 +1,9 @@
 {
+    "verbose": true,
+    "server_secret":"secret",
     "socket_host":"127.0.0.1",
     "socket_port":5000,
+    "disable_modbus":true,
     "modbus_host":"127.0.0.1",
     "modbus_port":502,
     "modbus_slave_num":1,

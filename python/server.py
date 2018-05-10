@@ -13,16 +13,19 @@ def main():
     if(opts == None):
         #an error occured, exit
         return
-
-    modbusThread = ModbusThread(opts, pressed_data, pressed_data_lock)
     
-    modbusThread.start()
+    if not opts["disable_modbus"]:
+        modbusThread = ModbusThread(opts, pressed_data, pressed_data_lock)
+        modbusThread.start()
+
     #TODO make this socket server a seperate thread.
     #It would make it easier to intercept whether one
     #thread has died/failed.
+    authenticate_server(None, opts)
     start_socket(opts, pressed_data, pressed_data_lock)
-
-    modbusThread.kill()    
+    
+    if not opts["disable_modbus"]:
+        modbusThread.kill()    
 
 def get_options(filename):
     file_dump = ''
@@ -31,13 +34,14 @@ def get_options(filename):
     
     try:
         options = json.loads(file_dump)
-    except json.JSONDecodeError as exc:
+    except json.decoder.JSONDecodeError as exc:
         print('Failed to parse json file!')
-        print(msg + ': (' + exc.lineno + ', ' + exc.colno + ')')
+        print(exc.msg + ': (' + str(exc.lineno) + ', ' + str(exc.colno) + ')')
         return None
     #TODO do extra argument checking; Make sure everything is of right type,
     #Make sure that values are within an appropriate range, etc.
     return options
+
 
 def start_socket(opts, pressed_data, pressed_data_lock):
     with socket() as listening_socket:
@@ -53,8 +57,8 @@ def start_socket(opts, pressed_data, pressed_data_lock):
                     while cur_recv != '':
                         cur_recv = client.recv(256).decode('utf-8')
                         msg += cur_recv
-
-                print("Receive message: " + msg)
+                if opts["verbose"]:
+                    print("Receive message: " + msg)
 
                 pressed_data_lock.acquire()
 
@@ -64,10 +68,11 @@ def start_socket(opts, pressed_data, pressed_data_lock):
                 pressed_data_lock.release()
         except herror as err:
             errno, errstr = err
-            print('Scoket Error (' + errno + '): ' + errstr)
+            print('Socket Error (' + errno + '): ' + errstr)
         else:
             print('Some socket error occured.')
     #If this area is reached, we have reached an error. Return to the caller
     #and have them handle it.
+
 if __name__ == '__main__':
     main()
