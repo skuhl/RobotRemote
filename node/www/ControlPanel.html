@@ -1,17 +1,151 @@
 <!DOCTYPE HTML>
 <html>
-<head>
-  <link rel="stylesheet" type="text/css" href="NavBar.css">
-</head>
-<body>
-<h1>Robot Remote</h1>
-<ul>
-  <li><a href="Home.html">Information</a></li>
-  <li><a href="Schedular.html">Schedular</a></li>
-  <li><a href="ControlPanel.html">Control Panel</a></li>
-  <li style="float:right"><a href="Login.html">Login</a></li>
-</ul>
+  <head>
+    <link rel="stylesheet" type="text/css" href="NavBar.css">
+    <link rel="stylesheet" type="text/css" href="Button.css">
+  </head>
+  <body>
+    <ul>
+      <li><a href="Home.html">Information</a></li>
+      <li><a href="Schedular.html">Schedular</a></li>
+      <li><a href="ControlPanel.html">Control Panel</a></li>
+      <li style="float:right"><a href="Login.html">Login</a></li>
+    </ul>
+    <!--someday the href="" will need to be changes to urls-->
 
-<!--someday the href="" will need to be changes to urls-->
+    <!--Place holder for video feeds-->
+    <video width="49%" height="50%" controls>
+      <source src="movie.mp4" type="video/mp4">
+      <source src="movie.ogg" type="video/ogg">
+      Your browser does not support the video tag.
+    </video>
+
+    <video width="49%" height="50%" controls>
+      <source src="movie.mp4" type="video/mp4">
+      <source src="movie.ogg" type="video/ogg">
+      Your browser does not support the video tag.
+    </video>
+
+    <!--top row of buttons-->
+    <div class="rowTop">
+      <button class="button buttonTop">F1</button> <button class="button buttonTop">F2</button>
+      <button class="button buttonTop">F3</button> <button class="button buttonTop">F4</button>
+      <button class="button buttonTop">F5</button> 
+    </div><!--end top row-->
+    <!--second row starts-->
+    <div class="row">
+      <div class="column">
+        <button class="button button1">STEP</button> 
+      </div>
+      <div class="column">
+        <button class="button">MENU</button>
+        <button class="button">SELECT</button> <button class="button">EDIT</button>
+        <button class="button">DATA</button>  <button class="button">FCTN</button>
+      </div>
+      <div class="column">
+        <button class="button button1">SHIFT</button>
+      </div>
+    </div><!--second row ends-->
+    <!--Begin row w/ arrows-->
+    <div class="row">
+      <div class="column column1">
+        <button class="button">PREV</button> 
+      </div>
+      <div class="column2">
+        <button class="button"><</button> 
+      </div>
+      <div class="column">
+        <div class="row">
+          <button class="button">^</button> 
+        </div>
+        <div class="row">
+          <button class="button">v</button>
+        </div>
+      </div>
+      <div class="column2">
+        <button class="button">></button> 
+      </div>
+      <div class="column2">
+        <button class="button">NEXT</button> 
+      </div>
+    </div>
+    <!--botton block of buttons-->
+    <div class="row">
+      <!--Numpad button set-->
+      <div class="column">
+        <div class="row">
+          <button class="button">RESET</button> <button class=
+          "button">BKSPC</button> <button class="button">ITEM</button>
+        </div>
+        <div class="row">
+          <button class="button">7</button> <button class="button">8</button>
+          <button class="button">9</button>
+        </div>
+        <div class="row">
+          <button class="button">4</button> <button class="button">5</button>
+          <button class="button">6</button>
+        </div>
+        <div class="row">
+          <button class="button">1</button> <button class="button">2</button>
+          <button class="button">3</button>
+        </div>
+        <div class="row">
+          <button class="button">0</button> <button class="button">.</button>
+          <button class="button">,</button>
+        </div>
+        <div class="row">
+          <button class="button">-</button> <button class="button">POSH</button>
+          <button class="button">I/O</button>
+        </div>
+      </div><!--numpad set ends-->
+      <!--middle verticle button set-->
+      <div class="column">
+        <div class="row">
+          <button class="button">Enter</button>
+        </div>
+        <div class="row">
+          <button class="button">Tool1</button>
+        </div>
+        <div class="row">
+          <button class="button">Tool2</button>
+        </div>
+        <div class="row">
+          <button class="button">MVMU</button>
+        </div>
+        <div class="row">
+          <button class="button">SETUP</button>
+        </div>
+        <div class="row">
+          <button class="button">STATUS</button>
+        </div>
+      </div><!--middle block ends-->
+      <!--Final block-->
+      <div class="column">
+        <div class="row">
+          <button class="button">Hold</button> <button class=
+          "button">-X</button> <button class="button">+X</button>
+        </div>
+        <div class="row">
+          <button class="button">FWD</button> <button class="button">-Y</button>
+          <button class="button">+Y</button>
+        </div>
+        <div class="row">
+          <button class="button">BWD</button> <button class="button">-Z</button>
+          <button class="button">+Z</button>
+        </div>
+        <div class="row">
+          <button class="button">COORD</button> <button class="button">-XR</button>
+          <button class="button">+XR</button>
+        </div>
+        <div class="row">
+          <button class="button">+%</button> <button class="button">-YR</button>
+          <button class="button">+YR</button>
+        </div>
+        <div class="row">
+          <button class="button">-%</button> <button class="button">-ZR</button>
+          <button class="button">+ZR</button>
+        </div>
+      </div><!--Final block ends-->
+    </div><!--Bottom row ends-->
 </body>
 </html>
