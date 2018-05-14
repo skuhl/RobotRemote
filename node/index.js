@@ -1,61 +1,45 @@
-let express = require("express");
-var request = require('request');
-let app = express();
-let WebSocketServer = require('websocket').server;
-let net = require('net')
+const express = require("express");
+const request = require('request');
+const app = express();
+const tls = require('tls');
+const net = require('net');
+const fs = require('fs');
+const crypto = require('crypto');
+const actuator_comm = require('./actuator_comm');
 
-app.use('/static', express.static('./www'));
+const options = require('./settings.json');
+
+//load private key into memory
+let my_key = fs.readFileSync(options['key_file']);
+let cert = fs.readFileSync(options['cert_file']);
+let cacert = fs.readFileSync(options['ca_file']);
+let actuators = [];
+
+//initialize actuators
+for(let act of options['actuator_servers']){
+    actuators.push(new actuator_comm.Actuator(act.ip, act.socket_port))
+}
+//routing
+//app.use('/static', express.static('./www'));
+
 app.get('/', function(req, res){
     console.log("Redirect from / to /static/");
     res.redirect(301, '/static/');
 });
 
+app.get('/static/', function(req, res){
+    console.log("Connecting to main page");
+    let act = actuator_comm.getFreeActuator(actuators);
+    if(act == null){
+        res.send("No free actuators!");
+    }else{
+        //TODO set cookie pointing to actuator
+        //TODO write out HTML
+        //TODO make this utilize a Promise from
+        //send client details.
+        res.send("Found actuator");
+        act.sendClientDetails(cert, my_key, cacert);
+    }
+});
+
 let server = app.listen(3000, () => console.log("Listening on port 3k"));
-//console.log(app);
-
-wsServer = new WebSocketServer({
-    httpServer: server,
-    keepalive: true,
-    keepaliveInterval: 2000,
-    keepaliveGracePeriod: 1000,
-    closeTimeout: 1000,
-    autoAcceptConnections: false
-});
-
-wsServer.on('request', function(req){
-    console.log("Request gotten.");
-    let con = req.accept(null, req.origin);
-    con.on('message', function(message){
-        con.sendUTF('Echo: ' + message.utf8Data);
-        //Make a request to python stuff
-        /*
-        request.post(
-            'http://localhost:5000/extend',
-            {json: JSON.parse(message.utf8Data)},
-            function (error, response, body) {
-                if (!error && response.statusCode == 200) {
-                    console.log(body)
-                }
-            }
-        );*/
-        socket = net.createConnection(5000, 'localhost', function(){
-            //Send a singular message, and end the connection
-            console.log("Sending" + message.utf8Data);
-            socket.end(message.utf8Data);
-        })
-        
-    });
-    con.on('close', function(reason, desc){
-        console.log('Client diconnected, because: ' + desc);
-    });
-});
-
-wsServer.on('connect', function(con){
-    //console.log(con);
-    console.log("Connected");
-});
-
-wsServer.on('close', function(con, reason, desc){
-    console.log("Disconnected");
-    //console.log(con, reason, desc);
-});

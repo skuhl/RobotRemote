@@ -11,5 +11,12 @@ python/bin
 node_modules/
 node/npm-debug.log
 
+#ignores for certificate files
+helperscripts/cacert
+helperscripts/cert
+cert.pem
+key.pem
+cacert.pem
+
 #ignore vscode files
 .vscode/

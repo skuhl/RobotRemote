@@ -1,7 +1,5 @@
 {
     "verbose": true,
-    "server_secret":"secret",
-    "socket_host":"127.0.0.1",
     "socket_port":5000,
     "disable_modbus":true,
     "modbus_host":"127.0.0.1",
@@ -14,5 +12,8 @@
         "f1" : 0,
         "f2" : 0,
         "f3" : 0
-    }
+    },
+    "cert_file":"cert.pem",
+    "key_file":"key.pem",
+    "ca_file":"cacert.pem"
 }

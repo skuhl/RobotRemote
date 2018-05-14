@@ -1,7 +1,9 @@
 from modbus import ModbusThread
 from threading import Lock
 from socket import socket
+from serverconnection import ServerConnection
 import json
+import rsa
 
 SETTINGS_FILE = 'settings.json'
 
@@ -21,8 +23,8 @@ def main():
     #TODO make this socket server a seperate thread.
     #It would make it easier to intercept whether one
     #thread has died/failed.
-    start_socket(opts, pressed_data, pressed_data_lock)
-    
+    conn = ServerConnection.listen(opts["socket_port"], opts["key_file"], opts["cert_file"], opts["ca_file"], True)
+
     if not opts["disable_modbus"]:
         modbusThread.kill()    
 
@@ -33,6 +35,7 @@ def get_options(filename):
     
     try:
         options = json.loads(file_dump)
+
     except json.decoder.JSONDecodeError as exc:
         print('Failed to parse json file!')
         print(exc.msg + ': (' + str(exc.lineno) + ', ' + str(exc.colno) + ')')
@@ -41,7 +44,7 @@ def get_options(filename):
     #Make sure that values are within an appropriate range, etc.
     return options
 
-
+'''
 def start_socket(opts, pressed_data, pressed_data_lock):
     with socket() as listening_socket:
         listening_socket.bind((opts['socket_host'], opts['socket_port']))
@@ -72,6 +75,6 @@ def start_socket(opts, pressed_data, pressed_data_lock):
             print('Some socket error occured.')
     #If this area is reached, we have reached an error. Return to the caller
     #and have them handle it.
-
+'''
 if __name__ == '__main__':
     main()

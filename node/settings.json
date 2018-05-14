@@ -1,0 +1,11 @@
+{
+    "actuator_servers": [
+        {
+            "ip":"127.0.0.1",
+            "socket_port": 5000
+        }
+    ],
+    "cert_file": "cert.pem",
+    "key_file":"key.pem",
+    "ca_file":"cacert.pem"
+}
