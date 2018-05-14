@@ -4,7 +4,6 @@ const app = express();
 const tls = require('tls');
 const net = require('net');
 const fs = require('fs');
-const crypto = require('crypto');
 const actuator_comm = require('./actuator_comm');
 
 const options = require('./settings.json');
@@ -34,11 +33,14 @@ app.get('/static/', function(req, res){
         res.send("No free actuators!");
     }else{
         //TODO set cookie pointing to actuator
-        //TODO write out HTML
-        //TODO make this utilize a Promise from
+        //TODO write out HTML (read from disk and send)
         //send client details.
-        res.send("Found actuator");
-        act.sendClientDetails(cert, my_key, cacert);
+        act.sendClientDetails(cert, my_key, cacert).then((val) => {
+            res.send('Connected to actuator server.');
+        },(err) => {
+            console.log("Failed to connect to actuator server, " + err)
+            res.send(err);
+        });
     }
 });
 

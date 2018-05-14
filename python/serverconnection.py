@@ -1,7 +1,7 @@
 from socket import socket
 import ssl
-import rsa
 import base64
+from threading import Thread
 
 #Represents a web server connection
 class ServerConnection:
@@ -39,7 +39,10 @@ class ServerConnection:
             ssl_sock.bind((ssl_sock.getsockname()[0], port))
             ssl_sock.listen(0)
 
-            connection = ssl_sock.accept()
+            connection = ssl_sock.accept()[0]
+
+            if verbose:
+                print('Accepted a connection from ' + connection.getpeername()[0])
 
             #Stop listening on the given port
             ssl_sock.close()
@@ -62,18 +65,21 @@ class ServerConnection:
         message = ''
         #We use ascii, then convert to utf-8, simply so we don;t
         #need to worry about multi-byte characters when decoding.
-        while(message[-1] != '\0'):
+        while len(message) < 1 or message[-1] != '\0':
             message += self.socket.recv().decode('ascii')
 
         message = message.encode().decode('utf-8')[0:-1]
         
+        if self.verbose:
+            print('Received message "' + message + '"')
+
         if self.state == 'WAITING':
             #Waiting for ready signeal
             if message.upper() == 'READY':
-                self.socket.sendall('OK\0')
+                self.socket.sendall('OK\0'.encode())
                 self.state = 'RECEIVING_INFO'
             elif message.upper() == 'STATUS':
-                self.socket.sendall('FREE\0')
+                self.socket.sendall('FREE\0'.encode())
             else:
                 self.socket.close()
                 return False
@@ -86,17 +92,16 @@ class ServerConnection:
             #This will be a single message, seperated
             #by a newline character.
             #Also, the secret will be base64 encoded,
-            #So that a zero byte isn't allowed
+            #So that a zero byte isn't accidentily included
             parts = message.split(sep = '\n')
-            if(len(parts) != 2):
+            if len(parts) != 2:
                 print('Received malformed message: {}'.format(message))
                 print('Closing connection due to malformed message')
                 self.socket.close()
                 return False
             
             ip = parts[0] #ip in xxx.xxx.xxx.xxx format
-            self.client_secret = base64.b64decode(parts[1].decode()).encode('utf-8') #secret shared between client and both servers
-
+            self.client_secret = base64.b64decode(parts[1].encode()).hex() #secret shared between client and both servers
             #Now, we attempt to connect to the given client.
             #To do this, we use a websocket. This requires a
             #certificate from an actual CA (can't be self signed).
@@ -104,17 +109,42 @@ class ServerConnection:
             #TODO maybe do this using let's encrypt? We could also
             #have it auto-renew, as well as having the webserver verified.
 
+            
 
         elif self.state == 'WITH_CLIENT':
             if message == 'STATUS':
                 #Get the status of the actuator server (busy, in this case) 
-                self.socket.sendall('BUSY\0')
+                self.socket.sendall('BUSY\0'.encode())
             elif message == 'TIMEOUT':
+                #TODO
                 #The webserver is telling this server to break it's connection
                 #with the client. Send back OK when done.
                 self.state = 'WAITING'
-                self.socket.sendall('OK\0')
+                self.socket.sendall('OK\0'.encode())
 
+class WebserverListenerThread(Thread):
+    def __init__(self, port, keyfile, certfile, ca_certfile, verbose):
+        Thread.__init__(self)
+        self.port = port
+        self.keyfile = keyfile
+        self.certfile = certfile
+        self.ca_certfile = ca_certfile
+        self.verbose = verbose
+        self.should_die = False
+        self.has_error = False
+        self.err_msg = ''
+    
+    def run(self):
+        while not self.should_die:
+            conn = ServerConnection.listen(self.port, self.keyfile, self.certfile, self.ca_certfile, self.verbose)
+            while not self.should_die:
+                exchange_result = conn.nextExchange()
+                if exchange_result == False:
+                    break
+                #TODO check if it's a ClientConnection, then spawn a client thread
 
+    def kill(self):
+        self.should_die = True
 
-
+    def haserror(self):
+        return self.has_error

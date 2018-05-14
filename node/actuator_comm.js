@@ -1,5 +1,6 @@
 const tls = require('tls');
 const StringDecoder = require('string_decoder').StringDecoder;
+const crypto = require('crypto');
 
 let decoder = new StringDecoder('utf8');
 
@@ -16,7 +17,7 @@ module.exports = {
             this.dateConnected = null;
         }
 
-        sendClientDetails(cert, key, ca){
+        sendClientDetails(cert, key, ca, client_ip){
             console.log('creating SSL socket');
             
             let curActuator = this;
@@ -41,11 +42,11 @@ module.exports = {
                             state:'READY',
                             actuator: curActuator,
                             sentData: resolve,
-                            failedToSend: reject
+                            failedToSend: reject,
+                            client_ip: client_ip
                         };
     
                         socket.info.actuator.socketOpen = true;
-                        socket.info.actuator.free = false;
                         socket.info.actuator.dateConnected = new Date();
                         socket.info.actuator.socket = socket;
                         
@@ -57,13 +58,13 @@ module.exports = {
                     });
                     
                     socket.on('close', function(){
-                        this.info.actuator.socketOpen = false;
+                        if(this.info) this.info.actuator.socketOpen = false;
                         this.destroy();
                     });
 
                     socket.on('error', function(err){
-                        reject("Socket error occured " + err);
-                        this.info.actuator.socketOpen = false;
+                        reject("Socket error occured\n" + err);
+                        if(this.info) this.info.actuator.socketOpen = false;
                         this.destroy();
                     });
                 }
@@ -80,6 +81,7 @@ module.exports = {
             return this.socket == null || !this.socketOpen;
         }
     },
+
     //Gets the first free actuator server
     getFreeActuator: function(actuators){
         for(let act of actuators){
@@ -92,7 +94,6 @@ module.exports = {
 };
 
 function handle_data(data){
-    console.log(data);
     this.info.data_unread += decoder.write(data);
 
     if(this.info.data_unread.size > 4096) {
@@ -109,19 +110,39 @@ function handle_data(data){
             if(this.info.data_unread.slice(0, -1).toUpperCase() == 'OK'){
                 //send data to server about where the client is
 
-                //Fufill the promise
+                //TODO make the number of random bytes configurable?
+                secret = crypto.randomBytes(512);
+                console.log('Secret: ' + secret.toString('hex'));
+
+                sendString = this.client_ip + '\n' + secret.toString('base64') + '\0';
+                
+                console.log('Sending following string:');
+                console.log(sendString)
+
+                this.write(sendString, 'utf-8');
+                //Fufill the promise (actuator got our data)
                 if(this.info.sentData != null) this.info.sentData();
                 this.info.failedToSend = null;
                 this.info.sentData = null;
 
-                this.info.state = 'DONE';
+                this.info.state == 'WAIT_FOR_CLIENT_ACT_ACK'
             }else{
                 if(this.info.failedToSend != null) this.info.failedToSend("Invalid response from actuator server.");
                 this.info.failedToSend = null;
                 this.info.sentData = null;
                 this.destroy();
             }
+        }else if(this.info.state == 'WAIT_FOR_CLIENT_ACT_ACK'){
+            if(this.info.data_unread.slice(0, -1).toUpperCase() == 'OK'){
+                this.info.state = 'DONE';
+            }else{
+                if(this.info.failedToSend != null) this.info.failedToSend("Actuator server did not properly acknowledge request to connect with client.");
+                this.info.failedToSend = null;
+                this.info.sentData = null;
+                this.destroy();
+            }
         }else if(this.info.state == 'DONE'){
+            //TODO possibly error here?
             console.log("Received data after done.");
         }else{
             if(this.info.failedToSend != null) this.info.failedToSend("Reached an unknown state");
