@@ -13,7 +13,8 @@
         "f2" : 0,
         "f3" : 0
     },
-    "cert_file":"cert.pem",
-    "key_file":"key.pem",
-    "ca_file":"cacert.pem"
+    "cert_file":"cert/cert.pem",
+    "key_file":"cert/key.pem",
+    "ca_file":"cert/cacert.pem",
+    "debug": true
 }

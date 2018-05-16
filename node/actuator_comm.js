@@ -9,87 +9,139 @@ module.exports = {
     //Holds a socket open until it breaks down, essentially.
     Actuator: class {
 
-        constructor(ip, port){
+        constructor(ip, port, secure_context){
             this.ip = ip;
             this.port = port;
             this.socket = null;
             this.socketOpen = false;
             this.dateConnected = null;
+            this.isFree = true;
+            this.secure_context = secure_context;
         }
 
-        sendClientDetails(cert, key, ca, client_ip){
-            console.log('creating SSL socket');
-            
-            let curActuator = this;
+        async sendClientDetails(){
+            let self = this;
+            this.isFree = false;
+            this.createSocket();
+
             let promise = new Promise((resolve, reject) => {
+                if(self.socket.info.state != 'READY') reject('Started in invalid state, expected READY, was in ' + self.socket.info.state);
+                if(self.socket == null || self.socket.destroyed) reject('Socket failed to open.');
                 
-                let secureContext = tls.createSecureContext({
-                    key: key,
-                    cert: cert,
-                    ca: ca
-                });
+                self.socket.info.sentData = resolve;
+                self.socket.info.failedToSend = reject;
 
-                if(this.socket == null || this.socket.destroyed){
-                    let socket = tls.connect({
-                        host: this.ip,
-                        port: this.port,
-                        rejectUnauthorized: true,
-                        secureContext: secureContext
-                    },
-                    function(){
-                        socket.info = {
-                            data_unread:'',
-                            state:'READY',
-                            actuator: curActuator,
-                            sentData: resolve,
-                            failedToSend: reject,
-                            client_ip: client_ip
-                        };
-    
-                        socket.info.actuator.socketOpen = true;
-                        socket.info.actuator.dateConnected = new Date();
-                        socket.info.actuator.socket = socket;
-                        
-                        console.log("Socket connected!");
-                        
-                        socket.on('data', handle_data);
-                        //send ready message to server
-                        socket.write('READY\0', 'utf8');
-                    });
-                    
-                    socket.on('close', function(){
-                        if(this.info) this.info.actuator.socketOpen = false;
-                        this.destroy();
-                    });
-
-                    socket.on('error', function(err){
-                        reject("Socket error occured\n" + err);
-                        if(this.info) this.info.actuator.socketOpen = false;
-                        this.destroy();
-                    });
-                }
+                self.socket.write('READY\0', 'utf8');
+                
             });
             
             return promise;
         }
 
-        free(){
-            //We may actually want to poll/query each server
-            //This is possible, but may be more expensive
-            //However, we can more confidently tell if a server
-            //is free
-            return this.socket == null || !this.socketOpen;
+        createSocket(){
+            let self = this;
+
+            if(this.socket == null || this.socket.destroyed){
+                console.log('creating SSL socket');
+                //TODO pull this out and make it global?
+                
+                this.socket = tls.connect({
+                    host: this.ip,
+                    port: this.port,
+                    secureContext: this.secureContext,
+                    rejectUnauthorized: false
+                },
+                function(){
+                    self.socketOpen = true;
+                    self.dateConnected = new Date();
+                    
+                    this.on('data', handle_data);
+                });
+                
+                this.socket.on('close', function(){
+                    if(this.info){ 
+                        this.info.actuator.socketOpen = false;
+                    }
+                    this.destroy();
+                });
+
+                this.socket.on('error', function(err){
+                    if(self.socket && self.socket!=null && self.socket.info && self.socket.info.failedToSend != null){
+                        self.socket.info.failedToSend("Socket error occured\n" + err);
+                        self.socket.info.failedToSend = null;
+                        self.socket.info.sentData = null;
+                    }else{
+                        console.log(err);
+                    }
+
+                    if(this.info){ 
+                        this.info.actuator.socketOpen = false;
+                    }
+
+                    this.destroy();
+                });
+
+                this.socket.info = {
+                    data_unread:'',
+                    state:'READY',
+                    actuator: self,
+                    sentData: null,
+                    failedToSend: null
+                };
+
+            }
+        }
+
+        async free(){
+            let self = this;
+            //if the socket is open, then the socket is certainly free
+            return new Promise(async function(resolve, reject){
+                if(self.socketOpen){
+                    resolve(self.isFree);
+                    return;
+                }
+                
+                self.createSocket();
+                if(!self.socket || self.socket == null){
+                    print(self.socket);
+                    reject('Failed to create socket.');
+                    return;
+                }
+
+                let status_callback = new Promise((resolve, reject) =>{
+                    self.socket.info.got_status = resolve;
+                    self.socket.info.failed_status_get = reject;
+                    console.log('Writing STATUS')
+                    self.socket.write('STATUS\0');
+                });
+
+                console.log('Awaiting status')
+                let status = await status_callback;
+                resolve(status == 'FREE');
+            });
+
         }
     },
 
     //Gets the first free actuator server
-    getFreeActuator: function(actuators){
-        for(let act of actuators){
-            if(act.free()){
-                return act;
+    getFreeActuator: async function(actuators){
+        return new Promise(async (resolve, reject) => {
+            for(let act of actuators){
+                console.log('Checking if act is free...');
+                let isFree = false;
+                try {
+                    isFree = await act.free();
+                }catch(err){
+                    console.log('Error getting actuator: ' + err);
+                }
+                console.log('isFree: ' + isFree);
+                if(isFree){
+                    resolve(act);
+                    return;
+                }
             }
-        }
-        return null;
+            reject('No free actuators.');
+        });
     }
 };
 
@@ -106,45 +158,58 @@ function handle_data(data){
 
     if(this.info.data_unread[this.info.data_unread.length-1] == '\0'){
         
+        let msg = this.info.data_unread.slice(0, -1).toUpperCase();
+        //Messages that may occur in any state....
+        
+
+        //Main state machine
         if(this.info.state == 'READY'){
-            if(this.info.data_unread.slice(0, -1).toUpperCase() == 'OK'){
+            if(msg == 'OK'){
                 //send data to server about where the client is
 
                 //TODO make the number of random bytes configurable?
                 secret = crypto.randomBytes(512);
-                console.log('Secret: ' + secret.toString('hex'));
-
-                sendString = this.client_ip + '\n' + secret.toString('base64') + '\0';
+                sendString = secret.toString('base64') + '\0';
                 
-                console.log('Sending following string:');
-                console.log(sendString)
-
                 this.write(sendString, 'utf-8');
-                //Fufill the promise (actuator got our data)
-                if(this.info.sentData != null) this.info.sentData();
-                this.info.failedToSend = null;
-                this.info.sentData = null;
 
-                this.info.state == 'WAIT_FOR_CLIENT_ACT_ACK'
+                this.info.state = 'WAIT_FOR_CLIENT_ACT_ACK'
+            //Might these messages be sent in different states?
+            }else if( msg == 'FREE' || msg == 'BUSY'){
+                if(this.info.got_status && this.info.got_status != null) this.info.got_status(msg);
+                this.info.got_status = null;
+                this.info.failed_status_get = null;
             }else{
-                if(this.info.failedToSend != null) this.info.failedToSend("Invalid response from actuator server.");
+                if(this.info.failedToSend != null) this.info.failedToSend("Invalid response from actuator server.\"" + msg + "\"");
                 this.info.failedToSend = null;
                 this.info.sentData = null;
                 this.destroy();
             }
         }else if(this.info.state == 'WAIT_FOR_CLIENT_ACT_ACK'){
-            if(this.info.data_unread.slice(0, -1).toUpperCase() == 'OK'){
-                this.info.state = 'DONE';
+            if(msg == 'OK'){
+                
+                //Fufill the promise (actuator got our data)
+                if(this.info.sentData != null) this.info.sentData();
+                this.info.failedToSend = null;
+                this.info.sentData = null;
+                
+                this.info.state = 'WAIT_FOR_FREE';
             }else{
                 if(this.info.failedToSend != null) this.info.failedToSend("Actuator server did not properly acknowledge request to connect with client.");
                 this.info.failedToSend = null;
                 this.info.sentData = null;
                 this.destroy();
             }
-        }else if(this.info.state == 'DONE'){
-            //TODO possibly error here?
-            console.log("Received data after done.");
-        }else{
+        }else if(this.info.state == 'WAIT_FOR_FREE'){
+            if(msg == 'FREE'){
+                console.log('Got FREE.')
+                this.info.actuator.isFree = true;
+                this.info.state = 'READY';
+            }else{
+                console.log('Malformed message in WAIT_FOR_FREE state: ' + msg);
+                this.destroy();
+            }
+        }else {
             if(this.info.failedToSend != null) this.info.failedToSend("Reached an unknown state");
             this.info.failedToSend = null;
             this.info.sentData = null;

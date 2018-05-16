@@ -5,7 +5,8 @@
             "socket_port": 5000
         }
     ],
-    "cert_file": "cert.pem",
-    "key_file":"key.pem",
-    "ca_file":"cacert.pem"
+    "cert_file": "cert/cert.pem",
+    "key_file":"cert/key.pem",
+    "ca_file":"cert/cacert.pem",
+    "debug":true
 }

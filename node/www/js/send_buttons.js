@@ -20,7 +20,7 @@ function UpdatePresses(){
 }
 
 var InitSocket = function(){
-    socket = new WebSocket('ws://localhost:3000/');
+    socket = new WebSocket('ws://localhost:5001/');
     socket.onopen = SocketReady;
     socket.onmessage = SocketMessage;
     socket.onerror = SocketClose();
