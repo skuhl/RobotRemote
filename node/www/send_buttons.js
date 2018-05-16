@@ -48,23 +48,24 @@ function keyDown(event){
     console.log("I done got called!");	
 	//let text = String.fromCharCode(e);
 	let text = event.keyCode;
+	console.log("I got called with key code: " + text);	
 	event.preventDefault();
 	switch(text){
-/*	 	case : // F1
+	 	case 112: // F1
 			ButtonPressed('F1');
 			break;
-		case : // F2
+		case 113: // F2
 			ButtonPressed('F2');
 			break;
-		case : // F3
+		case 114: // F3
 			ButtonPressed('F3');
 			break;
-		case : // F4
+		case 115: // F4
 			ButtonPressed('F4');
 			break;
-		case : // F5
+		case 116: // F5
 			ButtonPressed('F5');
-			break; */
+			break;
 		case 16: //shift unicode
 			ButtonPressed('SHIFT');
 			break;
@@ -134,21 +135,21 @@ function keyUp(event){
 	let text = event.keyCode;
 	event.preventDefault();
 	switch(text){
-/*	 	case : // F1
+	 	case 112: // F1
 			ButtonPressed('F1');
 			break;
-		case : // F2
+		case 113: // F2
 			ButtonPressed('F2');
 			break;
-		case : // F3
+		case 114: // F3
 			ButtonPressed('F3');
 			break;
-		case : // F4
+		case 115: // F4
 			ButtonPressed('F4');
 			break;
-		case : // F5
+		case 116: // F5
 			ButtonPressed('F5');
-			break; */
+			break; 
 		case 16: //shift unicode
 			ButtonReleased('SHIFT');
 			break;
