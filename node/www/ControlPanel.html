@@ -173,9 +173,10 @@
         </div><!--Final block ends-->
       </div><!--Bottom row ends-->
     </div><!--end of controls-->
-    <script src="js/send_buttons.js">
-      document.addEventListener("keydown", function(){keyDown(event.keyCode)})
-      document.addEventListener("keyup", function(){keyUp(event.keyCode)})      
+    <script src="./send_buttons.js"></script>
+    <script>
+      document.addEventListener("keydown", keyDown);
+      document.addEventListener("keyup", keyUp);
     </script>
 </body>
 </html>
