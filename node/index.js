@@ -40,14 +40,15 @@ for(let act of options['actuator_servers']){
     actuators.push(new actuator_comm.Actuator(act.ip, act.socket_port, secure_context))
 }
 //routing
-//app.use('/public', express.static('./www'));
+app.use('/css', express.static('./www/css'));
+app.use('/js', express.static('./www/js'));
 
 app.get('/', function(req, res){
     console.log("Redirect from / to /static/");
-    res.redirect(301, '/www/');
+    res.redirect(301, '/Home.html');
 });
 
-app.get('/www/index.html', function(req, res){
+app.get('/ControlPanel.html', function(req, res){
     console.log("Connecting to main page");
     actuator_comm.getFreeActuator(actuators).then((act)=>{
         //send client details.
@@ -56,7 +57,7 @@ app.get('/www/index.html', function(req, res){
             //TODO set up these options for cookie correctly
             //(https only, age, when it expires, possibly session stuff)
             res.cookie('act-secret', secret);
-            res.send(fs.readFileSync('./www/index.html', {
+            res.send(fs.readFileSync('./www/ControlPanel.html', {
                 encoding: 'utf8'
             }));
         },(err) => {
@@ -68,16 +69,26 @@ app.get('/www/index.html', function(req, res){
     });
 });
 
-app.get('/www/*', function(req, res){
-    //TODO FIXME THIS IS BAD, JUST FOR TESTING PURPOSES
-    //ALLOWS ACCESS OF FILES OUTSIDE OF WWW
-    if(fs.existsSync(__dirname + req.path)){
-        res.send(fs.readFileSync(__dirname + req.path, {
-            encoding: 'utf8'
-        }));
-    }else{
-        res.status(404).send('Could not find requested file.');
-    }
+app.get('/Home.html', function(req, res){
+    res.send(fs.readFileSync('./www/Home.html', {
+        encoding: 'utf8'
+    }));
+});
+app.get('/Login.html', function(req, res){
+    res.send(fs.readFileSync('./www/Login.html', {
+        encoding: 'utf8'
+    }));
+});
+app.get('/Scheduler.html', function(req, res){
+    res.send(fs.readFileSync('./www/Scheduler.html', {
+        encoding: 'utf8'
+    }));
+});
+
+app.get('/NavBar.html', function(req, res){
+    res.send(fs.readFileSync('./www/NavBar.html', {
+        encoding: 'utf8'
+    }));
 });
 
 let server = app.listen(3000, () => console.log("Listening on port 3k"));
