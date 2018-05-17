@@ -1,38 +1,34 @@
 <!DOCTYPE HTML>
 <html>
   <head>
-    <link rel="stylesheet" type="text/css" href="/css/NavBar.css">
-    <link rel="stylesheet" type="text/css" href="/css/Button.css">
+    <title>Robot Remote - Control Panel</title>
+    <link rel="stylesheet" type="text/css" href="NavBar.css">
+    <link rel="stylesheet" type="text/css" href="Button.css">
+    <link rel="import" href="./jsmpeg-master.view-stream.html">
+    
   </head>
   <body>
     <ul>
-      <li><a href="/Home.html">Information</a></li>
-      <li><a href="/Scheduler.html">Scheduler</a></li>
-      <li><a href="/ControlPanel.html">Control Panel</a></li>
-      <li style="float:right"><a href="/Login.html">Login</a></li>
+      <li><a href="Home.html">Information</a></li>
+      <li><a href="Schedular.html">Schedular</a></li>
+      <li><a href="ControlPanel.html">Control Panel</a></li>
+      <li style="float:right"><a href="Login.html">Login</a></li>
     </ul>
     <!--someday the href="" will need to be changes to urls-->
 
-    <!--Place holder for video feeds-->
-    <video width="49%" height="50%" controls>
-      <source src="movie.mp4" type="video/mp4">
-      <source src="movie.ogg" type="video/ogg">
-      Your browser does not support the video tag.
-    </video>
-
-    <video width="49%" height="50%" controls>
-      <source src="movie.mp4" type="video/mp4">
-      <source src="movie.ogg" type="video/ogg">
-      Your browser does not support the video tag.
-    </video>
-
-    <div class="column columnVid">
-      <video width="49%" height="50%" controls>
-        <source src="movie.mp4" type="video/mp4">
-        <source src="movie.ogg" type="video/ogg">
-        Your browser does not support the video tag.
-      </video>
+    <!--Video feeds it needs source, either a url or websocket server
+        Replace "Video.ts" with correct information-->
+    <script src="./jsmpeg-master/jsmpeg.min.js"></script>
+    <div class="jsmpeg" data-url="video.ts" 
+	     data-audio="false" data-autoplay="true">
     </div>
+    <div class="jsmpeg" data-url="video.ts" 
+	     data-audio="false" data-autoplay="true">
+    </div>
+    <div class="jsmpeg" data-url="video.ts" 
+	     data-audio="false" data-autoplay="true">
+    </div>
+
 
     <!--wrapper for the whole gosh darn button pannel-->
     <div class="column">
@@ -173,7 +169,7 @@
         </div><!--Final block ends-->
       </div><!--Bottom row ends-->
     </div><!--end of controls-->
-    <script src="/js/send_buttons.js"></script>
+    <script src="./send_buttons.js"></script>
     <script>
       document.addEventListener("keydown", keyDown);
       document.addEventListener("keyup", keyUp);
