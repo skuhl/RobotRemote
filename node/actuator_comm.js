@@ -169,7 +169,8 @@ function handle_data(data){
 
                 //TODO make the number of random bytes configurable?
                 secret = crypto.randomBytes(512);
-                sendString = secret.toString('base64') + '\0';
+                this.info.client_secret = secret.toString('base64');
+                sendString = this.info.client_secret + '\0';
                 
                 this.write(sendString, 'utf-8');
 
@@ -189,16 +190,24 @@ function handle_data(data){
             if(msg == 'OK'){
                 
                 //Fufill the promise (actuator got our data)
-                if(this.info.sentData != null) this.info.sentData();
+                if(this.info.sentData != null) this.info.sentData(this.info.client_secret);
                 this.info.failedToSend = null;
                 this.info.sentData = null;
                 
-                this.info.state = 'WAIT_FOR_FREE';
+                this.info.state = 'WAIT_FOR_CLIENT_ACTUATOR_CONNECTION';
             }else{
                 if(this.info.failedToSend != null) this.info.failedToSend("Actuator server did not properly acknowledge request to connect with client.");
                 this.info.failedToSend = null;
                 this.info.sentData = null;
                 this.destroy();
+            }
+        }else if(this.info.state == 'WAIT_FOR_CLIENT_ACTUATOR_CONNECTION'){
+            if(msg != 'CONNECTED'){
+                console.log('Client failed to connect to actuator server. ' + msg);
+                this.info.state = 'READY'
+                this.info.actuator.isFree = true;
+            }else{
+                this.info.state = 'WAIT_FOR_FREE';
             }
         }else if(this.info.state == 'WAIT_FOR_FREE'){
             if(msg == 'FREE'){

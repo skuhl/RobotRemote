@@ -50,10 +50,12 @@ app.get('/', function(req, res){
 app.get('/www/index.html', function(req, res){
     console.log("Connecting to main page");
     actuator_comm.getFreeActuator(actuators).then((act)=>{
-        //TODO set cookie pointing to actuator
-        //TODO write out HTML (read from disk and send)
         //send client details.
-        act.sendClientDetails().then((val) => {
+        act.sendClientDetails().then((secret) => {
+            //send cookie containing client secret!
+            //TODO set up these options for cookie correctly
+            //(https only, age, when it expires, possibly session stuff)
+            res.cookie('act-secret', secret);
             res.send(fs.readFileSync('./www/index.html', {
                 encoding: 'utf8'
             }));

@@ -8,6 +8,11 @@ function SocketMessage(event){
 
 function SocketReady(){ 
     socket_ready = true;
+    //Socket is ready, we need to send our secret
+    secret = GetCookie('act-secret');
+    console.log(secret);
+    socket.send(secret);
+
     UpdatePresses();
 }
 
@@ -40,6 +45,22 @@ var ButtonReleased = function(num){
     if(socket_ready){
         UpdatePresses();
     }
+}
+
+function GetCookie(cookie){
+    let name = cookie + '=';
+    let decoded_cookies = decodeURIComponent(document.cookie);
+    let cookie_array = decoded_cookies.split(';');
+
+    let cookie_string = cookie_array.map(function(x){
+        return x.trim()
+    }).find(function(x){
+        return x.startsWith(name);
+    });
+
+    if(!cookie_string) return null;
+
+    return cookie_string.slice(name.length).trim();
 }
 
 InitSocket();

@@ -3,25 +3,29 @@ import ssl
 import base64
 import asyncio
 from threading import Thread
-from clientconnection import ClientConnection
+from websocket_server import WebSocketConnectionInfo
+from asyncio import Queue
 
 class ServerProtocol(asyncio.Protocol):
     '''
     Protocol for communicating with the webserver.
     '''
-    def __init__(self, secure_context, pressed_lock, pressed_data, verbose):
+    def __init__(self, loop, accepting_websocks_sem, secure_context, pressed_lock, pressed_data, verbose):
         self.verbose = verbose
+        self.loop = loop
         self.state = 'WAITING'
         self.secure_context = secure_context
-        self.pressed_lock = pressed_lock
+        self.pressed_data_lock = pressed_lock
         self.pressed_data = pressed_data
+        self.client_comm_queue = Queue()
+        self.accepting_websocks_sem = accepting_websocks_sem
+        self.websock_connected = asyncio.Event()
+        loop.create_task(self.check_other_comms())
 
     def connection_made(self, transport):
         self.transport = transport
         self.state = 'WAITING'
         self.message = ''
-
-        print(transport)
 
     def connection_lost(self, exc):
         if exc == None:
@@ -38,7 +42,7 @@ class ServerProtocol(asyncio.Protocol):
         self.message = self.message.encode().decode('utf-8')[0:-1]
         
         if self.verbose:
-            print('Received message "' +self.message + '"')
+            print('Received message "' + self.message + '"')
 
         if self.state == 'WAITING':
             #Waiting for ready signal
@@ -60,21 +64,27 @@ class ServerProtocol(asyncio.Protocol):
             #Also, the secret will be base64 encoded,
             #So that a zero byte isn't accidentily included
 
-            client_secret = base64.b64decode(self.message.encode()).hex() #secret shared between client and both servers
-            
-            self.transport.write('OK\0'.encode())
+            client_secret = self.message #secret shared between client and both servers
 
             #Now, we attempt to connect to the given client.
             #To do this, we use a websocket. This requires a
             #certificate from an actual CA (can't be self signed).
-            ##self.client_conn = ClientConnection.do_websock(self.socket.getsockname()[0], 5001, client_secret, self.cert, self.key, self.ca, self.pressed_lock, self.pressed_data, self)
+            self.websock_connected.clear()
+            self.accepting_websocks_sem.release()
+            
+            WebSocketConnectionInfo(self.websock_connected, client_secret, self.client_comm_queue)
+            
+            #Tell webserver we are ready for connections
+            self.transport.write('OK\0'.encode())
+
+            #wait for connection
+            self.loop.create_task(self.websock_timeout(5))
 
         elif self.state == 'WITH_CLIENT':
             if self.message.upper() == 'STATUS':
                 #Get the status of the actuator server (busy, in this case) 
                 self.transport.write('BUSY\0'.encode())
             elif self.message.upper() == 'TIMEOUT':
-                self.client_conn.kill()
                 self.state = 'WAITING'
                 self.transport.write('OK\0'.encode())
         else:
@@ -88,3 +98,28 @@ class ServerProtocol(asyncio.Protocol):
         #Doesn't really matter, SSL connections can't be half-closed
         print('EOF received')
         return False
+
+    async def check_other_comms(self):
+        #TODO change queue to event.
+        #store in WebSocketConnectionInfo.
+        while True:
+            msg = await self.client_comm_queue.get()
+            if msg == 'done':
+                #tell server
+                print('Client left websocket.')
+                self.websock_connected.clear()
+                self.state = 'WAITING'
+                self.transport.write('FREE\0'.encode())
+
+    async def websock_timeout(self, timeout):
+        try:
+            await asyncio.wait_for(self.websock_connected.wait(), timeout)
+        except asyncio.TimeoutError:
+            #ERROR, websocket didn't connect fast enough!
+            self.websock_connected.clear()
+            self.state = 'WAITING'
+            self.transport.write('CONNECTION_ERROR\0'.encode())
+        else:
+            #websocket connected
+            self.transport.write('CONNECTED\0'.encode())
+

@@ -1,7 +1,8 @@
 from modbus import ModbusThread
 from threading import Lock
 from socket import socket
-from serverconnection import ServerProtocol
+from webserver_server import ServerProtocol
+from websocket_server import WebSocketServer
 import ssl
 from ssl import SSLContext
 import json
@@ -27,39 +28,38 @@ def main():
         modbusThread.start()
 
     loop = asyncio.get_event_loop()
-    
+
+    #TODO better exception handling.
     def ex_handler(loop, context):
         print('An exeption occured, ' + context['message'])
+        print(context['exception'])
 
     loop.set_exception_handler(ex_handler)
 
     if opts['debug']:
         secure_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+        #We need these certs loaded if we want to use SSL,
+        #it seems like most cipher suites need them, and 
+        #anything that shouldn't just fails.
         secure_context.load_cert_chain(opts['cert_file'], keyfile = opts['key_file'])
-        #secure_context.load_verify_locations(cafile = opts['ca_file'])
         secure_context.verify_mode = ssl.CERT_NONE
     else:
-        print('Debug off, creating custom context')
         secure_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH, cafile = opts['ca_file'])
         secure_context.load_cert_chain(opts['cert_file'], keyfile = opts['key_file'])
         secure_context.verify_mode = ssl.CERT_REQUIRED
     
     if opts['verbose']:
         print('Starting up server...')
-
-    #print(secure_context.ciphers)
-    '''
-    sock = secure_context.wrap_socket(socket(), server_side=True)
-    sock.bind(('', 5000))
-    sock.listen(0)
-    client = sock.accept()
-    '''
-    #print(client)
-
-    webserver_server = loop.create_server(lambda:  ServerProtocol(secure_context, pressed_data_lock, pressed_data, opts['verbose']), 
+    
+    #Create communications with webserver
+    accepting_semaphore = asyncio.Semaphore(value = 0)
+    webserver_server = loop.create_server(lambda:  ServerProtocol(loop, accepting_semaphore, secure_context, pressed_data_lock, pressed_data, opts['verbose']), 
         host = '', port = opts['socket_port'], ssl = secure_context, backlog = 1)
-
     loop.run_until_complete(webserver_server)
+    
+    #Create websocket server
+    websock = WebSocketServer.do_websock('', 5001, accepting_semaphore, None, pressed_data_lock, pressed_data)
+
     loop.run_forever()
     loop.close()
 
