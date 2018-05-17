@@ -37,15 +37,19 @@ var InitSocket = function(){
     console.log(socket);
 }
 
-var ButtonPressed = function(num){
-    pressed_buttons.push(num);
+var ButtonPressed = function(button_code){
+    //Don't add duplicates
+    if(pressed_buttons.find(function(x){return x== button_code}) != undefined) return;
+    
+    pressed_buttons.push(button_code);
+    
     if(socket_ready){
         UpdatePresses();
     }
 }
 
-var ButtonReleased = function(num){
-    pressed_buttons = pressed_buttons.filter(function(x){return x!=num});
+var ButtonReleased = function(button_code){
+    pressed_buttons = pressed_buttons.filter(function(x){return x!=button_code});
     if(socket_ready){
         UpdatePresses();
     }
