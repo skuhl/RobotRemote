@@ -16,6 +16,10 @@ function SocketReady(){
     UpdatePresses();
 }
 
+function SocketError(err){
+    console.log('Socket encountered an error, ' + err);
+}
+
 function SocketClose(){
     socket_ready = false;
 }
@@ -28,8 +32,8 @@ var InitSocket = function(){
     socket = new WebSocket('ws://localhost:5001/');
     socket.onopen = SocketReady;
     socket.onmessage = SocketMessage;
-    socket.onerror = SocketClose();
-    socket.onclose = SocketClose();
+    socket.onerror = SocketError;
+    socket.onclose = SocketClose;
     console.log(socket);
 }
 
