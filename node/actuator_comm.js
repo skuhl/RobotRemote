@@ -9,9 +9,10 @@ module.exports = {
     //Holds a socket open until it breaks down, essentially.
     Actuator: class {
 
-        constructor(ip, port, webcams, secure_context){
+        constructor(ip, port, websock_port, webcams, secure_context){
             this.ip = ip;
             this.port = port;
+            this.websock_port = websock_port;
             this.webcams = webcams;
             this.socket = null;
             this.socketOpen = false;

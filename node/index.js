@@ -37,7 +37,7 @@ let actuators = [];
 
 //initialize actuators
 for(let act of options['actuator_servers']){
-    actuators.push(new actuator_comm.Actuator(act.ip, act.socket_port, act.web_cams, secure_context))
+    actuators.push(new actuator_comm.Actuator(act.ip, act.socket_port, act.websock_port, act.web_cams, secure_context))
 }
 //routing
 app.use('/css', express.static('./www/css'));
@@ -56,7 +56,7 @@ app.get('/ControlPanel.html', function(req, res){
             //send cookie containing client secret!
             //TODO set up these options for cookie correctly
             //(https only, age, when it expires, possibly session stuff)
-            res.cookie('act-url', act.ip + ":" + act.port + "/")
+            res.cookie('act-url', act.ip + ":" + act.websock_port + "/")
             res.cookie('act-secret', secret);
 
             //TODO Spin up every webcam (probably in the actuator_comm code)

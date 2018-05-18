@@ -3,6 +3,7 @@
         {
             "ip":"127.0.0.1",
             "socket_port": 5000,
+            "websock_port": 5001,
             "web_cams":[ 
                 {
                     "ip":"127.0.0.1",
