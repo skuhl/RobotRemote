@@ -37,19 +37,15 @@ var InitSocket = function(){
     console.log(socket);
 }
 
-var ButtonPressed = function(button_code){
-    //Don't add duplicates
-    if(pressed_buttons.find(function(x){return x== button_code}) != undefined) return;
-    
-    pressed_buttons.push(button_code);
-    
+var ButtonPressed = function(num){
+    pressed_buttons.push(num);
     if(socket_ready){
         UpdatePresses();
     }
 }
 
-var ButtonReleased = function(button_code){
-    pressed_buttons = pressed_buttons.filter(function(x){return x!=button_code});
+var ButtonReleased = function(num){
+    pressed_buttons = pressed_buttons.filter(function(x){return x!=num});
     if(socket_ready){
         UpdatePresses();
     }
@@ -77,6 +73,7 @@ function replacePort(){
     let cam1 = document.getElementById("cam1");
     console.log("ws://" + ws1 + "/" + secret1);
     cam1["data-url"]="ws://" + ws1 + "/" + secret1;
+    var player = new JSMpeg.Player(cam1["data-url"], {canvas:cam1, autoplay: true});
 }
 
 function keyDown(event){
