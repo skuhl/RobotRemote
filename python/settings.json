@@ -7,14 +7,14 @@
     "modbus_slave_num":1,
     "modbus_timeout":1.0,
     "modbus_sleep_inteval":0.125,
+    "cert_file":"cert/cert.pem",
+    "key_file":"cert/key.pem",
+    "ca_file":"cert/cacert.pem",
+    "debug": true,
     "pin_assignments": {
         "prev": 0,
         "f1" : 0,
         "f2" : 0,
         "f3" : 0
-    },
-    "cert_file":"cert/cert.pem",
-    "key_file":"cert/key.pem",
-    "ca_file":"cert/cacert.pem",
-    "debug": true
+    }
 }
