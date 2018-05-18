@@ -37,7 +37,7 @@ let actuators = [];
 
 //initialize actuators
 for(let act of options['actuator_servers']){
-    actuators.push(new actuator_comm.Actuator(act.ip, act.socket_port, secure_context))
+    actuators.push(new actuator_comm.Actuator(act.ip, act.socket_port, act.web_cams, secure_context))
 }
 //routing
 app.use('/css', express.static('./www/css'));
@@ -56,7 +56,18 @@ app.get('/ControlPanel.html', function(req, res){
             //send cookie containing client secret!
             //TODO set up these options for cookie correctly
             //(https only, age, when it expires, possibly session stuff)
+            res.cookie('act-url', act.ip + ":" + act.socket_port + "/")
             res.cookie('act-secret', secret);
+
+            //TODO Spin up every webcam (probably in the actuator_comm code)
+            //This probably means having some small server listen for messages,
+            //meaning an extra parameter for each webcam.
+            for(let i = 0; i < act.webcams.length; i++){
+                res.cookie("web-cam-" + (i+1), act.webcams[i].ip + ':' +  act.webcams[i].port);
+                //TODO generate unique secrets, send them to webcams, set the cookies to them
+                res.cookie("webcam"+ (i+1) + "-secret", "secret");
+            }
+
             res.send(fs.readFileSync('./www/ControlPanel.html', {
                 encoding: 'utf8'
             }));
@@ -74,11 +85,13 @@ app.get('/Home.html', function(req, res){
         encoding: 'utf8'
     }));
 });
+
 app.get('/Login.html', function(req, res){
     res.send(fs.readFileSync('./www/Login.html', {
         encoding: 'utf8'
     }));
 });
+
 app.get('/Scheduler.html', function(req, res){
     res.send(fs.readFileSync('./www/Scheduler.html', {
         encoding: 'utf8'

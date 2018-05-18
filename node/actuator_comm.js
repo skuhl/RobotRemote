@@ -9,9 +9,10 @@ module.exports = {
     //Holds a socket open until it breaks down, essentially.
     Actuator: class {
 
-        constructor(ip, port, secure_context){
+        constructor(ip, port, webcams, secure_context){
             this.ip = ip;
             this.port = port;
+            this.webcams = webcams;
             this.socket = null;
             this.socketOpen = false;
             this.dateConnected = null;
@@ -170,6 +171,7 @@ function handle_data(data){
                 //TODO make the number of random bytes configurable?
                 secret = crypto.randomBytes(512);
                 this.info.client_secret = secret.toString('base64');
+                //TODO possibly generate secrets for all cameras? Or maybe one secret for all of them is good enough?
                 sendString = this.info.client_secret + '\0';
                 
                 this.write(sendString, 'utf-8');

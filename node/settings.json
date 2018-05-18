@@ -2,7 +2,13 @@
     "actuator_servers": [
         {
             "ip":"127.0.0.1",
-            "socket_port": 5000
+            "socket_port": 5000,
+            "web_cams":[ 
+                {
+                    "ip":"127.0.0.1",
+                    "port":8082
+                }
+            ]
         }
     ],
     "cert_file": "cert/cert.pem",
