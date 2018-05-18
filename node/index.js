@@ -56,7 +56,7 @@ app.get('/ControlPanel.html', function(req, res){
             //send cookie containing client secret!
             //TODO set up these options for cookie correctly
             //(https only, age, when it expires, possibly session stuff)
-            res.cookie('act-url', act.ip + ":" + act.socket_port + "/")
+            res.cookie('act-url', act.ip + ":" + act.port + "/")
             res.cookie('act-secret', secret);
 
             //TODO Spin up every webcam (probably in the actuator_comm code)
