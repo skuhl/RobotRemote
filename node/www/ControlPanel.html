@@ -2,23 +2,24 @@
 <html>
   <head>
     <title>Robot Remote - Control Panel</title>
-    <link rel="stylesheet" type="text/css" href="./css/NavBar.css">
-    <link rel="stylesheet" type="text/css" href="./css/Button.css">
-    
+
+    <link rel="stylesheet" type="text/css" href="/css/NavBar.css">
+    <link rel="stylesheet" type="text/css" href="/css/Button.css">
+
   </head>
   <body>
     <ul>
-      <li><a href="Home.html">Information</a></li>
-      <li><a href="Schedular.html">Schedular</a></li>
-      <li><a href="ControlPanel.html">Control Panel</a></li>
-      <li style="float:right"><a href="Login.html">Login</a></li>
+      <li><a href="/Home.html">Information</a></li>
+      <li><a href="/Scheduler.html">Scheduler</a></li>
+      <li><a href="/ControlPanel.html">Control Panel</a></li>
+      <li style="float:right"><a href="/Login.html">Login</a></li>
     </ul>
     <!--someday the href="" will need to be changes to urls-->
 
     <!--Video feeds it needs source, either a url or websocket server
         Replace "Video.ts" with correct information-->
-    <script src="./js/jsmpeg.min.js"></script>
-    <div class="jsmpeg" id="cam1" data-url="video.ts"
+    <script src="/js/jsmpeg.min.js"></script>
+    <div class="jsmpeg" data-url="video.ts" 
 	     data-audio="false" data-autoplay="true">
     </div>
     <div class="jsmpeg" id="cam2" data-url="video.ts" 
@@ -167,7 +168,8 @@
         </div><!--Final block ends-->
       </div><!--Bottom row ends-->
     </div><!--end of controls-->
-    <script src="./js/send_buttons.js"></script>
+
+    <script src="/js/send_buttons.js"></script>
     <script>
       document.addEventListener("keydown", keyDown);
       document.addEventListener("keyup", keyUp);

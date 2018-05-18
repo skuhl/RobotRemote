@@ -59,7 +59,7 @@ class WebSocketServer:
 
         #Check to see if client leads with secret
         try:
-            msg = await asyncio.wait_for(websock.recv(), timeout = 0.1)
+            msg = await asyncio.wait_for(websock.recv(), timeout = 1)
         except asyncio.TimeoutError:
             print('Client did not provide secret in time.')
             self.accepting_websocks_sem.release()
