@@ -67,8 +67,15 @@ function GetCookie(cookie){
     return cookie_string.slice(name.length).trim();
 }
 
+function replacePort(){
+    let secret1 = GetCookie("webcam1-secret");
+    let ws1 = GetCookie("web-cam-1");
+    let cam1 = document.getElementById("cam1");
+    console.log("ws://" + ws1 + "/" + secret1);
+    cam1["data-url"]="ws://" + ws1 + "/" + secret1;
+}
+
 function keyDown(event){
-    console.log("I done got called!");
     if(event.repeat) return;
 	//let text = String.fromCharCode(e);
 	let text = event.keyCode;
