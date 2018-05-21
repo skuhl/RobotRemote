@@ -67,13 +67,13 @@ function GetCookie(cookie){
     return cookie_string.slice(name.length).trim();
 }
 
-function replacePort(){
-    let secret1 = GetCookie("webcam1-secret");
-    let ws1 = GetCookie("web-cam-1");
-    let cam1 = document.getElementById("cam1");
-    console.log("ws://" + ws1 + "/" + secret1);
-    cam1["data-url"]="ws://" + ws1 + "/" + secret1;
-    var player = new JSMpeg.Player(cam1["data-url"], {canvas:cam1, autoplay: true});
+function replacePort(num){
+    let secret = GetCookie("webcam" + num + "-secret");	//get the cookie with port password
+    let ws = GetCookie("webcam-" + num);						//get cookie with IP and port
+    let cam = document.getElementById("cam" + num);		//get the correct camera based on arg
+    console.log("ws://" + ws + "/" + secret);				//remove me latter!!!!!!
+    cam1["data-url"]="ws://" + ws + "/" + secret;
+    var player = new JSMpeg.Player(cam["data-url"], {canvas:cam, autoplay: true});
 }
 
 function keyDown(event){
