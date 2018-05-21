@@ -165,9 +165,12 @@
 
     <script src="/js/send_buttons.js"></script>
     <script>
-      document.addEventListener("keydown", keyDown);
+      document.addEventListener("keydown", keyDown); 
       document.addEventListener("keyup", keyUp);
-      document.addEventListener("DOMContentLoaded", function() {replacePort()});
+      //Set's the port to listen for video arguments refer to cam number
+      document.addEventListener("DOMContentLoaded", function() {replacePort(1)});
+      document.addEventListener("DOMContentLoaded", function() {replacePort(2)});
+      document.addEventListener("DOMContentLoaded", function() {replacePort(3)});
     </script>
 </body>
 </html>
