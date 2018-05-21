@@ -72,7 +72,7 @@ function replacePort(num){
     let ws = GetCookie("webcam-" + num);						//get cookie with IP and port
     let cam = document.getElementById("cam" + num);		//get the correct camera based on arg
     console.log("ws://" + ws + "/" + secret);				//remove me latter!!!!!!
-    cam1["data-url"]="ws://" + ws + "/" + secret;
+    cam["data-url"]="ws://" + ws + "/" + secret;
     var player = new JSMpeg.Player(cam["data-url"], {canvas:cam, autoplay: true});
 }
 
