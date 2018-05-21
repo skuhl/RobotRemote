@@ -31,7 +31,7 @@ def main():
 
     #TODO better exception handling.
     def ex_handler(loop, context):
-        print('An exeption occured, ' + context['message'])
+        print('An exception occured, ' + context['message'])
         print(context['exception'])
 
     loop.set_exception_handler(ex_handler)
@@ -58,7 +58,7 @@ def main():
     loop.run_until_complete(webserver_server)
     
     #Create websocket server
-    websock = WebSocketServer.do_websock('', 5001, accepting_semaphore, None, pressed_data_lock, pressed_data)
+    websock = WebSocketServer.do_websock('', opts['websocket_port'], opts['websocket_accepted_origins'], accepting_semaphore, None, pressed_data_lock, pressed_data)
 
     loop.run_forever()
     loop.close()

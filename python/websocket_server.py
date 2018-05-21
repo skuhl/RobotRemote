@@ -24,7 +24,7 @@ class WebSocketServer:
         self.pressed_data_lock = pressed_data_lock
         self.pressed_data = pressed_data
 
-    def do_websock(ip, port, accepting_websocks_sem, secure_context, pressed_data_lock, pressed_data):
+    def do_websock(ip, port, accepted_origins, accepting_websocks_sem, secure_context, pressed_data_lock, pressed_data):
         global clientConn
         '''
         Starts up a websocket server. This server will connect to 1 client,
@@ -35,7 +35,7 @@ class WebSocketServer:
         clientConn = WebSocketServer(accepting_websocks_sem, event_loop, pressed_data_lock, pressed_data)
 
         if secure_context == None:
-            server = websockets.serve(clientConn.websocket_handler, host = ip, port = port, backlog = 0)
+            server = websockets.serve(clientConn.websocket_handler, host = ip, port = port, backlog = 0, origins = accepted_origins)
         else:
             server = websockets.serve(clientConn.websocket_handler, host = ip, port = port, backlog = 0, ssl = secure_context)
 

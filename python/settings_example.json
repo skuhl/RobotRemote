@@ -1,7 +1,12 @@
 {
     "verbose": true,
     "socket_port":5000,
-    "disable_modbus":true,
+    "websocket_port":5001,
+    "websocket_accepted_origins":[
+        "http://localhost:3000",
+        ""
+    ],
+    "disable_modbus":false,
     "modbus_host":"127.0.0.1",
     "modbus_port":502,
     "modbus_slave_num":1,
@@ -10,7 +15,7 @@
     "cert_file":"cert/cert.pem",
     "key_file":"cert/key.pem",
     "ca_file":"cert/cacert.pem",
-    "debug": true,
+    "debug": false,
     "pin_assignments": {
         "prev": 0,
         "f1" : 0,
