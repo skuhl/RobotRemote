@@ -5,7 +5,7 @@ RANDFILE        = $ENV::HOME/.rnd
 [ req ]
 default_bits       = 2048
 default_keyfile    = serverkey.pem
-distinguished_name = robotremote_webserver
+distinguished_name = server_distinguished_name
 req_extensions     = server_req_extensions
 string_mask        = utf8only
 

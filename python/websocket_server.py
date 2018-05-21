@@ -46,7 +46,7 @@ class WebSocketServer:
     async def websocket_handler(self, websock, uri):
         global connection_info_array
         global connection_info_lock
-
+        print('Websocket at ' + websock.remote_address[0])
         try:
             #Give 0.5 seconds for the event to proc. Shouldn't matter if we do this right.
             await asyncio.wait_for(self.accepting_websocks_sem.acquire(), timeout = 0.5 )

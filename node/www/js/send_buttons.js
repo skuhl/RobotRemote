@@ -10,7 +10,6 @@ function SocketReady(){
     socket_ready = true;
     //Socket is ready, we need to send our secret
     secret = GetCookie('act-secret');
-    console.log(secret);
     socket.send(secret);
 
     UpdatePresses();
@@ -30,7 +29,7 @@ function UpdatePresses(){
 }
 
 var InitSocket = function(){
-    socket = new WebSocket('ws://localhost:5001/');
+    socket = new WebSocket('ws://' + GetCookie('act-url'));
     socket.onopen = SocketReady;
     socket.onmessage = SocketMessage;
     socket.onerror = SocketError;
@@ -38,15 +37,18 @@ var InitSocket = function(){
     console.log(socket);
 }
 
-var ButtonPressed = function(num){
-    pressed_buttons.push(num);
+var ButtonPressed = function(button_code){
+	//don't add duplicates
+	if(pressed_buttons.find(function(x){return x == button_code}) != undefined) return;
+	
+	pressed_buttons.push(button_code);
     if(socket_ready){
         UpdatePresses();
     }
 }
 
-var ButtonReleased = function(num){
-    pressed_buttons = pressed_buttons.filter(function(x){return x!=num});
+var ButtonReleased = function(button_code){
+	pressed_buttons = pressed_buttons.filter(function(x){return x!=button_code});
     if(socket_ready){
         UpdatePresses();
     }
