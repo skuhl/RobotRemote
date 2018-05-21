@@ -35,9 +35,9 @@ class WebSocketServer:
         clientConn = WebSocketServer(accepting_websocks_sem, event_loop, pressed_data_lock, pressed_data)
 
         if secure_context == None:
-            server = websockets.serve(clientConn.websocket_handler, host = ip, port = port, backlog = 0, origins = accepted_origins)
+            server = websockets.serve(clientConn.websocket_handler, host = ip, port = port, backlog = 1, origins = accepted_origins)
         else:
-            server = websockets.serve(clientConn.websocket_handler, host = ip, port = port, backlog = 0, origins = accepted_origins, ssl = secure_context)
+            server = websockets.serve(clientConn.websocket_handler, host = ip, port = port, backlog = 1, origins = accepted_origins, ssl = secure_context)
 
         event_loop.run_until_complete(server)
 

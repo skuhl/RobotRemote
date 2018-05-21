@@ -54,7 +54,7 @@ def main():
     #Create communications with webserver
     accepting_semaphore = asyncio.Semaphore(value = 0)
     webserver_server = loop.create_server(lambda:  ServerProtocol(loop, accepting_semaphore, secure_context, pressed_data_lock, pressed_data, opts['verbose']), 
-        host = '', port = opts['socket_port'], ssl = secure_context, backlog = 0)
+        host = '', port = opts['socket_port'], ssl = secure_context, backlog = 1)
     loop.run_until_complete(webserver_server)
     
     #Create websocket server
