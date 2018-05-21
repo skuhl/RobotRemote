@@ -37,7 +37,7 @@ let actuators = [];
 
 //initialize actuators
 for(let act of options['actuator_servers']){
-    actuators.push(new actuator_comm.Actuator(act.ip, act.socket_port, act.websock_port, act.web_cams, secure_context))
+    actuators.push(new actuator_comm.Actuator(act.ip, act.socket_port, act.websock_port, act.web_cams, my_key, cert, cacert));
 }
 //routing
 app.use('/css', express.static('./www/css'));
@@ -51,7 +51,7 @@ app.get('/', function(req, res){
 app.get('/ControlPanel.html', function(req, res){
     console.log("Connecting to main page");
     actuator_comm.getFreeActuator(actuators).then((act)=>{
-        //send client details.
+        //send client details (secret).
         act.sendClientDetails().then((secret) => {
             //send cookie containing client secret!
             //TODO set up these options for cookie correctly

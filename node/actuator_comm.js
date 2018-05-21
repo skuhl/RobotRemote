@@ -9,16 +9,18 @@ module.exports = {
     //Holds a socket open until it breaks down, essentially.
     Actuator: class {
 
-        constructor(ip, port, websock_port, webcams, secure_context){
+        constructor(ip, port, websock_port, webcams, client_key, client_cert, server_ca){
             this.ip = ip;
             this.port = port;
             this.websock_port = websock_port;
             this.webcams = webcams;
+            this.client_key = client_key;
+            this.client_cert = client_cert;
+            this.server_ca = server_ca;
             this.socket = null;
             this.socketOpen = false;
             this.dateConnected = null;
             this.isFree = true;
-            this.secure_context = secure_context;
         }
 
         async sendClientDetails(){
@@ -50,8 +52,10 @@ module.exports = {
                 this.socket = tls.connect({
                     host: this.ip,
                     port: this.port,
-                    secureContext: this.secureContext,
-                    rejectUnauthorized: false
+                    key: this.client_key,
+                    cert: this.client_cert,
+                    ca: this.server_ca,
+                    rejectUnauthorized: true
                 },
                 function(){
                     self.socketOpen = true;
