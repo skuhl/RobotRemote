@@ -63,7 +63,7 @@ app.get('/ControlPanel.html', function(req, res){
             //This probably means having some small server listen for messages,
             //meaning an extra parameter for each webcam.
             for(let i = 0; i < act.webcams.length; i++){
-                res.cookie("web-cam-" + (i+1), act.webcams[i].ip + ':' +  act.webcams[i].port);
+                res.cookie("webcam-" + (i+1), act.webcams[i].ip + ':' +  act.webcams[i].port);
                 //TODO generate unique secrets, send them to webcams, set the cookies to them
                 res.cookie("webcam"+ (i+1) + "-secret", "secret");
             }

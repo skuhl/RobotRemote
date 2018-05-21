@@ -17,7 +17,8 @@ function SocketReady(){
 }
 
 function SocketError(err){
-    console.log('Socket encountered an error, ' + err);
+	console.log('Socket encountered an error.');
+	console.log(err);
 }
 
 function SocketClose(){
