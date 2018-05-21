@@ -9,15 +9,16 @@ function SocketMessage(event){
 function SocketReady(){ 
     socket_ready = true;
     //Socket is ready, we need to send our secret
-    secret = GetCookie('act-secret');
-    console.log(secret);
+	secret = GetCookie('act-secret');
+	
     socket.send(secret);
 
     UpdatePresses();
 }
 
 function SocketError(err){
-    console.log('Socket encountered an error, ' + err);
+	console.log('Socket encountered an error.');
+	console.log(err);
 }
 
 function SocketClose(){
@@ -29,7 +30,7 @@ function UpdatePresses(){
 }
 
 var InitSocket = function(){
-    socket = new WebSocket('ws://localhost:5001/');
+    socket = new WebSocket('ws://' + GetCookie('act-url'));
     socket.onopen = SocketReady;
     socket.onmessage = SocketMessage;
     socket.onerror = SocketError;

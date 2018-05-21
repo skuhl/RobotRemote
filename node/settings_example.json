@@ -1,0 +1,19 @@
+{
+    "actuator_servers": [
+        {
+            "ip":"127.0.0.1",
+            "socket_port": 5000,
+            "websock_port": 5001,
+            "web_cams":[ 
+                {
+                    "ip":"127.0.0.1",
+                    "port":8082
+                }
+            ]
+        }
+    ],
+    "cert_file": "cert/cert.pem",
+    "key_file":"cert/key.pem",
+    "ca_file":"cert/cacert.pem",
+    "debug":true
+}

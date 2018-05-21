@@ -11,6 +11,9 @@ python/bin
 node_modules/
 node/npm-debug.log
 
+#ignore settings files
+settings.json
+
 #ignores for certificate files
 helperscripts/cacert
 helperscripts/cert
