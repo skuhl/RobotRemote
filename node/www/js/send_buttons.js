@@ -9,16 +9,15 @@ function SocketMessage(event){
 function SocketReady(){ 
     socket_ready = true;
     //Socket is ready, we need to send our secret
-	secret = GetCookie('act-secret');
-	
+    secret = GetCookie('act-secret');
+    console.log(secret);
     socket.send(secret);
 
     UpdatePresses();
 }
 
 function SocketError(err){
-	console.log('Socket encountered an error.');
-	console.log(err);
+    console.log('Socket encountered an error, ' + err);
 }
 
 function SocketClose(){
@@ -30,7 +29,7 @@ function UpdatePresses(){
 }
 
 var InitSocket = function(){
-    socket = new WebSocket('ws://' + GetCookie('act-url'));
+    socket = new WebSocket('ws://localhost:5001/');
     socket.onopen = SocketReady;
     socket.onmessage = SocketMessage;
     socket.onerror = SocketError;
@@ -77,7 +76,7 @@ function replacePort(num){
     var player = new JSMpeg.Player(cam["data-url"], {canvas:cam, autoplay: true});
 }
 
-function keyDown(event){
+function keyDown(event){ 
     if(event.repeat) return;
 	//let text = String.fromCharCode(e);
 	let text = event.keyCode;
