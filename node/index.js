@@ -5,6 +5,7 @@ const tls = require('tls');
 const net = require('net');
 const fs = require('fs');
 const actuator_comm = require('./actuator_comm');
+const user_auth = require('./user_auth.js');
 
 const options = require('./settings.json');
 
@@ -18,6 +19,8 @@ let cert = fs.readFileSync(options['cert_file']);
 let cacert = fs.readFileSync(options['ca_file']);
 
 let secure_context = null;
+
+user_auth.init_mysql(options['mysql_host'], options['mysql_user'], options['mysql_pass'], options['mysql_db']);
 
 if(options['debug']){
     secure_context = tls.createSecureContext({
@@ -90,6 +93,19 @@ app.get('/Login.html', function(req, res){
     res.send(fs.readFileSync('./www/Login.html', {
         encoding: 'utf8'
     }));
+});
+
+app.post('/Login.html', function(req, res){
+    if(!req.query.username || !req.query.password){
+        res.send('Missing username or password');
+        return;
+    }
+    user_auth.verify_credentials(req.query.username, req.query.password).then(()=>{
+        //TODO this should probably redirect to the scheduler or something.
+        res.send('Verified!');
+    },(err)=>{
+        res.send('Error: ' + err.client_reason);
+    });
 });
 
 app.get('/Request.html', function(req, res){

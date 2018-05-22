@@ -1,4 +1,8 @@
 {
+    "mysql_host":"",
+    "mysql_user":"",
+    "mysql_pass":"",
+    "mysql_db":"",
     "actuator_servers": [
         {
             "ip":"127.0.0.1",
