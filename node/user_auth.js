@@ -21,8 +21,14 @@ module.exports = {
     verify_credentials: function(username, password){
         return new Promise ((resolve, reject) => {
             connection.query('SELECT passhash, passsalt, approved from users where email = ?', [username], (err, res, fields)=>{
-                
-                if(err || res.length < 1){ 
+                if(err){
+                    console.log(err);
+                    reject({
+                        reason: 'Error performing query.',
+                        client_reason: 'Internal database error.'
+                    });
+                }
+                if(res.length < 1){ 
                     reject({
                         reason: 'Couldn\'t find username in DB.',
                         client_reason: 'Invalid email or password.'
@@ -30,6 +36,7 @@ module.exports = {
                     connection.end(()=>{});
                     return;
                 }
+                
                 if(res.length > 1){
                     reject({
                         reason: 'More than 1 user with given email!',
@@ -49,6 +56,7 @@ module.exports = {
                     connection.end(()=>{});
                     return;
                 }
+
                 console.log('Approved: ' + res.approved);
                 if(res.approved == false){
                     reject({
