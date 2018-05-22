@@ -6,6 +6,7 @@ const net = require('net');
 const fs = require('fs');
 const actuator_comm = require('./actuator_comm');
 const user_auth = require('./user_auth.js');
+const bodyParser = require('body-parser')
 
 const options = require('./settings.json');
 
@@ -42,6 +43,8 @@ let actuators = [];
 for(let act of options['actuator_servers']){
     actuators.push(new actuator_comm.Actuator(act.ip, act.socket_port, act.websock_port, act.web_cams, my_key, cert, cacert));
 }
+//middleware
+app.use(bodyParser.urlencoded({extended: false}));
 //routing
 app.use('/css', express.static('./www/css'));
 app.use('/js', express.static('./www/js'));
@@ -96,8 +99,8 @@ app.get('/Login.html', function(req, res){
 });
 
 app.post('/Login.html', function(req, res){
-    console.log(req.query);
-    if(!req.query.username || !req.query.password){
+    console.log(req.body);
+    if(!req.body.username || !req.body.password){
         res.send('Missing username or password');
         return;
     }
