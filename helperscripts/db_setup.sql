@@ -4,7 +4,7 @@ use RobotRemote;
 /*Create user table*/
 CREATE TABLE IF NOT EXISTS users (id INT UNSIGNED AUTO_INCREMENT KEY NOT NULL,
                                   email CHAR(191) NOT NULL UNIQUE, 
-                                  passhash CHAR(32) NOT NULL,
+                                  passhash CHAR(64) NOT NULL,
                                   passsalt CHAR(16) NOT NULL,
                                   approved BIT(1) NOT NULL DEFAULT 0,
                                   admin BIT(1) NOT NULL DEFAULT 0,

@@ -44,9 +44,9 @@ module.exports = {
                         return;
                     }
 
-                    let hash = crypto.createHash('sha256').update(password + res[0].passsalt).digest('utf8');
+                    let hash = crypto.createHash('sha256').update(password + res[0].passsalt).digest('hex');
                     
-                    if(!hash.equals(res[0].passhash)){
+                    if(hash !== res[0].passhash){
                         reject({
                             reason: 'Invalid password.',
                             client_reason: 'Invalid email or password.'
