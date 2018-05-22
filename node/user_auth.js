@@ -61,7 +61,7 @@ module.exports = {
                         });
                     }
                     //TODO does something need to be passed here? 
-                    accept();
+                    resolve();
                 });
             });
         });
