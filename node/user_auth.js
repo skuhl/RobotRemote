@@ -20,60 +20,49 @@ module.exports = {
     */
     verify_credentials: function(username, password){
         return new Promise ((resolve, reject) => {
-            connection.connect((err)=>{
-                if(err){
-                    console.log(err);
+            connection.query('SELECT passhash, passsalt, approved from users where email = ?', [username], (err, res, fields)=>{
+                
+                if(err || res.length < 1){ 
                     reject({
-                        reason: 'Unable to connect to database',
-                        client_reason: 'Unable to connect to database'
+                        reason: 'Couldn\'t find username in DB.',
+                        client_reason: 'Invalid email or password.'
                     });
+                    connection.end(()=>{});
                     return;
                 }
-                connection.query('SELECT passhash, passsalt, approved from users where email = ?', [username], (err, res, fields)=>{
-                    
-                    if(err || res.length < 1){ 
-                        reject({
-                            reason: 'Couldn\'t find username in DB.',
-                            client_reason: 'Invalid email or password.'
-                        });
-                        connection.end(()=>{});
-                        return;
-                    }
-                    if(res.length > 1){
-                        reject({
-                            reason: 'More than 1 user with given email!',
-                            client_reason: 'Internal database error.'
-                        });
-                        connection.end(()=>{});
-                        return;
-                    }
-
-                    let hash = crypto.createHash('sha256').update(password + res[0].passsalt).digest('hex');
-                    
-                    if(hash !== res[0].passhash){
-                        reject({
-                            reason: 'Invalid password.',
-                            client_reason: 'Invalid email or password.'
-                        });
-                        connection.end(()=>{});
-                        return;
-                    }
-                    console.log('Approved: ' + res.approved);
-                    if(res.approved == false){
-                        reject({
-                            reason: 'User has not been approved yet.',
-                            client_reason: 'Your login is still awaiting approval.'
-                        });
-                        connection.end(()=>{});
-                        return;
-                    }
-                    connection.end((err)=>{
-                        //TODO does something need to be passed here? 
-                        resolve();
+                if(res.length > 1){
+                    reject({
+                        reason: 'More than 1 user with given email!',
+                        client_reason: 'Internal database error.'
                     });
+                    connection.end(()=>{});
+                    return;
+                }
+
+                let hash = crypto.createHash('sha256').update(password + res[0].passsalt).digest('hex');
+                
+                if(hash !== res[0].passhash){
+                    reject({
+                        reason: 'Invalid password.',
+                        client_reason: 'Invalid email or password.'
+                    });
+                    connection.end(()=>{});
+                    return;
+                }
+                console.log('Approved: ' + res.approved);
+                if(res.approved == false){
+                    reject({
+                        reason: 'User has not been approved yet.',
+                        client_reason: 'Your login is still awaiting approval.'
+                    });
+                    connection.end(()=>{});
+                    return;
+                }
+                connection.end((err)=>{
+                    //TODO does something need to be passed here? 
+                    resolve();
                 });
             });
         });
-        
     }
 }
