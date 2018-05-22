@@ -22,10 +22,12 @@ module.exports = {
         return new Promise ((resolve, reject) => {
             connection.connect((err)=>{
                 if(err){
+                    consle.log(err);
                     reject({
                         reason: 'Unable to connect to database',
                         client_reason: 'Unable to connect to database'
                     });
+                    return;
                 }
                 connection.query('SELECT passhash, passsalt, approved from users where email = ?', [username], (err, res, fields)=>{
                     
@@ -34,6 +36,7 @@ module.exports = {
                             reason: 'Couldn\'t find username in DB.',
                             client_reason: 'Invalid email or password.'
                         });
+                        connection.end(()=>{});
                         return;
                     }
                     if(res.length > 1){
@@ -41,6 +44,7 @@ module.exports = {
                             reason: 'More than 1 user with given email!',
                             client_reason: 'Internal database error.'
                         });
+                        connection.end(()=>{});
                         return;
                     }
 
@@ -51,6 +55,7 @@ module.exports = {
                             reason: 'Invalid password.',
                             client_reason: 'Invalid email or password.'
                         });
+                        connection.end(()=>{});
                         return;
                     }
 
@@ -59,9 +64,13 @@ module.exports = {
                             reason: 'User has not been approved yet.',
                             client_reason: 'Your login is still awaiting approval.'
                         });
+                        connection.end(()=>{});
+                        return;
                     }
-                    //TODO does something need to be passed here? 
-                    resolve();
+                    connection.end((err)=>{
+                        //TODO does something need to be passed here? 
+                        resolve();
+                    });
                 });
             });
         });
