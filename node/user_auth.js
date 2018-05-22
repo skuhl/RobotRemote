@@ -58,7 +58,7 @@ module.exports = {
                         connection.end(()=>{});
                         return;
                     }
-
+                    console.log('Approved: ' + res.approved);
                     if(res.approved == false){
                         reject({
                             reason: 'User has not been approved yet.',
