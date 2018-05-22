@@ -71,7 +71,7 @@ input {
     outline: none;
 }
  
-input[type=text],
+input[type=email],
 input[type=password] {
     color: #777;
     padding-left: 10px;
@@ -83,6 +83,19 @@ input[type=password] {
     border: 1px solid #c7d0d2;
     border-radius: 2px;
     background-color: #f3f9fb;
+}
+
+input[type=date],
+input[type=time],
+input[type=number]{
+       color: #777;
+       width:150px;
+       padding-left: 10px;
+       margin-top: 12px;
+       margin-left: 10px;
+       border: 1px solid #c7d0d2;
+       border-radius: 2px;
+       background-color: #f3f9fb;
 }
 
 textarea{
