@@ -92,6 +92,12 @@ app.get('/Login.html', function(req, res){
     }));
 });
 
+app.get('/Request.html', function(req, res){
+    res.send(fs.readFileSync('./www/Request.html', {
+        encoding: 'utf8'
+    }));
+});
+
 app.get('/Scheduler.html', function(req, res){
     res.send(fs.readFileSync('./www/Scheduler.html', {
         encoding: 'utf8'
