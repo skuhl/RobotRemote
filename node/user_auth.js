@@ -46,13 +46,13 @@ module.exports = {
                         reason: 'Error performing query.',
                         client_reason: 'Internal database error.'
                     });
+                    return;
                 }
                 if(res.length < 1){ 
                     reject({
                         reason: 'Couldn\'t find username in DB.',
                         client_reason: 'Invalid email or password.'
                     });
-                    connection.end(()=>{});
                     return;
                 }
 
@@ -63,7 +63,6 @@ module.exports = {
                         reason: 'More than 1 user with given email!',
                         client_reason: 'Internal database error.'
                     });
-                    connection.end(()=>{});
                     return;
                 }
 
@@ -74,7 +73,6 @@ module.exports = {
                         reason: 'Invalid password.',
                         client_reason: 'Invalid email or password.'
                     });
-                    connection.end(()=>{});
                     return;
                 }
 
@@ -84,13 +82,10 @@ module.exports = {
                         reason: 'User has not been approved yet.',
                         client_reason: 'Your login is still awaiting approval.'
                     });
-                    connection.end(()=>{});
                     return;
                 }
-                connection.end((err)=>{
-                    //TODO does something need to be passed here? 
-                    resolve();
-                });
+                //TODO does something need to be passed here? 
+                resolve();
             });
         });
     }
