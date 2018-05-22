@@ -57,8 +57,8 @@ module.exports = {
                     return;
                 }
 
-                console.log('Approved: ' + res.approved);
-                if(res.approved == false){
+                console.log('Approved: ' + res[0].approved);
+                if(res[0].approved == false){
                     reject({
                         reason: 'User has not been approved yet.',
                         client_reason: 'Your login is still awaiting approval.'
