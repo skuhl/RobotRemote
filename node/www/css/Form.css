@@ -71,6 +71,7 @@ input {
     outline: none;
 }
  
+input[type=text],
 input[type=email],
 input[type=password] {
     color: #777;
