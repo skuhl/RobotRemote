@@ -96,6 +96,7 @@ app.get('/Login.html', function(req, res){
 });
 
 app.post('/Login.html', function(req, res){
+    console.log(req.query);
     if(!req.query.username || !req.query.password){
         res.send('Missing username or password');
         return;
