@@ -99,15 +99,15 @@ app.get('/Login.html', function(req, res){
 });
 
 app.post('/Login.html', function(req, res){
-    console.log(req.body);
     if(!req.body.username || !req.body.password){
         res.send('Missing username or password');
         return;
     }
-    user_auth.verify_credentials(req.query.username, req.query.password).then(()=>{
+    user_auth.verify_credentials(req.body.username, req.body.password).then(()=>{
         //TODO this should probably redirect to the scheduler or something.
         res.send('Verified!');
     },(err)=>{
+        console.log('Error verifying user '  + req.body.username + ': ' + err.reason);
         res.send('Error: ' + err.client_reason);
     });
 });
