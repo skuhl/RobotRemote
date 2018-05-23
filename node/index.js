@@ -140,6 +140,7 @@ app.post('/Login.html', function(req, res){
 
 app.get('/Logout', function(req, res){
     delete req.session;
+    res.send('deleted session');
 });
 
 app.get('/sessioninfo', function(req, res){
