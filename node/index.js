@@ -126,9 +126,9 @@ app.post('/Request.html', function(req, res){
 
     user_auth.login_request(req.body.username, req.body.password, req.body.reason)
         .then(()=>{
-            req.send('Succesfully added user to DB, awaiting approval.');
+            res.send('Succesfully added user to DB, awaiting approval.');
         }, (err)=>{
-            req.send('Error adding user to DB, ' + err.client_reason);
+            res.send('Error adding user to DB, ' + err.client_reason);
         });
 });
 
