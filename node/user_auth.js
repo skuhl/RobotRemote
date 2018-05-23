@@ -160,7 +160,7 @@ module.exports = {
    },
    email_verify: function(email, email_tok){
    	return new Promise(function(resolve, reject){
-   		connection.query('SELECT loginreq_id FROM users WHERE email=?', [email], function(error, result, fields){
+   		connection.query('SELECT loginreq_id FROM users WHERE email=?', [email], function(error, results, fields){
    			if(error){
    				return reject({
                   reason: 'Failed to select by email!',
@@ -175,7 +175,7 @@ module.exports = {
                   db_err: error
               });
             }
-            let request_ID = result[0].loginreq_id;
+            let request_ID = results[0].loginreq_id;
             if(request_ID == null){
             	return reject({
                   reason: "Request ID was NULL",
@@ -183,7 +183,7 @@ module.exports = {
                   db_err: error
               });
             }
-            connection.query('SELECT email_token, email_validated FROM loginrequests where id=?', [request_ID], function(error, result, fields){
+            connection.query('SELECT email_token, email_validated FROM loginrequests where id=?', [request_ID], function(error, results, fields){
             	if(error){
 	   				return reject({
 	                  reason: 'Failed to select by email!',
@@ -212,7 +212,7 @@ module.exports = {
 	                  db_err: error
 	              });
 	            }
-	            connection.query('UPDATE loginrequests SET email_validated=1 where id=?', [request_ID],function(error, result, fields){
+	            connection.query('UPDATE loginrequests SET email_validated=1 where id=?', [request_ID],function(error, results, fields){
 	            	if(error){
 		   				return reject({
 		                  reason: 'Failed to update!!:(',
