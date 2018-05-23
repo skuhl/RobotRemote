@@ -5,7 +5,7 @@ use RobotRemote;
 CREATE TABLE IF NOT EXISTS users (id INT UNSIGNED AUTO_INCREMENT KEY NOT NULL,
                                   email CHAR(191) NOT NULL UNIQUE, 
                                   passhash CHAR(64) NOT NULL,
-                                  passsalt CHAR(16) NOT NULL,
+                                  passsalt CHAR(64) NOT NULL,
                                   approved BIT(1) NOT NULL DEFAULT 0,
                                   admin BIT(1) NOT NULL DEFAULT 0,
                                   loginreq_id INT UNSIGNED NULL);
@@ -31,7 +31,7 @@ ALTER TABLE timeslots ADD INDEX user_id (user_id);
 /*Procedures*/
 DELIMITER //
 CREATE PROCEDURE user_request
-(IN email_in CHAR(191), IN passwordhash CHAR(64), IN passwordsalt CHAR(16), IN email_token_in CHAR(32), IN user_comment TEXT)
+(IN email_in CHAR(191), IN passwordhash CHAR(64), IN passwordsalt CHAR(64), IN email_token_in CHAR(32), IN user_comment TEXT)
 BEGIN
     /*Make a new request for a login*/
     INSERT INTO loginrequests (email_token, comment, email_validated) VALUES (email_token_in, user_comment, 0);
