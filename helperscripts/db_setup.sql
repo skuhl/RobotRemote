@@ -31,7 +31,7 @@ ALTER TABLE timeslots ADD INDEX user_id (user_id);
 /*Procedures*/
 DELIMITER //
 CREATE PROCEDURE user_request
-(IN email_in CHAR(191), IN passwordhash CHAR(64), IN passwordsalt CHAR(16), IN email_token_in CHAR(32), IN user_comment)
+(IN email_in CHAR(191), IN passwordhash CHAR(64), IN passwordsalt CHAR(16), IN email_token_in CHAR(32), IN user_comment TEXT)
 BEGIN
     /*Make a new request for a login*/
     INSERT INTO loginrequests (email_token, comment, email_validated) VALUES (email_token_in, user_comment, 0);
@@ -39,3 +39,4 @@ BEGIN
     INSERT INTO users (email, passhash, passsalt, loginreq_id, approved, admin) 
         VALUES (email_in, passwordhash, passwordsalt, LAST_INSERT_ID(), 0, 0);
 END//
+DELIMITER ;
