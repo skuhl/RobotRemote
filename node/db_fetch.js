@@ -57,11 +57,11 @@ module.exports = {
                         });
                     }
                     //Is this necessary? Could we just do json = res? 
-                    for(col of res){
+                    for(let i = 0; i<res.length; i++){
                         json.push({
-                            id: col.id,
-                            email: col.email,
-                            reason: col.reason
+                            id: res[i].id,
+                            email: res[i].email,
+                            reason: res[i].comment
                         });
                     }
                     resolve(json);
