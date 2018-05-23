@@ -36,7 +36,8 @@ module.exports = {
                     console.log(err);
                     reject({
                         reason: 'Error performing query.',
-                        client_reason: 'Internal database error.'
+                        client_reason: 'Internal database error.',
+                        db_err: err
                     });
                     return;
                 }
@@ -93,11 +94,17 @@ module.exports = {
             let salt = crypto.randomBytes(32).toString('hex');
             let email_tok = crypto.randomBytes(16).toString('hex');
             let hash = crypto.createHash('sha256').update(password + salt).digest('hex');
+
+            console.log(salt);
+            console.log(email_tok);
+            console.log(hash);
+
             connection.beginTransaction(function(err){
                 if(err) {
                     return reject({
                         reason: 'Failed to start transaction!',
-                        client_reason: 'Internal database error.'
+                        client_reason: 'Internal database error.',
+                        db_err: err
                     });
                 }
                 connection.query('SELECT * FROM users WHERE email = ?', [email], function(err, res, field){
@@ -105,7 +112,8 @@ module.exports = {
                         return connection.rollback(function(){
                             reject({
                                 reason: 'Failed trying to see if user already in DB.',
-                                client_reason: 'Internal database error.'
+                                client_reason: 'Internal database error.',
+                                db_err: err
                             });
                         });
                     }
@@ -114,7 +122,8 @@ module.exports = {
                         return connection.rollback(function(){
                             reject({
                                 reason: 'User already in DB.',
-                                client_reason: 'Email already in use.'
+                                client_reason: 'Email already in use.',
+                                db_err: null
                             });
                         });
                     }
@@ -124,7 +133,8 @@ module.exports = {
                             return connection.rollback(function(){
                                 reject({
                                     reason: 'Failed to call stored procedure!',
-                                    client_reason: 'Internal database error.'
+                                    client_reason: 'Internal database error.',
+                                    db_err: err
                                 });
                             });
                         }
@@ -134,7 +144,8 @@ module.exports = {
                                 return connection.rollback(function(){
                                     reject({
                                         reason: 'Commit failed!',
-                                        client_reason: 'Internal database error.'
+                                        client_reason: 'Internal database error.',
+                                        db_err: err
                                     });
                                 });
                             }

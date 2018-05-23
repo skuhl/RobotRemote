@@ -129,6 +129,7 @@ app.post('/Request.html', function(req, res){
             res.send('Succesfully added user to DB, awaiting approval.');
         }, (err)=>{
             console.log(err.reason);
+            console.log(err.db_err);
             res.send('Error adding user to DB, ' + err.client_reason);
         });
 });
