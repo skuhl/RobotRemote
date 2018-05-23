@@ -31,7 +31,7 @@ module.exports = {
     */
     verify_credentials: function(username, password){
         return new Promise ((resolve, reject) => {
-            connection.query('SELECT passhash, passsalt, approved from users where email = ?', [username], (err, res, fields)=>{
+            connection.query('SELECT passhash, passsalt, approved, admin from users where email = ?', [username], (err, res, fields)=>{
                 if(err){
                     console.log(err);
                     reject({
@@ -78,7 +78,7 @@ module.exports = {
                     return;
                 }
                 //TODO does something need to be passed here? 
-                resolve();
+                resolve(res[0].admin);
             });
         });
     },

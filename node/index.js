@@ -8,6 +8,7 @@ const fs = require('fs');
 const actuator_comm = require('./actuator_comm');
 const user_auth = require('./user_auth.js');
 const bodyParser = require('body-parser')
+const session = require('express-session');
 
 const options = require('./settings.json');
 
@@ -54,6 +55,14 @@ for(let act of options['actuator_servers']){
 }
 //middleware
 app.use(bodyParser.urlencoded({extended: false}));
+app.use(session({
+    secret:'alkshflkasf',
+    resave: false,
+    saveUninitialized: false,
+    unset: 'destroy',
+    cookie:{maxAge: 36000000}
+}));
+
 //routing
 app.use('/css', express.static('./www/css'));
 app.use('/js', express.static('./www/js'));
@@ -108,17 +117,33 @@ app.get('/Login.html', function(req, res){
 });
 
 app.post('/Login.html', function(req, res){
+    if(req.session.email){
+        res.send('Already logged in, log out first.');
+        return;
+    }
+    
     if(!req.body.username || !req.body.password){
         res.send('Missing username or password');
         return;
     }
-    user_auth.verify_credentials(req.body.username, req.body.password).then(()=>{
+
+    user_auth.verify_credentials(req.body.username, req.body.password).then((is_admin)=>{
+        req.session.email = req.body.username;
+        req.session.is_admin = is_admin;
         //TODO this should probably redirect to the scheduler or something.
         res.send('Verified!');
     },(err)=>{
         console.log('Error verifying user '  + req.body.username + ': ' + err.reason);
         res.send('Error: ' + err.client_reason);
     });
+});
+
+app.get('/Logout', function(req, res){
+    delete req.session;
+});
+
+app.get('/sessioninfo', function(req, res){
+    res.send(req.session.email + ", admin: " + req.session.is_admin);
 });
 
 app.get('/Request.html', function(req, res){
