@@ -9,6 +9,7 @@ const actuator_comm = require('./actuator_comm');
 const user_auth = require('./user_auth.js');
 const bodyParser = require('body-parser')
 const session = require('express-session');
+const MySQLStore = require('express-mysql-session')(session);
 
 const options = require('./settings.json');
 
@@ -54,9 +55,18 @@ for(let act of options['actuator_servers']){
     actuators.push(new actuator_comm.Actuator(act.ip, act.socket_port, act.websock_port, act.web_cams, my_key, cert, cacert));
 }
 //middleware
+let session_store = new MySQLStore({
+    host: options['mysql_host'],
+    port: 3306,
+    user: options['mysql_user'],
+    password: options['mysql_pass'],
+    database: "sessions"
+});
+
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(session({
     secret:'alkshflkasf',
+    store: session_store,
     resave: false,
     saveUninitialized: false,
     unset: 'destroy',
