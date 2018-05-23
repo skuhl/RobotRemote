@@ -19,5 +19,8 @@
     "cert_file": "cert/cert.pem",
     "key_file":"cert/key.pem",
     "ca_file":"cert/cacert.pem",
-    "debug":true
+    "debug":true,
+    "smtp_username":"",
+    "smtp_password":"",
+    "domain_name":"http://localhost:3000"
 }

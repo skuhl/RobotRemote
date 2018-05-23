@@ -151,11 +151,79 @@ module.exports = {
                             }
                             
                             //Maybe return something here?
-                            resolve();
+                            resolve(email_tok);
                         });
                     });
                 });
             });
         });
+   },
+   email_verify: function(email, email_tok){
+   	return new Promise(function(resolve, reject){
+   		connection.query('SELECT loginreq_id FROM users WHERE email=?', [email], function(error, result, fields){
+   			if(error){
+   				return reject({
+                  reason: 'Failed to select by email!',
+                  client_reason: 'Internal database error.',
+                  db_err: error
+              });
+            }
+            if(results.length != 1){
+            	return reject({
+                  reason: "Couldn't find user with that email!",
+                  client_reason: 'Internal database error.',
+                  db_err: error
+              });
+            }
+            let request_ID = result[0].loginreq_id;
+            if(request_ID == null){
+            	return reject({
+                  reason: "Request ID was NULL",
+                  client_reason: 'Email already verified.',
+                  db_err: error
+              });
+            }
+            connection.query('SELECT email_token, email_validated FROM loginrequests where id=?', [request_ID], function(error, result, fields){
+            	if(error){
+	   				return reject({
+	                  reason: 'Failed to select by email!',
+	                  client_reason: 'Internal database error.',
+	                  db_err: error
+              		});
+         		}
+         		if(results.length < 1){
+	            	return reject({
+	                  reason: "Invalid request ID!",
+	                  client_reason: 'Internal database error.',
+	                  db_err: error
+           			});
+         		}
+         		if(results[0].email_validated){
+         			return reject({
+	                  reason: "Request ID was NULL",
+	                  client_reason: 'Email already verified.',
+	                  db_err: error
+	              });
+	            }
+	            if(results[0].email_token != email_tok){
+	            	return reject({
+	                  reason: "Non matching token!",
+	                  client_reason: 'Invalid URL.',
+	                  db_err: error
+	              });
+	            }
+	            connection.query('UPDATE loginrequests SET email_validated=1 where id=?', [request_ID],function(error, result, fields){
+	            	if(error){
+		   				return reject({
+		                  reason: 'Failed to update!!:(',
+		                  client_reason: 'Internal database error.',
+		                  db_err: error
+	              		});
+         			}
+         			resolve();
+	            });
+            });
+   		});
+   	});
    }
 }

@@ -1,4 +1,5 @@
 const express = require("express");
+var nodemailer = require("nodemailer");
 const request = require('request');
 const app = express();
 const tls = require('tls');
@@ -9,6 +10,14 @@ const user_auth = require('./user_auth.js');
 const bodyParser = require('body-parser')
 
 const options = require('./settings.json');
+
+const smtpTransport = nodemailer.createTransport({
+    service: "Gmail",
+    auth: {
+        user: options['smtp_username'],
+        pass: options['smtp_password']
+    }
+});
 
 if(options['debug']){
     console.log('WARNING: Server was started in debug mode. This is insecure, and meant only for testing purposes.');
@@ -125,8 +134,25 @@ app.post('/Request.html', function(req, res){
     }
 
     user_auth.login_request(req.body.username, req.body.password, req.body.reason)
-        .then(()=>{
+        .then((email_token)=>{
             res.send('Succesfully added user to DB, awaiting approval.');
+            let link = options['domain_name'] + "/verify?email=" + encodeURIComponent(req.body.username) + "&email_tok=" + encodeURIComponent(email_token);
+            mailOptions={
+					to : req.body.username,
+					from : options['smtp_username'],
+					subject : "Please confirm your Email account",
+					html : "Hello,<br> Please Click on the link to verify your email.<br><a href="+link+">Click here to verify</a>"	
+				}
+				console.log(mailOptions);
+				smtpTransport.sendMail(mailOptions, function(error, response){
+			   	 if(error){
+			        	console.log(error);
+						res.end("error");
+				 	}else{
+			        	console.log("Message sent: " + response.message);
+						res.end("sent");
+			    	 }
+				});
         }, (err)=>{
             console.log(err.reason);
             console.log(err.db_err);
@@ -145,5 +171,15 @@ app.get('/NavBar.html', function(req, res){
         encoding: 'utf8'
     }));
 });
+
+app.get('/verify', function(req,res){
+	user_auth.email_verify(req.query.email, req.query.email_tok).then(function(){
+		res.send('email veirfied');
+	},function(error){
+		 console.log(error.reason);
+       console.log(error.db_err);
+       res.send('Error verifying email, ' + error.client_reason);
+	});
+}
 
 let server = app.listen(3000, () => console.log("Listening on port 3k"));
