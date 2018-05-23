@@ -34,6 +34,7 @@ module.exports = {
                             client_reason: 'Internal database error.',
                             db_err: err
                         });
+                        return;
                     }
                     //Is this necessary? Could we just do json = res? 
                     for(let i = 0; i<res.length; i++){

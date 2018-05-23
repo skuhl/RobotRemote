@@ -252,6 +252,7 @@ app.get('/admin/loginrequests', function(req, res){
         res.json({requests: json});
     }, (err)=>{
         res.send('Error getting login requests');
+        console.log(err.db_err);
     });
 });
 
