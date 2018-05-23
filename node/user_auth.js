@@ -80,5 +80,61 @@ module.exports = {
                 resolve();
             });
         });
-    }
+    },
+    /* 
+    Similar to above, but creates a non-approved login_request.
+    return value is the same.
+    */
+   login_request: function(email, password, comment){
+        
+        return new Promise((resolve, reject) => {
+            /*TOOD VALIDATE EMAIL */
+            /* TODO SEND VALIDATION EMAIL */
+            let salt = crypto.randomBytes(32).toString('hex');
+            let email_tok = crypto.randomBytes(16).toString('hex');
+            let hash = crypto.createHash('sha256').update(password + salt).digest('hex');
+            connection.beginTransaction(function(err){
+                if(err) {
+                    return reject({
+                        reason: 'Failed to start transaction!',
+                        client_reason: 'Internal database error.'
+                    });
+                }
+                connection.query('SELECT * FROM users WHERE email = ?', [email], function(err){
+                    if(err){
+                        return connection.rollback(function(){
+                            reject({
+                                reason: 'User already in DB.',
+                                client_reason: 'Email already in use.'
+                            });
+                        });
+                    }
+                    connection.query('CALL user_request(?, ?, ?, ?, ?)', [email, hash, salt, email_tok, comment], function(err){
+                        if(err){
+                            return connection.rollback(function(){
+                                reject({
+                                    reason: 'Failed to call stored procedure!',
+                                    client_reason: 'Internal database error.'
+                                });
+                            });
+                        }
+    
+                        connection.commit(function(err){
+                            if(err){
+                                return connection.rollback(function(){
+                                    reject({
+                                        reason: 'Commit failed!',
+                                        client_reason: 'Internal database error.'
+                                    });
+                                });
+                            }
+                            
+                            //Maybe return something here?
+                            resolve();
+                        });
+                    });
+                });
+            });
+        });
+   }
 }

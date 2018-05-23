@@ -18,25 +18,25 @@
     <div id="containerSignUp">
       <form action="" method="post"> <!--We will eventually need an action-->
         <label for="username">Email:</label>
-        <input type="email" ID="username" required="required" /> </br>
+        <input type="email" name="username" required="required" /> </br>
       
         <label for="password">Password: </label>
-        <input type="password" ID="password" required="required" /> </br>
+        <input type="password" name="password" required="required" /> </br>
         
         <label for="REpassword">Retype Password: </label>
-        <input type="password" ID="REpassword" required="required" onkeyup="validate();"/> </br>
+        <input type="password" name="REpassword" required="required" onkeyup="validate();"/> </br>
         
         <label for="Date">Requested Date:</label>
-        <input type="date" ID="Date" required="required" /> </br>
+        <input type="date" name="date" required="required" /> </br>
         
         <label for="Time">Requested Time:</label>
-        <input type="time" ID="Time" required="required" /> </br>
+        <input type="time" name="time" required="required" /> </br>
         
         <label for="Duration">Duration (hours):</label>
-        <input type="number" ID="Duration" min="0.5" max="10"required="required" /> </br> </br>
+        <input type="number" name="duration" min="0.5" max="10"required="required" /> </br> </br>
                 
-        <label for="comments">Please state the reason for your request:</label>
-        <textarea ID="comments" cols="20" rows="3"></textarea> </br>
+        <label for="reason">Please state the reason for your request:</label>
+        <textarea name="reason" cols="20" rows="3" required></textarea> </br>
 
         <input type="submit" value="Submit" />
       </form>

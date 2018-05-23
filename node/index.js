@@ -118,6 +118,20 @@ app.get('/Request.html', function(req, res){
     }));
 });
 
+app.post('/Request.html', function(req, res){
+    if(!req.body.username || !req.body.password || !req.body.reason){
+        res.send('Missing username, password, or reason for request.');
+        return;
+    }
+
+    user_auth.login_request(req.body.username, req.body.password, req.body.reason)
+        .then(()=>{
+            req.send('Succesfully added user to DB, awaiting approval.');
+        }, (err)=>{
+            req.send('Error adding user to DB, ' + err.client_reason);
+        });
+});
+
 app.get('/Scheduler.html', function(req, res){
     res.send(fs.readFileSync('./www/Scheduler.html', {
         encoding: 'utf8'
