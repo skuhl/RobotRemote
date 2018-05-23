@@ -100,8 +100,17 @@ module.exports = {
                         client_reason: 'Internal database error.'
                     });
                 }
-                connection.query('SELECT * FROM users WHERE email = ?', [email], function(err){
+                connection.query('SELECT * FROM users WHERE email = ?', [email], function(err, res, field){
                     if(err){
+                        return connection.rollback(function(){
+                            reject({
+                                reason: 'Failed trying to see if user already in DB.',
+                                client_reason: 'Internal database error.'
+                            });
+                        });
+                    }
+
+                    if(res.length > 0){
                         return connection.rollback(function(){
                             reject({
                                 reason: 'User already in DB.',
@@ -109,7 +118,8 @@ module.exports = {
                             });
                         });
                     }
-                    connection.query('CALL user_request(?, ?, ?, ?, ?)', [email, hash, salt, email_tok, comment], function(err){
+
+                    connection.query('CALL user_request(?, ?, ?, ?, ?)', [email, hash, salt, email_tok, comment], function(err, res, field){
                         if(err){
                             return connection.rollback(function(){
                                 reject({
