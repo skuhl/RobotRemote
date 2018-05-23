@@ -27,7 +27,7 @@ module.exports = {
         let json = [];
         return new Promise((resolve, reject) => {
             if(num_requests <= 0 ){
-                connection.query('SELECT id, email, comment FROM loginrequests WHERE email_validated=1', [], function(err, res, fields){    
+                connection.query('SELECT loginrequests.id, users.email, loginrequests.comment FROM users INNER JOIN loginrequests ON users.loginreq_id = loginrequests.id WHERE email_validated=1', [], function(err, res, fields){    
                     if(err){
                         reject({
                             reason: 'Error selecting from loginrequests.',
@@ -48,7 +48,7 @@ module.exports = {
     
                 });
             }else{
-                connection.query('SELECT id, email, comment FROM loginrequests WHERE email_validated=1 LIMIT ? OFFSET ?', [num_requests, start_at], function(err, res, fields){    
+                connection.query('SELECT loginrequests.id, users.email, loginrequests.comment FROM users INNER JOIN loginrequests ON users.loginreq_id = loginrequests.id WHERE email_validated=1 LIMIT ? OFFSET ?', [num_requests, start_at], function(err, res, fields){    
                     if(err){
                         reject({
                             reason: 'Error selecting from loginrequests.',
