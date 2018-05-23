@@ -1,6 +1,7 @@
 const mysql = require('mysql');
-let connection = null;
 const crypto = require('crypto');
+
+let connection = null;
 
 module.exports = {
     init_mysql: function(host, username, password, database){

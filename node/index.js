@@ -7,6 +7,7 @@ const net = require('net');
 const fs = require('fs');
 const actuator_comm = require('./actuator_comm');
 const user_auth = require('./user_auth.js');
+const db_fetch = require('./db_fetch.js');
 const bodyParser = require('body-parser')
 const session = require('express-session');
 const MySQLStore = require('express-mysql-session')(session);
@@ -33,6 +34,7 @@ let cacert = fs.readFileSync(options['ca_file']);
 let secure_context = null;
 
 user_auth.init_mysql(options['mysql_host'], options['mysql_user'], options['mysql_pass'], options['mysql_db']);
+db_fetch.init_mysql(options['mysql_host'], options['mysql_user'], options['mysql_pass'], options['mysql_db']);
 
 if(options['debug']){
     secure_context = tls.createSecureContext({
@@ -216,6 +218,86 @@ app.get('/verify', function(req,res){
        console.log(error.db_err);
        res.send('Error verifying email, ' + error.client_reason);
 	});
+});
+
+app.get('/admin/Admin.html', function(req, res){
+    if(req.session.is_admin === undefined){
+        res.redirect(302, '/Login.html');
+        return;
+    }
+    if(!req.session.is_admin){
+        res.redirect(302, '/Home.html');
+        return;
+    }
+    //emit admin page
+    res.send('Admin page');
+});
+/*Returns JSON encoded list of requests:
+    {
+        id:  <id for request>
+        email: <email>,
+        reason: <reason>
+    }
+*/
+app.get('/admin/loginrequests', function(req, res){
+    if(req.session.is_admin === undefined){
+        res.redirect(302, '/Login.html');
+        return;
+    }
+    if(!req.session.is_admin){
+        res.redirect(302, '/Home.html');
+        return;
+    }
+    db_fetch.get_login_requests(0, -1).then((json)=>{
+        res.json({requests: json});
+    }, (err)=>{
+        res.send('Error getting login requests');
+    });
+});
+
+/*Returns JSON encoded list of requests:
+    {
+        id: <id for request>
+        email: <email>,
+        starttime: <datetime>,
+        duration: <duration in seconds>
+    }
+*/
+app.get('/admin/timeslotrequests', function(req, res){
+    if(req.session.is_admin === undefined){
+        res.redirect(302, '/Login.html');
+        return;
+    }
+    if(!req.session.is_admin){
+        res.redirect(302, '/Home.html');
+        return;
+    }
+});
+/* 
+    Request to reject login request with given id
+*/
+app.get('/admin/rejectloginrequest/:id', function(req, res){
+    if(req.session.is_admin === undefined){
+        res.redirect(302, '/Login.html');
+        return;
+    }
+    if(!req.session.is_admin){
+        res.redirect(302, '/Home.html');
+        return;
+    }
+});
+/* 
+    Request to accept login request with given id
+*/
+app.get('/admin/acceptloginrequest/:id', function(req, res){
+    if(req.session.is_admin === undefined){
+        res.redirect(302, '/Login.html');
+        return;
+    }
+    if(!req.session.is_admin){
+        res.redirect(302, '/Home.html');
+        return;
+    }
 });
 
 let server = app.listen(3000, () => console.log("Listening on port 3k"));
