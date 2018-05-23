@@ -41,7 +41,7 @@ module.exports = {
                         json.push({
                             id: res[i].id,
                             email: res[i].email,
-                            reason: res[i].reason
+                            reason: res[i].comment
                         });
                     }
                     resolve(json);
