@@ -180,6 +180,6 @@ app.get('/verify', function(req,res){
        console.log(error.db_err);
        res.send('Error verifying email, ' + error.client_reason);
 	});
-}
+});
 
 let server = app.listen(3000, () => console.log("Listening on port 3k"));
