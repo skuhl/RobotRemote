@@ -319,6 +319,17 @@ app.get('/admin/accepttimeslotrequest/:id', function(req, res){
 });
 
 app.get('*', function(req, res){
-	res.send(html_fetcher(__dirname + '/www/Error.html'));
+	if(req.session.error_status === undefined){
+      req.session.error_status = 404;
+	}
+	let err_str = req.session.error_status;
+   opts.afterNavbar = ()=>('<input id="errmsg" type="hidden" value="' + err_str + '"/>');
+   req.session.error_status = undefined;
+   
+	res.status(req.session.error_status).send(html_fetcher(__dirname + '/www/Error.html'));
+});
+
+app.post('*', function(req, res){
+	
 });
 let server = app.listen(3000, () => console.log("Listening on port 3k"));
