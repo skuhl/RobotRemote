@@ -8,6 +8,7 @@ const fs = require('fs');
 const actuator_comm = require('./actuator_comm');
 const user_auth = require('./user_auth.js');
 const db_fetch = require('./db_fetch.js');
+const html_fetcher = require('./html_fetcher');
 const bodyParser = require('body-parser')
 const session = require('express-session');
 const MySQLStore = require('express-mysql-session')(session);
@@ -103,10 +104,7 @@ app.get('/ControlPanel.html', function(req, res){
                 //TODO generate unique secrets, send them to webcams, set the cookies to them
                 res.cookie("webcam"+ (i+1) + "-secret", "secret");
             }
-
-            res.send(fs.readFileSync('./www/ControlPanel.html', {
-                encoding: 'utf8'
-            }));
+            res.send(html_fetcher('www/ControlPanel.html', {beforeHeader: ()=>{return '<title>Robot Remote - Control Panel</title>'}}));
         },(err) => {
             console.log("Failed to connect to actuator server, " + err)
             res.send(err);
@@ -117,15 +115,11 @@ app.get('/ControlPanel.html', function(req, res){
 });
 
 app.get('/Home.html', function(req, res){
-    res.send(fs.readFileSync('./www/Home.html', {
-        encoding: 'utf8'
-    }));
+    res.send(html_fetcher('www/Home.html'));
 });
 
 app.get('/Login.html', function(req, res){
-    res.send(fs.readFileSync('./www/Login.html', {
-        encoding: 'utf8'
-    }));
+    res.send(html_fetcher('./www/Login.html'));
 });
 
 app.post('/Login.html', function(req, res){
@@ -142,11 +136,12 @@ app.post('/Login.html', function(req, res){
     user_auth.verify_credentials(req.body.username, req.body.password).then((is_admin)=>{
         req.session.email = req.body.username;
         req.session.is_admin = is_admin;
-        //TODO this should probably redirect to the scheduler or something.
-        res.send('Verified!');
+        res.redirect(302, '/Scheduler.html');
     },(err)=>{
         console.log('Error verifying user '  + req.body.username + ': ' + err.reason);
-        res.send('Error: ' + err.client_reason);
+        //set session error. Login.html can ask for it.
+        req.session.login_error = err.client_reason;
+        res.redirect(303, '/Login.html');
     });
 });
 
@@ -160,9 +155,7 @@ app.get('/sessioninfo', function(req, res){
 });
 
 app.get('/Request.html', function(req, res){
-    res.send(fs.readFileSync('./www/Request.html', {
-        encoding: 'utf8'
-    }));
+    res.send(html_fetcher('www/Request.html'));
 });
 
 app.post('/Request.html', function(req, res){
@@ -192,29 +185,19 @@ app.post('/Request.html', function(req, res){
 			    	 }
 				});
         }, (err)=>{
-            console.log(err.reason);
-            console.log(err.db_err);
             res.send('Error adding user to DB, ' + err.client_reason);
         });
 });
 
 app.get('/Scheduler.html', function(req, res){
-    res.send(fs.readFileSync('./www/Scheduler.html', {
-        encoding: 'utf8'
-    }));
-});
-
-app.get('/NavBar.html', function(req, res){
-    res.send(fs.readFileSync('./www/NavBar.html', {
-        encoding: 'utf8'
-    }));
+    res.send(html_fetcher('/www/Scheduler.html'));
 });
 
 app.get('/verify', function(req,res){
 	user_auth.email_verify(req.query.email, req.query.email_tok).then(function(){
 		res.send('email veirfied');
 	},function(error){
-		 console.log(error.reason);
+	   console.log(error.reason);
        console.log(error.db_err);
        res.send('Error verifying email, ' + error.client_reason);
 	});

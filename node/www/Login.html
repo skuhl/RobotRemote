@@ -1,30 +1,11 @@
-<!DOCTYPE HTML>
-<html>
-  <head>
-    <link rel="stylesheet" type="text/css" href="./css/NavBar.css">
-    <link rel="stylesheet" type="text/css" href="./css/Form.css">
-  </head>
-  <body>
-    <h1>Robot Remote</h1>
-    <ul>
-      <li><a href="/Home.html">Information</a></li>
-      <li><a href="/Scheduler.html">Scheduler</a></li>
-      <li><a href="/ControlPanel.html">Control Panel</a></li>
-      <li style="float:right"><a href="/Request.html">Sign Up</a></li>
-      <li style="float:right"><a href="/Login.html">Login</a></li>
-    </ul>
-    <!--someday the href="" will need to be changes to urls-->
+<div id="container">
+  <form action="/Login.html" method="post"> <!--We will eventually need an action-->
+    <label for="username">Email:</label>
+    <input type="text" name="username" required="required" /> </br>
+  
+    <label for="password">Password: </label>
+    <input type="password" name="password" required="required" /> </br>
     
-    <div id="container">
-      <form action="./Login.html" method="post"> <!--We will eventually need an action-->
-        <label for="username">Email:</label>
-        <input type="text" name="username" required="required" /> </br>
-      
-        <label for="password">Password: </label>
-        <input type="password" name="password" required="required" /> </br>
-        
-        <input type="submit" value="Submit" />
-      </form>
-    </div>
-  </body>
-</html>
+    <input type="submit" value="Submit" />
+  </form>
+</div>
