@@ -284,4 +284,7 @@ app.get('/admin/acceptloginrequest/:id', function(req, res){
     }
 });
 
+app.get('*', function(req, res){
+	res.send(html_fetcher(__dirname + '/www/Error.html'));
+});
 let server = app.listen(3000, () => console.log("Listening on port 3k"));
