@@ -16,7 +16,9 @@ const MySQLStore = require('express-mysql-session')(session);
 const options = require('./settings.json');
 
 const smtpTransport = nodemailer.createTransport({
-    service: "Gmail",
+    host: options['smtp_host'],
+    port: options['smtp_port'],
+    secure: options['smtp_tls'],
     auth: {
         user: options['smtp_username'],
         pass: options['smtp_password']
@@ -178,10 +180,11 @@ app.post('/Request.html', function(req, res){
             let link = options['domain_name'] + "/verify?email=" + encodeURIComponent(req.body.username) + "&email_tok=" + encodeURIComponent(email_token);
             mailOptions={
 					to : req.body.username,
-					from : options['smtp_username'],
+					from : options['mailer_email'],
 					subject : "Please confirm your Email account",
-					html : "Hello,<br> Please Click on the link to verify your email.<br><a href="+link+">Click here to verify</a>"	
-				}
+					html : "Hello,<br> Please Click on the link to verify your email.<br><a href="+link+">Click here to verify</a>",	
+                    text : "Hello, Please visit the following URL to verify your email." + link
+                }
 				console.log(mailOptions);
 				smtpTransport.sendMail(mailOptions, function(error, response){
 			   	 if(error){
