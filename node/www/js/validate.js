@@ -14,4 +14,4 @@ function validate()
 }
 
 password.onchange = validate;
-confirm_password.onkeyup = validate;
+passConfirm.onkeyup = validate;
