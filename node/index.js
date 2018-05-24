@@ -291,6 +291,32 @@ app.get('/admin/acceptloginrequest/:id', function(req, res){
         return;
     }
 });
+/* 
+    Request to reject timeslot request with given id
+*/
+app.get('/admin/rejecttimeslotrequest/:id', function(req, res){
+    if(req.session.is_admin === undefined){
+        res.redirect(302, '/Login.html');
+        return;
+    }
+    if(!req.session.is_admin){
+        res.redirect(302, '/Home.html');
+        return;
+    }
+});
+/* 
+    Request to accept timeslot request with given id
+*/
+app.get('/admin/accepttimeslotrequest/:id', function(req, res){
+    if(req.session.is_admin === undefined){
+        res.redirect(302, '/Login.html');
+        return;
+    }
+    if(!req.session.is_admin){
+        res.redirect(302, '/Home.html');
+        return;
+    }
+});
 
 app.get('*', function(req, res){
 	res.send(html_fetcher(__dirname + '/www/Error.html'));
