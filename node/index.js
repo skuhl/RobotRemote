@@ -104,7 +104,7 @@ app.get('/ControlPanel.html', function(req, res){
                 //TODO generate unique secrets, send them to webcams, set the cookies to them
                 res.cookie("webcam"+ (i+1) + "-secret", "secret");
             }
-            res.send(html_fetcher(__dirname + 'www/ControlPanel.html', {beforeHeader: ()=>{return '<title>Robot Remote - Control Panel</title>'}}));
+            res.send(html_fetcher(__dirname + '/www/ControlPanel.html', {beforeHeader: ()=>{return '<title>Robot Remote - Control Panel</title>'}}));
         },(err) => {
             console.log("Failed to connect to actuator server, " + err)
             res.send(err);
@@ -115,11 +115,11 @@ app.get('/ControlPanel.html', function(req, res){
 });
 
 app.get('/Home.html', function(req, res){
-    res.send(html_fetcher(__dirname + 'www/Home.html'));
+    res.send(html_fetcher(__dirname + '/www/Home.html'));
 });
 
 app.get('/Login.html', function(req, res){
-    res.send(html_fetcher(__dirname + './www/Login.html'));
+    res.send(html_fetcher(__dirname + '/www/Login.html'));
 });
 
 app.post('/Login.html', function(req, res){
@@ -155,7 +155,7 @@ app.get('/sessioninfo', function(req, res){
 });
 
 app.get('/Request.html', function(req, res){
-    res.send(html_fetcher(__dirname + 'www/Request.html'));
+    res.send(html_fetcher(__dirname + '/www/Request.html'));
 });
 
 app.post('/Request.html', function(req, res){
