@@ -1,7 +1,7 @@
 const fs = require('fs');
 
-const header_file = 'www/Header.html'
-const navbar_file = 'www/Navbar.html'
+const header_file = __dirname + 'www/Header.html'
+const navbar_file = __dirname + 'www/Navbar.html'
 /* 
     file: the main HTML page to compose.
     options: an object, containing the following options:
