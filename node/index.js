@@ -319,6 +319,7 @@ app.get('/admin/accepttimeslotrequest/:id', function(req, res){
 });
 
 app.get('*', function(req, res){
+	let ops = { };
 	if(req.session.error_status === undefined){
       req.session.error_status = 404;
 	}
