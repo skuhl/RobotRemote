@@ -22,7 +22,7 @@
     "debug":true,
     "smtp_username":"",
     "smtp_password":"",
-    "smtp_host":"smtp.google.com",
+    "smtp_host":"smtp.gmail.com",
     "smtp_port":587,
     "smtp_tls":true,
     "mailer_email":"",
