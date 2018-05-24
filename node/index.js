@@ -119,7 +119,15 @@ app.get('/Home.html', function(req, res){
 });
 
 app.get('/Login.html', function(req, res){
-    res.send(html_fetcher(__dirname + '/www/Login.html'));
+    let opts = {};
+    
+    if(req.session.login_error){
+        let err_str = req.session.login_error;
+        opts.afterNavbar = ()=>('<input id="errmsg" type="hidden" value="' + err_str + '"/>');
+        req.session.login_error = undefined;
+    }
+
+    res.send(html_fetcher(__dirname + '/www/Login.html'), opts);
 });
 
 app.post('/Login.html', function(req, res){
