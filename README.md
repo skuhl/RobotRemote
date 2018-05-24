@@ -26,8 +26,8 @@ This setup is meant for Linux. If you would like to run on Windows 10, these ins
 ### Node webserver (node/settings.json)
 | Option     | Purpose | Possible Values |
 | ---------- | ------- | --------------- |
-|`mysql_host`|Specify the location of the mysql server|Host name or IP address|
-|`mysql_user`|Specify the username for the database server|A valid mysql username|
+|`mysql_host`|Specify the location of the mysql server|Host name or IP address.|
+|`mysql_user`|Specify the username for the database server|A valid mysql username.|
 |`mysql_pass`|specify the password for the database server|The password for the username given in `mysql_user`|
 |`mysql_db`|Specify the name of the database being used|Database set up with the schema provided in `db_setup.sql` |
 | `actuators`| Specify information about actuator servers that this webserver can connect clients to. | `actuators` is an array containing actuator objects. Each of these objects contain the `ip` and `port` that the actuator socket listens on.|
