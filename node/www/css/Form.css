@@ -41,9 +41,9 @@ html, body {
 }
 
 #msg_container {
-    text-align: center;
-    color: red;
-    background-color: #48489e;
+    text-align: left;
+    color: white;
+    background-color: red;
     padding: 15px 0 15px 0;
     display: none;
 }
