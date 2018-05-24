@@ -29,4 +29,6 @@ module.exports = function (file, options){
     /* PUT FOOTER STUFF HERE */
     if(options && options.afterFooter) HTMLstring += options.afterFooter();
     HTMLstring += '</footer>'
+
+    return HTMLstring;
 }
