@@ -326,7 +326,7 @@ app.get('*', function(req, res){
 	let err_str = 'Page Not Found';
    opts.afterNavbar = ()=>('<input id="errmsg" type="hidden" value="' + err_str + '"/>');
    
-	res.status(req.session.error_status).send(html_fetcher(__dirname + '/www/Error.html'));
+	res.status(req.session.error_status).send(html_fetcher(__dirname + '/www/Error.html', opts));
 	req.session.error_status = undefined;
 });
 
