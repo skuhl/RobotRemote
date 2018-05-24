@@ -104,40 +104,32 @@ app.get('/ControlPanel.html', function(req, res){
                 //TODO generate unique secrets, send them to webcams, set the cookies to them
                 res.cookie("webcam"+ (i+1) + "-secret", "secret");
             }
-            res.status(200).send(html_fetcher(__dirname + '/www/ControlPanel.html', {beforeHeader: ()=>{return '<title>Robot Remote - Control Panel</title>'}}));
+            res.send(html_fetcher(__dirname + '/www/ControlPanel.html', {beforeHeader: ()=>{return '<title>Robot Remote - Control Panel</title>'}}));
         },(err) => {
             console.log("Failed to connect to actuator server, " + err)
-            res.status(500).send(err);
+            res.send(err);
         });
     },(err)=>{
-        res.status(200).send(err);
+        res.send(err);
     });
 });
 
 app.get('/Home.html', function(req, res){
-    res.status(200).send(html_fetcher(__dirname + '/www/Home.html'));
+    res.send(html_fetcher(__dirname + '/www/Home.html'));
 });
 
 app.get('/Login.html', function(req, res){
-    let opts = {};
-    
-    if(req.session.login_error){
-        let err_str = req.session.login_error;
-        opts.afterNavbar = ()=>('<input id="errmsg" type="hidden" value="' + err_str + '"/>');
-        req.session.login_error = undefined;
-    }
-
-    res.status(200).send(html_fetcher(__dirname + '/www/Login.html', opts));
+    res.send(html_fetcher(__dirname + '/www/Login.html'));
 });
 
 app.post('/Login.html', function(req, res){
     if(req.session.email){
-        res.status(200).send('Already logged in, log out first.');
+        res.send('Already logged in, log out first.');
         return;
     }
     
     if(!req.body.username || !req.body.password){
-        res.status(200).send('Missing username or password');
+        res.send('Missing username or password');
         return;
     }
 
@@ -155,26 +147,26 @@ app.post('/Login.html', function(req, res){
 
 app.get('/Logout', function(req, res){
     delete req.session;
-    res.status(200).send('deleted session');
+    res.send('deleted session');
 });
 
 app.get('/sessioninfo', function(req, res){
-    res.status(200).send(req.session.email + ", admin: " + req.session.is_admin);
+    res.send(req.session.email + ", admin: " + req.session.is_admin);
 });
 
 app.get('/Request.html', function(req, res){
-    res.status(200).send(html_fetcher(__dirname + '/www/Request.html'));
+    res.send(html_fetcher(__dirname + '/www/Request.html'));
 });
 
 app.post('/Request.html', function(req, res){
     if(!req.body.username || !req.body.password || !req.body.reason){
-        res.status(200).send('Missing username, password, or reason for request.');
+        res.send('Missing username, password, or reason for request.');
         return;
     }
 
     user_auth.login_request(req.body.username, req.body.password, req.body.reason)
         .then((email_token)=>{
-            res.status(200).send('Succesfully added user to DB, awaiting approval.');
+            res.send('Succesfully added user to DB, awaiting approval.');
             let link = options['domain_name'] + "/verify?email=" + encodeURIComponent(req.body.username) + "&email_tok=" + encodeURIComponent(email_token);
             mailOptions={
 					to : req.body.username,
@@ -193,7 +185,7 @@ app.post('/Request.html', function(req, res){
 			    	 }
 				});
         }, (err)=>{
-            res.status(200).send('Error adding user to DB, ' + err.client_reason);
+            res.send('Error adding user to DB, ' + err.client_reason);
         });
 });
 
@@ -203,11 +195,11 @@ app.get('/Scheduler.html', function(req, res){
 
 app.get('/verify', function(req,res){
 	user_auth.email_verify(req.query.email, req.query.email_tok).then(function(){
-		res.status(200).send('email veirfied');
+		res.send('email veirfied');
 	},function(error){
 	   console.log(error.reason);
        console.log(error.db_err);
-       res.status(200).send('Error verifying email, ' + error.client_reason);
+       res.send('Error verifying email, ' + error.client_reason);
 	});
 });
 
@@ -240,9 +232,9 @@ app.get('/admin/loginrequests', function(req, res){
         return;
     }
     db_fetch.get_login_requests(0, -1).then((json)=>{
-        res.status(200).json({requests: json});
+        res.json({requests: json});
     }, (err)=>{
-        res.status(500).send('Error getting login requests');
+        res.send('Error getting login requests');
         console.log(err.db_err);
     });
 });
@@ -295,4 +287,5 @@ app.get('/admin/acceptloginrequest/:id', function(req, res){
 app.get('*', function(req, res){
 	res.send(html_fetcher(__dirname + '/www/Error.html'));
 });
+
 let server = app.listen(3000, () => console.log("Listening on port 3k"));
