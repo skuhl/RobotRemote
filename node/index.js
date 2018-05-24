@@ -323,11 +323,11 @@ app.get('*', function(req, res){
 	if(req.session.error_status === undefined){
       req.session.error_status = 404;
 	}
-	let err_str = req.session.error_status;
+	let err_str = 'Page Not Found';
    opts.afterNavbar = ()=>('<input id="errmsg" type="hidden" value="' + err_str + '"/>');
-   req.session.error_status = undefined;
    
 	res.status(req.session.error_status).send(html_fetcher(__dirname + '/www/Error.html'));
+	req.session.error_status = undefined;
 });
 
 app.post('*', function(req, res){
