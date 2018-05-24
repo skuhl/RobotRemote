@@ -5,6 +5,5 @@ var CheckError = function(){
     let msg = msg_component.value;
 
     document.getElementById("msg_text").innerHTML = msg;
-    document.getElementById("msg_container").style.visibility = "visible";
-    document.getElementById("msg_container").style.opacity = 1;
+    document.getElementById("msg_container").style.display = "block";
 }
