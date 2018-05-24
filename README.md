@@ -26,17 +26,26 @@ This setup is meant for Linux. If you would like to run on Windows 10, these ins
 ### Node webserver (node/settings.json)
 | Option     | Purpose | Possible Values |
 | ---------- | ------- | --------------- |
+|`mysql_host`|Specify the location of the mysql server|Host name or IP address|
+|`mysql_user`|Specify the username for the database server|A valid mysql username|
+|`mysql_pass`|specify the password for the database server|The password for the username given in `mysql_user`|
+|`mysql_db`|Specify the name of the database being used|Database set up with the schema provided in `db_setup.sql` |
 | `actuators`| Specify information about actuator servers that this webserver can connect clients to. | `actuators` is an array containing actuator objects. Each of these objects contain the `ip` and `port` that the actuator socket listens on.|
 |`cert_file` | Specify a certificate for this webserver, so that HTTPS may be used | This is a string, giving the path to the file containing the certificate. If this is an empty string, then no certificate will be used, and the server will run in insecure HTTP. It is recommended that you use a certificate. (TODO CERTBOT)|
 |`key_file`  | Specify the key file used with your certificate. | This is a string, giving the path to the file containing the private key for your certificate. If the `cert_file` is specified, then this option must be specified, otherwise the server will not run properly.|
-|`ca_file`   | Specify an optional file to use for certificate authorities | This option may be a file containing a list of certificate authorities, or it may be an empty string, in which case the system defailt certificate authorities are used.|
-|`debug`     | Enables various behaviours related to debugging. This option is insecure, as it uses SSL without verifiying certificates. | For production, always use `false`. For testing, you may consider setting this to `true`, which may allow testing SSL based work without a proper certificate.|
+|`ca_file`   | Specify an optional file to use for certificate authorities | This option may be a file containing a list of certificate authorities, or it may be an empty string, in which case the system default certificate authorities are used.|
+|`debug`     | Enables various behaviors related to debugging. This option is insecure, as it uses SSL without verifying certificates. | For production, always use `false`. For testing, you may consider setting this to `true`, which may allow testing SSL based work without a proper certificate.|
+|`smtp_username`|Specify  what email to send verification emails from|A valid Gmail account that has "Allow less secure apps" turned OFF|
+|`smtp_password`|Allows app access to send emails from specified account |Password for the email used in `smtp_username`|
+|`domain_name`|Specify the domain of the site|Any valid domain that you are hosting|
 
 ### Python actuator server (python/settings.json)
 | Option         | Purpose | Possible Values |
 | -------------- | ------- | --------------- |
 |`verbose`| Allows you to control the amount of output from this server | `true` will print more information, while `false` will print only the essentials (server errors)
-|`socket_port`| Specify which port this actuator server will take commands from | This is a small integer. Try to keep this above 1024, as ports below that are reserved for other well-known services. This value must match what you have for this actuator in the webserver configuration. | Any integer between 1024 and 65535 is acceptable. |
+|`socket_port`| Specify which port this actuator server will take commands from | This is a small integer. Try to keep this above 1024, as ports below that are reserved for other well-known services. This value must match what you have for this actuator in the webserver configuration.  Any integer between 1024 and 65535 is acceptable. |
+|`websocket_port`|Specify the socket for the python actuator server to communicate with the client.|Any integer between 1024 and 65535 is acceptable. |
+|`websocket_accepted_origins`|A list of sites that the websocket can accept connections from.|Domain names or IP addresses.|
 |`disable_modbus`| Disables modbus communications. This is useful for testing when a PLC is not available. | Should be `false` in production, or `true` for testing if no PLC is connected. The following modbus options are ignored if this is set to `true`|
 |`modbus_host`| IP address of the modbus host. | A valid IP address.|
 |`modbus_port`| Port that your modbus server is running on | An integer between 0 and 65535|
@@ -45,6 +54,6 @@ This setup is meant for Linux. If you would like to run on Windows 10, these ins
 |`modbus_sleep_inteval`| The amount of time to wait in between sending messages to the PLC. This is done so that if a disconnection does occur, the PLC may shut itself off in emergency.| A positive float value, denoting the number of seconds to wait.|
 |`cert_file` | Specify a certificate for this actuator server, so that secure sockets/websockets may be used | This is a string, giving the path to the file containing the certificate. If this is an empty string, then no certificate will be used, and the server will run in insecure mode. It is recommended that you use a certificate. (TODO CERTBOT)|
 |`key_file`| Specify the key file used with your certificate. | This is a string, giving the path to the file containing the private key for your certificate. If the `cert_file` is specified, then this option must be specified, otherwise the server will not run properly.|
-|`ca_file`| Specify an optional file to use for certificate authorities | This option may be a file containing a list of certificate authorities, or it may be an empty string, in which case the system defailt certificate authorities are used.|
-|`debug`| Enables various behaviours related to debugging. This option is insecure, as it uses SSL without verifiying certificates. | For production, always use `false`. For testing, you may consider setting this to `true`, which may allow testing SSL based work without a proper certificate.|
+|`ca_file`| Specify an optional file to use for certificate authorities | This option may be a file containing a list of certificate authorities, or it may be an empty string, in which case the system default certificate authorities are used.|
+|`debug`| Enables various behaviors related to debugging. This option is insecure, as it uses SSL without verifying certificates. | For production, always use `false`. For testing, you may consider setting this to `true`, which may allow testing SSL based work without a proper certificate.|
 |`pin_assignments`| A mapping of symbolic button names to modbus addresses. These are actually the modbus addresses + 1, since this is how CLICK decided to show the addresses in their software.| A positive integer corresponding to the modbus address of the coil to activate when the mesage is received. If an address maps to 0, the message will be ignored, and no coils will be activated for that message.|
