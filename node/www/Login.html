@@ -1,4 +1,7 @@
 <div id="container">
+  <div id="msg_container">
+    <p id="msg_text"></p>
+  </div>
   <form action="/Login.html" method="post"> <!--We will eventually need an action-->
     <label for="username">Email:</label>
     <input type="text" name="username" required="required" /> </br>
@@ -9,3 +12,7 @@
     <input type="submit" value="Submit" />
   </form>
 </div>
+<script src="/js/login.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", CheckError);
+</script>
