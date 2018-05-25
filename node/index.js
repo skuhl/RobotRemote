@@ -341,7 +341,7 @@ app.get('/timeslotrequests', function(req, res){
     let week_later_ms = now_ms + (24*60*60*1000)*7;
 
     db_fetch.user_get_timeslot_requests(new Date(now_ms), new Date(week_later_ms)).then((json)=>{
-        res.status(200).json(json);
+        res.status(200).json({timeslots: json});
     },(err)=>{
         console.log('Error fetching timeslot requests: ' + err.reason);
         console.log(err.db_err);
