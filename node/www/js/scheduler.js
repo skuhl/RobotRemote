@@ -88,7 +88,7 @@ var req = new XMLHttpRequest();
 req.onreadystatechange = function(){
     if(req.readyState === 4 && req.status === 200){
         var i;
-        var res = JSON.parts(req.response);
+        var res = JSON.parse(req.response);
         console.log(req.response);
 
         //Parse into more easily digestable format
