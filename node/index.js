@@ -322,7 +322,7 @@ app.get('/admin/accepttimeslotrequest/:id', function(req, res){
     }
 });
 
-app.get('*', function(req, res){
+app.all('*', function(req, res){
 	let opts = { };
 	if(req.session.error_status === undefined){
       req.session.error_status = 404;
@@ -334,7 +334,4 @@ app.get('*', function(req, res){
 	req.session.error_status = undefined;
 });
 
-app.post('*', function(req, res){
-	
-});
 let server = app.listen(3000, () => console.log("Listening on port 3k"));
