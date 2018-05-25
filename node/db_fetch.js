@@ -70,10 +70,11 @@ module.exports = {
         });
     },
     /*Timeframe */
-    user_get_timeslot_requests: function(beginDate, endDate){
+    user_get_timeslot_requests: function(beginDate, endDate, email){
         return new Promise((resolve, reject) => {
-            connection.query('SELECT start_time, duration, approved FROM timeslots WHERE start_time > ? AND start_time < ?', [beginDate, endDate], function(err, res, fields){
-                let json = [];
+            connection.query('SELECT users.email, timeslots.start_time, timeslots.duration, timeslots.approved FROM users INNER JOIN timeslots ON users.id = timeslots.user_id WHERE start_time > ? AND start_time < ?', [beginDate, endDate], function(err, res, fields){
+                let mine = [];
+                let others = [];
                 if(err){
                     return reject({
                         reason: 'Error selecting from timeslots.',
@@ -83,14 +84,23 @@ module.exports = {
                 }
 
                 for(let i = 0; i<res.length; i++){
-                    json.push({
-                        starttime: res[i].start_time,
-                        duration: res[i].duration,
-                        accepted: res[i].approved
-                    });
+                    if(res[i].email == email){
+                        mine.push({
+                            starttime: res[i].start_time,
+                            duration: res[i].duration,
+                            accepted: res[i].approved
+                        });
+                    }else{
+                        others.push({
+                            starttime: res[i].start_time,
+                            duration: res[i].duration,
+                            accepted: res[i].approved
+                        });
+                    }
+                    
                 }
 
-                resolve(json);
+                resolve({mine: mine, others: others});
             });
         })
         
