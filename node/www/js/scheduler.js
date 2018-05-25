@@ -104,7 +104,7 @@ req.onreadystatechange = function(){
                 res.others[i].duration*1000);
         }
 
-        GenerateGrid(req.response);
+        GenerateGrid(res);
     }else if(req.readyState === 4){
         console.log('Error getting timeslot requests.');
     }
