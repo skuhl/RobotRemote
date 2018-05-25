@@ -257,6 +257,7 @@ app.get('/admin/loginrequests', function(req, res){
         email: <email>,
         starttime: <datetime>,
         duration: <duration in seconds>
+        accepted: <bool>
     }
 */
 app.get('/admin/timeslotrequests', function(req, res){
@@ -320,6 +321,31 @@ app.get('/admin/accepttimeslotrequest/:id', function(req, res){
         res.redirect(302, '/Home.html');
         return;
     }
+});
+
+/*Returns JSON encoded list of requests:
+    {
+        starttime: <datetime>,
+        duration: <duration in seconds>
+        accepted: <bool>
+    }
+*/
+app.get('/timeslotrequests', function(req, res){
+    if(req.session.email === undefined){
+        //not logged in
+        res.redirect(302, '/Login.html');
+        return;
+    }
+    
+    let now_ms = Date.now();
+    let week_later_ms = now_ms + (24*60*60*1000)*7;
+
+    db_fetch.user_get_timeslot_requests(new Date(now_ms), new Date(week_later_ms)).then((json)=>{
+        res.status(200).json(json);
+    },(err)=>{
+        res.status(500).send(err.client_reason);
+    });
+
 });
 
 app.all('*', function(req, res){

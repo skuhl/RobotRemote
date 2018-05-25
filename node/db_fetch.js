@@ -29,12 +29,11 @@ module.exports = {
             if(num_requests <= 0 ){
                 connection.query('SELECT loginrequests.id, users.email, loginrequests.comment FROM users INNER JOIN loginrequests ON users.loginreq_id = loginrequests.id WHERE email_validated=1', [], function(err, res, fields){    
                     if(err){
-                        reject({
+                        return reject({
                             reason: 'Error selecting from loginrequests.',
                             client_reason: 'Internal database error.',
                             db_err: err
                         });
-                        return;
                     }
                     //Is this necessary? Could we just do json = res? 
                     for(let i = 0; i<res.length; i++){
@@ -50,7 +49,7 @@ module.exports = {
             }else{
                 connection.query('SELECT loginrequests.id, users.email, loginrequests.comment FROM users INNER JOIN loginrequests ON users.loginreq_id = loginrequests.id WHERE email_validated=1 LIMIT ? OFFSET ?', [num_requests, start_at], function(err, res, fields){    
                     if(err){
-                        reject({
+                        return reject({
                             reason: 'Error selecting from loginrequests.',
                             client_reason: 'Internal database error.',
                             db_err: err
@@ -69,5 +68,31 @@ module.exports = {
                 });
             }
         });
+    },
+    /*Timeframe */
+    user_get_timeslot_requests: function(beginDate, endDate){
+        return new Promise((resolve, reject) => {
+            connection.query('SELECT start_time, duration, approved, FROM timeslots WHERE start_time > ? AND start_time < ?', [beginDate, endDate], function(err, res, fields){
+                let json = [];
+                if(err){
+                    return reject({
+                        reason: 'Error selecting from timeslots.',
+                        client_reason: 'Internal database error.',
+                        db_err: err
+                    });
+                }
+
+                for(let i = 0; i<res.length; i++){
+                    json.push({
+                        starttime: res[i].start_time,
+                        duration: res[i].duration,
+                        accepted: res[i].approved
+                    });
+                }
+
+                resolve(json);
+            });
+        })
+        
     }
 }
