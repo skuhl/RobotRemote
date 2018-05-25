@@ -81,6 +81,7 @@ app.use(session({
 //routing
 app.use('/css', express.static(__dirname + '/www/css'));
 app.use('/js', express.static(__dirname +'/www/js'));
+app.use('/img', express.static(__dirname +'/www/img'));
 
 app.get('/', function(req, res){
     console.log("Redirect from / to /static/");
