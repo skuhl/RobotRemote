@@ -343,6 +343,8 @@ app.get('/timeslotrequests', function(req, res){
     db_fetch.user_get_timeslot_requests(new Date(now_ms), new Date(week_later_ms)).then((json)=>{
         res.status(200).json(json);
     },(err)=>{
+        console.log('Error fetching timeslot requests: ' + err.reason);
+        console.log(err.db_err);
         res.status(500).send(err.client_reason);
     });
 
@@ -354,7 +356,7 @@ app.all('*', function(req, res){
       req.session.error_status = 404;
 	}
 	let err_str = 'Page Not Found';
-   opts.afterNavbar = ()=>('<input id="errmsg" type="hidden" value="' + err_str + '"/>');
+    opts.afterNavbar = ()=>('<input id="errmsg" type="hidden" value="' + err_str + '"/>');
    
 	res.status(req.session.error_status).send(html_fetcher(__dirname + '/www/Error.html', opts));
 	req.session.error_status = undefined;
