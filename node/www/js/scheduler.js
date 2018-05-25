@@ -88,8 +88,7 @@ var req = new XMLHttpRequest();
 req.onreadystatechange = function(){
     if(req.readyState === 4 && req.status === 200){
         var i;
-        var res = req.response;
-        console.log(req.responseText);
+        var res = JSON.parts(req.response);
         console.log(req.response);
 
         //Parse into more easily digestable format
@@ -111,5 +110,5 @@ req.onreadystatechange = function(){
     }
 }
 
-req.open("GET", window.location.host + "/timeslotrequests", true);
+req.open("GET", 'http://' + window.location.host + "/timeslotrequests", true);
 req.send();
