@@ -72,7 +72,7 @@ module.exports = {
     /*Timeframe */
     user_get_timeslot_requests: function(beginDate, endDate){
         return new Promise((resolve, reject) => {
-            connection.query('SELECT start_time, duration, approved, FROM timeslots WHERE start_time > ? AND start_time < ?', [beginDate, endDate], function(err, res, fields){
+            connection.query('SELECT start_time, duration, approved FROM timeslots WHERE start_time > ? AND start_time < ?', [beginDate, endDate], function(err, res, fields){
                 let json = [];
                 if(err){
                     return reject({
