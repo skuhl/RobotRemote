@@ -55,7 +55,8 @@ var GenerateGrid = function(elements){
         html += '<tr>';
         for(j = 0; j < num_columns; j++){
             var table_class = '';
-            var row_date = new Date(start_day_date.value + i*time_quantum*60*1000);
+            var row_date = new Date(start_day_date.getTime() + i*time_quantum*60*1000);
+            print(row_date);
             var my_json = elements.mine.find(function(x){return row_date >= x.start_date && row_date <= x.end_date});
             var other_json = elements.others.find(function(x){return row_date >= x.start_date && row_date <= x.end_date});
             
