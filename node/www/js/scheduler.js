@@ -32,6 +32,23 @@ const month_index_to_string = {
     10: "Nov",
     11: "Dec"
 }
+/*
+Function which pads number to num_digits digits before the decimal point,
+using the give padding character.
+*/
+function PadNumber(num_digits, padding_character, number, precision){
+    var fixed_num_str = number.toFixed(precision);
+    var cur_num_digits = fixed_num_str.indexOf('.');
+    var num_padding_needed = cur_num_digits < 0 ? num_digits - fixed_num_str.length : num_digits - cur_num_digits;
+    var final_string = fixed_num_str;
+    var i;
+
+    for(i = 0; i < num_padding_needed; i++){
+        final_string = padding_character + final_string;
+    } 
+
+    return final_string;
+}
 
 var GenerateGrid = function(elements){
     let num_columns = num_days;
@@ -66,7 +83,7 @@ var GenerateGrid = function(elements){
                 table_class = other_json.accepted ? 'td_other_accepted' : 'td_other_pending';
             }
             html += '<td class="'+ table_class + '" onclick="GridMouseDown(this)" onmouseover="GridMouseOver(this)">';
-            html += ((row_date.getHours()%12)+1) + ':' + row_date.getMinutes(); 
+            html += PadNumber(2, '0', (row_date.getHours()%12)+1, 0) + ':' + PadNumber(2, '0', row_date.getMinutes(), 0); 
             html += '</td>';
         }
         html += '</tr>';
