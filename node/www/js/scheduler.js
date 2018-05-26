@@ -70,8 +70,8 @@ var GenerateGrid = function(elements){
             var table_class = '';
             //row date = start_day + j days + i time quantums. 24*60*60*1000 = 1 day in ms
             var element_date = new Date(start_day_date.getTime() + j*24*60*60*1000 + i*time_quantum*60*1000);
-            var my_json = elements.mine.find(function(x){return row_date >= x.start_date && row_date <= x.end_date});
-            var other_json = elements.others.find(function(x){return row_date >= x.start_date && row_date <= x.end_date});
+            var my_json = elements.mine.find(function(x){return element_date >= x.start_date && element_date <= x.end_date});
+            var other_json = elements.others.find(function(x){return element_date >= x.start_date && element_date <= x.end_date});
             
             if(my_json !== undefined){
                 table_class = my_json.accepted ? 'td_accepted' : 'td_pending';
