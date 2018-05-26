@@ -55,9 +55,10 @@ var GenerateGrid = function(elements){
     var i, j;
     //Generate days
     for(i = 0; i < num_days; i++){
-        html += '<th class="schedule_table_element schedule_table_cell"><span>' + day_index_to_string[start_date.getDay()] +
-        '</span><span>' + month_index_to_string[start_date.getMonth()] + 
-        '</span><span>' + start_date.getDate() + '</span></th>'; 
+        var col_date = new Date(start_day_date.getTime() + i*24*60*60*1000);
+        html += '<th class="schedule_table_element schedule_table_cell"><span>' + day_index_to_string[col_date.getDay()] +
+        '</span><span>' + month_index_to_string[col_date.getMonth()] + 
+        '</span><span>' + col_date.getDate() + '</span></th>'; 
     }
 
     html += '</tr>';
@@ -67,7 +68,8 @@ var GenerateGrid = function(elements){
         html += '<tr class="schedule_table_element schedule_table_row">';
         for(j = 0; j < num_columns; j++){
             var table_class = '';
-            var row_date = new Date(start_day_date.getTime() + i*time_quantum*60*1000);
+            //row date = start_day + j days + i time quantums. 24*60*60*1000 = 1 day in ms
+            var row_date = new Date(start_day_date.getTime() + j*24*60*60*1000 + i*time_quantum*60*1000);
             var my_json = elements.mine.find(function(x){return row_date >= x.start_date && row_date <= x.end_date});
             var other_json = elements.others.find(function(x){return row_date >= x.start_date && row_date <= x.end_date});
             
