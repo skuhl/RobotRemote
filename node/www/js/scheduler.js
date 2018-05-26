@@ -69,7 +69,7 @@ var GenerateGrid = function(elements){
         for(j = 0; j < num_columns; j++){
             var table_class = '';
             //row date = start_day + j days + i time quantums. 24*60*60*1000 = 1 day in ms
-            var row_date = new Date(start_day_date.getTime() + j*24*60*60*1000 + i*time_quantum*60*1000);
+            var element_date = new Date(start_day_date.getTime() + j*24*60*60*1000 + i*time_quantum*60*1000);
             var my_json = elements.mine.find(function(x){return row_date >= x.start_date && row_date <= x.end_date});
             var other_json = elements.others.find(function(x){return row_date >= x.start_date && row_date <= x.end_date});
             
@@ -107,14 +107,16 @@ req.onreadystatechange = function(){
         //Parse into more easily digestable format
         for(i = 0; i < res.mine.length; i++){
             res.mine[i].start_date = new Date(res.mine[i].starttime);
-            res.mine[i].end_date = new Date((new Date(res.mine[i].starttime)).value +
+            res.mine[i].end_date = new Date((new Date(res.mine[i].starttime)).getTime() +
                 res.mine[i].duration*1000);
+            console.log("Starts: " + res.mine[i].start_date + ", Ends: " + res.mine[i].end_date);
         }
 
         for(i = 0; i < res.others.length; i++){
             res.others[i].start_date = new Date(res.others[i].starttime);
-            res.others[i].end_date = new Date((new Date(res.others[i].starttime)).value +
+            res.others[i].end_date = new Date((new Date(res.others[i].starttime)).getTime() +
                 res.others[i].duration*1000);
+            console.log("Starts: " + res.others[i].start_date + ", Ends: " + res.others[i].end_date);
         }
 
         GenerateGrid(res);
