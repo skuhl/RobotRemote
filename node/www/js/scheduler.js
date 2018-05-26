@@ -50,7 +50,7 @@ var GenerateGrid = function(elements){
     let num_rows = (24*60)/time_quantum;
     let start_time = Date.now();
     let start_date = new Date(start_time);
-    var start_day_date = new Date(start_date.getFullYear(), start_date.getMonth(), start_date.getDay());
+    var start_day_date = new Date(start_date.getFullYear(), start_date.getMonth(), start_date.getDate());
     var html = '<table id="schedule_table" class="schedule_table_element"><tr class="schedule_table_element schedule_table_row">'
     var i, j;
     //Generate days
@@ -87,8 +87,6 @@ var GenerateGrid = function(elements){
     html += '<table>';
 
     document.getElementsByTagName("body")[0].innerHTML += html;
-
-    console.log(html);
 }
 
 var GridMouseDown = function(element){
@@ -105,7 +103,6 @@ req.onreadystatechange = function(){
     if(req.readyState === 4 && req.status === 200){
         var i;
         var res = JSON.parse(req.response);
-        console.log(req.response);
 
         //Parse into more easily digestable format
         for(i = 0; i < res.mine.length; i++){
