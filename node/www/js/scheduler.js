@@ -72,7 +72,9 @@ var GenerateGrid = function(elements){
     }
     html += '<table>';
 
-    document.getElementsByTagName("body").innerHTML += html;
+    document.getElementsByTagName("body")[0].innerHTML += html;
+
+    console.log(html);
 }
 
 var GridMouseDown = function(element){
