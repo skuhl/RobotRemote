@@ -65,7 +65,7 @@ var GenerateGrid = function(elements){
                 table_class = other_json.accepted ? 'td_other_accepted' : 'td_other_pending';
             }
             html += '<td class="'+ table_class + '" onclick="GridMouseDown(this)" onmouseover="GridMouseOver(this)">';
-            html += ((row_date.getHours%12)+1) + ':' + row_date.getMinutes(); 
+            html += ((row_date.getHours()%12)+1) + ':' + row_date.getMinutes(); 
             html += '</td>';
         }
         html += '</tr>';
