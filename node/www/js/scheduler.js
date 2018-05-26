@@ -79,7 +79,7 @@ var GenerateGrid = function(elements){
                 table_class = other_json.accepted ? 'td_other_accepted' : 'td_other_pending';
             }
             html += '<td class="'+ table_class + ' schedule_table_element schedule_table_cell" onclick="GridMouseDown(this)" onmouseover="GridMouseOver(this)">';
-            html += PadNumber(2, '0', (row_date.getHours()%12)+1, 0) + ':' + PadNumber(2, '0', row_date.getMinutes(), 0); 
+            html += PadNumber(2, '0', (element_date.getHours()%12)+1, 0) + ':' + PadNumber(2, '0', element_date.getMinutes(), 0); 
             html += '</td>';
         }
         html += '</tr>';
