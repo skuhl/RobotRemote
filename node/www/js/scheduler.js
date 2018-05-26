@@ -2,11 +2,6 @@ var mouse_down = false;
 
 const time_quantum = 30; /*Time quantum in minutes */
 const num_days = 7; /*Number of days to display*/
-const my_slot_request_color = '#1c22ea';
-const my_slot_accepted_color = '#23ea1c';
-const other_slot_requested_color = '#fcf802';
-const other_slot_accepted_color = '#ea1c1c';
-const cur_selection_color = '#fca801';
 
 const day_index_to_string = {
     0: "Sun",
@@ -56,11 +51,11 @@ var GenerateGrid = function(elements){
     let start_time = Date.now();
     let start_date = new Date(start_time);
     var start_day_date = new Date(start_date.getFullYear(), start_date.getMonth(), start_date.getDay());
-    var html = '<table><tr>'
+    var html = '<table id="schedule_table" class="schedule_table_element"><tr class="schedule_table_element schedule_table_row">'
     var i, j;
     //Generate days
     for(i = 0; i < num_days; i++){
-        html += '<th><span>' + day_index_to_string[start_date.getDay()] +
+        html += '<th class="schedule_table_element schedule_table_cell"><span>' + day_index_to_string[start_date.getDay()] +
         '</span><span>' + month_index_to_string[start_date.getMonth()] + 
         '</span><span>' + start_date.getDate() + '</span></th>'; 
     }
@@ -69,7 +64,7 @@ var GenerateGrid = function(elements){
 
     //Generate elements for dates 
     for( i = 0; i < num_rows; i++){
-        html += '<tr>';
+        html += '<tr class="schedule_table_element schedule_table_row">';
         for(j = 0; j < num_columns; j++){
             var table_class = '';
             var row_date = new Date(start_day_date.getTime() + i*time_quantum*60*1000);
@@ -81,7 +76,7 @@ var GenerateGrid = function(elements){
             }else if(other_json !== undefined){
                 table_class = other_json.accepted ? 'td_other_accepted' : 'td_other_pending';
             }
-            html += '<td class="'+ table_class + '" onclick="GridMouseDown(this)" onmouseover="GridMouseOver(this)">';
+            html += '<td class="'+ table_class + ' schedule_table_element schedule_table_cell" onclick="GridMouseDown(this)" onmouseover="GridMouseOver(this)">';
             html += PadNumber(2, '0', (row_date.getHours()%12)+1, 0) + ':' + PadNumber(2, '0', row_date.getMinutes(), 0); 
             html += '</td>';
         }
