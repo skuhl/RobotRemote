@@ -15,7 +15,9 @@ const MySQLStore = require('express-mysql-session')(session);
 
 const options = require('./settings.json');
 
-const smtpTransport = nodemailer.createTransport({
+const smtpTransport = 
+options["smtp_auth"] ?
+nodemailer.createTransport({
     host: options['smtp_host'],
     port: options['smtp_port'],
     secure: options['smtp_tls'],
@@ -23,7 +25,13 @@ const smtpTransport = nodemailer.createTransport({
         user: options['smtp_username'],
         pass: options['smtp_password']
     }
-});
+}) :
+nodemailer.createTransport({
+    host: options['smtp_host'],
+    port: options['smtp_port'],
+    secure: options['smtp_tls'],
+})
+;
 
 if(options['debug']){
     console.log('WARNING: Server was started in debug mode. This is insecure, and meant only for testing purposes.');
