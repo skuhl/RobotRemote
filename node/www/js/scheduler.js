@@ -112,7 +112,7 @@ var GenerateGrid = function(elements){
         }
         html += '</tr>';
     }
-    html += '<table>';
+    html += '</table>';
 
     document.getElementsByTagName("body")[0].innerHTML += html;
 }
