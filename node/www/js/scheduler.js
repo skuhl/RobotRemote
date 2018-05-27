@@ -1,9 +1,14 @@
 var mouse_down = false;
+var mode = null;
+var max_quantums = 24;
 
-const time_quantum = 30; /*Time quantum in minutes */
-const num_days = 7; /*Number of days to display*/
+var select_begin_index = -1;
+var select_end_index = -1;
 
-const day_index_to_string = {
+var time_quantum = 30; /*Time quantum in minutes */
+var num_days = 7; /*Number of days to display*/
+
+var day_index_to_string = {
     0: "Sun",
     1: "Mon",
     2: "Tues",
@@ -13,7 +18,7 @@ const day_index_to_string = {
     6: "Sat"
 }
 
-const month_index_to_string = {
+var month_index_to_string = {
     0: "Jan",
     1: "Feb",
     2: "Mar",
@@ -51,14 +56,14 @@ var GenerateGrid = function(elements){
     let start_time = Date.now();
     let start_date = new Date(start_time);
     var start_day_date = new Date(start_date.getFullYear(), start_date.getMonth(), start_date.getDate());
-    var html = '<table id="schedule_table" class="schedule_table_element"><tr class="schedule_table_element schedule_table_row">'
+    var html = '<table id="schedule_table" class="schedule_table_element" onmouseleave="TableLeave(this)" onmouseup="TableMouseUp(this)" ><tr class="schedule_table_element schedule_table_row">'
     var i, j;
     //Generate days
     for(i = 0; i < num_days; i++){
         var col_date = new Date(start_day_date.getTime() + i*24*60*60*1000);
-        html += '<th class="schedule_table_element schedule_table_cell"><span>' + day_index_to_string[col_date.getDay()] +
-        '</span><span>' + month_index_to_string[col_date.getMonth()] + 
-        '</span><span>' + col_date.getDate() + '</span></th>'; 
+        html += '<th class="schedule_table_element schedule_table_cell"><span class="block">' + day_index_to_string[col_date.getDay()] +
+        '</span><span class="block">' + month_index_to_string[col_date.getMonth()] + 
+        '</span><span class="block">' + col_date.getDate() + '</span></th>'; 
     }
 
     html += '</tr>';
@@ -72,13 +77,27 @@ var GenerateGrid = function(elements){
             var element_date = new Date(start_day_date.getTime() + j*24*60*60*1000 + i*time_quantum*60*1000);
             var my_json = elements.mine.find(function(x){return element_date >= x.start_date && element_date <= x.end_date});
             var other_json = elements.others.find(function(x){return element_date >= x.start_date && element_date <= x.end_date});
-            
+            var can_select = true;
+
             if(my_json !== undefined){
                 table_class = my_json.accepted ? 'td_accepted' : 'td_pending';
+                can_select = !my_json.accepted;
             }else if(other_json !== undefined){
                 table_class = other_json.accepted ? 'td_other_accepted' : 'td_other_pending';
+                can_select = !other_json.accepted;
             }
-            html += '<td class="'+ table_class + ' schedule_table_element schedule_table_cell" onclick="GridMouseDown(this)" onmouseover="GridMouseOver(this)">';
+
+            html += '<td id = "schedule-' +
+                    (j*num_rows + i) +
+                    '" class="' + 
+                    table_class + 
+                    ' schedule_table_element schedule_table_cell" date="' + 
+                    element_date.toISOString() +
+                    '" index="' + 
+                    (j*num_rows + i) + 
+                    '" can_select="' +
+                    can_select +
+                    '" onmousedown="GridMouseDown(this)" onmouseover="GridMouseOver(this)">';
             html += PadNumber(2, '0', (element_date.getHours()%12)+1, 0) + ':' + PadNumber(2, '0', element_date.getMinutes(), 0); 
             html += '</td>';
         }
@@ -89,12 +108,110 @@ var GenerateGrid = function(elements){
     document.getElementsByTagName("body")[0].innerHTML += html;
 }
 
+function SelectElement(element){
+    element.setAttribute('old_class', element.getAttribute('class'));
+    element.setAttribute('class', "td_selected schedule_table_element schedule_table_cell");
+}
+
+function DeselectElement(element){
+    element.setAttribute('class', element.getAttribute('old_class'));
+}
+
 var GridMouseDown = function(element){
-    console.log(element);
+
+    mouse_down = true;
+
+    var index = Number.parseInt(element.getAttribute('index'));
+    
+    if(index == select_end_index){
+        //Deselect
+        select_end_index-=1;
+        if(select_end_index < select_begin_index){
+            select_begin_index = select_end_index = -1;
+        }
+        mode = 'deselect';
+        DeselectElement(element);
+    }else if(index == select_begin_index){
+        //Deslect
+        select_begin_index+=1;
+        if(select_end_index < select_begin_index){
+            select_begin_index = select_end_index = -1;
+        }
+        mode = 'deselect';
+        DeselectElement(element);
+    }else if(select_begin_index < 0 || select_end_index < 0){
+        //select
+        select_begin_index = select_end_index = index;
+        mode = 'select';
+        SelectElement(element);
+    }else if(select_begin_index - 1 == index){
+        //select
+        if((select_end_index - select_begin_index + 1) >= max_quantums || element.getAttribute('can_select') == 'false'){
+            return;
+        }
+        select_begin_index -= 1;
+        mode = 'select';
+        SelectElement(element);
+    }else if(select_end_index + 1 == index){
+        //select
+        if((select_end_index - select_begin_index + 1) >= max_quantums || element.getAttribute('can_select') == 'false'){
+            return;
+        }
+        select_end_index += 1;
+        mode = 'select';
+        SelectElement(element);
+    }
 }
 
 var GridMouseOver = function(element){
+    var index = Number.parseInt(element.getAttribute('index'));
+    if(mouse_down){
+        if(mode == 'select'){
+            if(select_begin_index < 0 || select_end_index < 0){
+                //select
+                select_begin_index = select_end_index = index;
+                SelectElement(element);
+            }else if(select_begin_index - 1 == index){
+                //select
+                if((select_end_index - select_begin_index + 1) >= max_quantums || element.getAttribute('can_select') == 'false'){
+                    return;
+                }
+                select_begin_index -= 1;
+                SelectElement(element);
+            }else if(select_end_index + 1 == index){
+                //select
+                if((select_end_index - select_begin_index + 1) >= max_quantums || element.getAttribute('can_select') == 'false'){
+                    return;
+                }
+                select_end_index += 1;
+                SelectElement(element);
+            }
+        }else if(mode == 'deselect'){
+            if(index == select_end_index){
+                //Deselect
+                select_end_index-=1;
+                if(select_end_index < select_begin_index){
+                    select_begin_index = select_end_index = -1;
+                }
+                DeselectElement(element);
+            }else if(index == select_begin_index){
+                //Deslect
+                select_begin_index+=1;
+                if(select_end_index < select_begin_index){
+                    select_begin_index = select_end_index = -1;
+                }
+                DeselectElement(element);
+            }
+        }
+    }
+}
 
+var TableMouseUp = function(table){
+    mouse_down = false;
+}
+
+var TableLeave = function(table) {
+    mouse_down = false;
 }
 
 var req = new XMLHttpRequest();
