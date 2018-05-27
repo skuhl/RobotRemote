@@ -6,7 +6,7 @@ var select_begin_index = -1;
 var select_end_index = -1;
 
 var time_quantum = 30; /*Time quantum in minutes */
-var num_days = 7; /*Number of days to display*/
+var num_days = 14; /*Number of days to display*/
 
 var day_index_to_string = {
     0: "Sun",
@@ -50,6 +50,12 @@ function PadNumber(num_digits, padding_character, number, precision){
     return final_string;
 }
 
+function Hour24To12(hour){
+    if(hour == 0) return 12;
+    if(hour > 12) return hour % 12;
+    return hour;
+}
+
 var GenerateGrid = function(elements){
     let num_columns = num_days;
     let num_rows = (24*60)/time_quantum;
@@ -86,6 +92,9 @@ var GenerateGrid = function(elements){
                 table_class = other_json.accepted ? 'td_other_accepted' : 'td_other_pending';
                 can_select = !other_json.accepted;
             }
+            if(element_date < start_date){
+                can_select = false;
+            }
 
             html += '<td id = "schedule-' +
                     (j*num_rows + i) +
@@ -98,7 +107,7 @@ var GenerateGrid = function(elements){
                     '" can_select="' +
                     can_select +
                     '" onmousedown="GridMouseDown(this)" onmouseover="GridMouseOver(this)">';
-            html += PadNumber(2, '0', (element_date.getHours()%12)+1, 0) + ':' + PadNumber(2, '0', element_date.getMinutes(), 0); 
+            if(element_date >= start_date) html += PadNumber(2, '0', Hour24To12(element_date.getHours()%12), 0) + ':' + PadNumber(2, '0', element_date.getMinutes(), 0); 
             html += '</td>';
         }
         html += '</tr>';
@@ -141,6 +150,7 @@ var GridMouseDown = function(element){
         DeselectElement(element);
     }else if(select_begin_index < 0 || select_end_index < 0){
         //select
+        if(element.getAttribute('can_select') == 'false') return;
         select_begin_index = select_end_index = index;
         mode = 'select';
         SelectElement(element);
@@ -169,6 +179,7 @@ var GridMouseOver = function(element){
         if(mode == 'select'){
             if(select_begin_index < 0 || select_end_index < 0){
                 //select
+                if(element.getAttribute('can_select') == 'false') return;
                 select_begin_index = select_end_index = index;
                 SelectElement(element);
             }else if(select_begin_index - 1 == index){
