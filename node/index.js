@@ -383,6 +383,9 @@ app.post('/requesttimeslot', function(req, res){
         return;
     }
     //TODO validate that requested time isn't too far in the future.
+    //TODO validate that requested time starts on a valid point
+    //TODO validated that the requested time duration is a multiple of the time quantum
+    //TODO validate that the requested time doesn't overlap with a current request by the logged in user.
     if(req.body.start_time < Date.now()){
         res.status(400).send('Start time before current time.');
     }
