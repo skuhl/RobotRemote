@@ -6,7 +6,7 @@ var select_begin_index = -1;
 var select_end_index = -1;
 
 var time_quantum = 60; /*Time quantum in minutes */
-var num_days = 14; /*Number of days to display*/
+var num_days = 7; /*Number of days to display*/
 
 var day_index_to_string = {
     0: "Sun",
