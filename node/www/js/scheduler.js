@@ -59,6 +59,8 @@ function Hour24To12(hour){
 var GenerateTable = function(my_elements){
     var html = '';
     
+    if(my_elements.length == 0) document.getElementById('my_req_table').style.display = "none";
+
     for(var i = 0; i < my_elements.length; i++){
         let start = my_elements[i].start_date;
         let end = my_elements[i].end_date;
@@ -87,7 +89,9 @@ var DeleteTimeslot = function(id){
     xhr.onreadystatechange = function(){
         if(this.readyState === 4 && this.status === 200){
             var elem = document.getElementById('request_table_row_' + id);
-            elem.parentElement.removeChild(elem);
+            var parent = elem.parentElement;
+            parent.removeChild(elem);
+            //TODO remove table if no more elements in it.
             console.log("Deleted " + id);
         }else if(this.readyState === 4){
             console.log('Error, couldn\'t delete!');
