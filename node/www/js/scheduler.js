@@ -58,10 +58,11 @@ function Hour24To12(hour){
 
 var GenerateTable = function(my_elements){
     var html = '';
+    
     for(var i = 0; i < my_elements.length; i++){
         let start = my_elements[i].start_date;
         let end = my_elements[i].end_date;
-        html+='<tr class="request_table_row request_table_element">';
+        html+='<tr id="request_table_row_'+ my_elements[i].id +'"class="request_table_row request_table_element">';
         //TODO pretty print dates?
         html+='<td class="request_table_element request_table_cell">' + (start.getMonth()+1) + '/' + start.getDate() + '/' + start.getFullYear() + 
         ' ' + PadNumber(2, '0', Hour24To12(start.getHours()), 0) + ':' + PadNumber(2, '0', start.getMinutes(), 0) +  ' ' + 
@@ -75,11 +76,27 @@ var GenerateTable = function(my_elements){
         html+='<td class="request_table_element request_table_cell"><button class="delete_button" onclick="DeleteTimeslot(' + my_elements[i].id + ')">Delete</button></td>';
         html+='</tr>';
     }
+
     document.getElementById('my_req_table').innerHTML += html;
 }
 
 var DeleteTimeslot = function(id){
     console.log('Deleting ' + id);
+    var xhr = new XMLHttpRequest();
+
+    xhr.onreadystatechange = function(){
+        if(this.readyState === 4 && this.status === 200){
+            var elem = document.getElementById('request_table_row_' + id);
+            elem.parentElement.removeChild(elem);
+            console.log("Deleted " + id);
+        }else if(this.readyState === 4){
+            console.log('Error, couldn\'t delete!');
+            console.log(this.responseText);
+        }
+    }
+
+    xhr.open("GET", 'http://' + window.location.host + "/deletetimeslot/" + id, true);
+    xhr.send();
 }
 
 var GenerateGrid = function(elements){
@@ -267,23 +284,23 @@ var SubmitSelected = function(){
     var duration = (select_end_index - select_begin_index + 1) * time_quantum * 60 * 1000;
 
     xhr.onreadystatechange = function(){
-        if(req.readyState === 4 && req.status === 200){
+        if(this.readyState === 4 && this.status === 200){
             document.getElementById('table_msg').innerText = "Successfully requested timeslot!";
             //Update table (or remake it, or something)
             console.log('Success!');
-        }else if(req.readyState === 4){
+        }else if(this.readyState === 4){
             document.getElementById('table_msg').innerText = "Error submitting timeslot request!";
         }
 
-        if(req.readyState === 4){
-            //I don't know why 
+        if(this.readyState === 4){
+            //I don't know why, but this doesn't work if it's too quick.
             setTimeout(function(){
                 document.getElementById('req_submit').disabled = false;
             }, 1000);
         }
     }
 
-    xhr.open("POST",'http://' + window.location.host + '/requesttimeslot');
+    xhr.open("POST",'http://' + window.location.host + '/requesttimeslot', true);
     xhr.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
     document.getElementById('req_submit').disabled = true;
     xhr.send(JSON.stringify({start_time: begin_utc_time, duration: duration}));
@@ -292,9 +309,9 @@ var SubmitSelected = function(){
 var req = new XMLHttpRequest();
 
 req.onreadystatechange = function(){
-    if(req.readyState === 4 && req.status === 200){
+    if(this.readyState === 4 && this.status === 200){
         var i;
-        var res = JSON.parse(req.response);
+        var res = JSON.parse(this.response);
 
         //Parse into more easily digestable format
         for(i = 0; i < res.mine.length; i++){
@@ -312,8 +329,9 @@ req.onreadystatechange = function(){
         }
         GenerateTable(res.mine);
         GenerateGrid(res);
-    }else if(req.readyState === 4){
+    }else if(this.readyState === 4){
         console.log('Error getting timeslot requests.');
+        console.log(this.responseText);
     }
 }
 
