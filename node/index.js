@@ -406,6 +406,11 @@ app.get('/timeslotrequests', function(req, res){
     Endpoint for timeslot request. Client needs to 
     provide start time in milliseconds since the unix epoch, and duration in milliseconds.
 */
+//These should match the ones in scheduler.js
+const time_quantum = 60;
+const max_quantums = 8;
+const num_days = 7;
+
 app.post('/requesttimeslot', function(req, res){ 
     if(!req.session.loggedin){
         res.status(403).send('Not logged in!');
@@ -421,15 +426,34 @@ app.post('/requesttimeslot', function(req, res){
         res.status(400).send('Invalid request paramaters.');
         return;
     }
-    //TODO validate that requested time isn't too far in the future.
-    //TODO validate that requested time starts on a valid point
-    //TODO validated that the requested time duration is a multiple of the time quantum
-    //TODO validate that the requested time doesn't overlap with a current request by the logged in user.
+
     if(req.body.start_time < Date.now()){
         res.status(400).send('Start time before current time.');
+        return;
+    }
+    
+    if(req.body.start_time > Date.now() + num_days*24*60*60*1000){
+        res.status(400).send('Requested date too far in the future.');
+        return;
     }
 
     let date = new Date(req.body.start_time);
+    //TODO make this check more robust
+    //This should check that it starts on a time quantum
+    if((date.getMinutes() % time_quantum) != 0){
+        res.status(400).send('Requested time not a multiple of the time quantum');
+        return;
+    }
+
+    if((req.body.duration / (1000 * 60)) % time_quantum != 0){
+        res.status(400).send('Bad duration (not a multiple of the time quantum)');
+        return;
+    }
+
+    if(req.body.duration > max_quantums*time_quantum*60*1000){
+        res.status(400).send('Bad duration (duration too large)');
+        return;
+    }
 
     db_fetch.add_request(date, (req.body.duration / 1000) - 1, req.session.user_id).then((val) => {
         res.status(200).send("Success");
