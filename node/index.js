@@ -372,7 +372,7 @@ app.post('/requesttimeslot', function(req, res){
         res.status(403).send('Not logged in!');
         return;
     }
-    console.log(req.body);
+    
     if(req.body.start_time === undefined || req.body.duration === undefined){
         res.status(400).send('Missing request paramaters.');
         return;
@@ -391,8 +391,7 @@ app.post('/requesttimeslot', function(req, res){
     }
 
     let date = new Date(req.body.start_time);
-    
-    console.log(date);
+
 
     db_fetch.add_request(date, (req.body.duration / 1000) - 1, req.session.user_id).then((val) => {
         res.status(200).send("Success");

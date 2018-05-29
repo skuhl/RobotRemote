@@ -125,7 +125,6 @@ module.exports = {
                         db_err: err
                     });
                 } 
-                console.log(res);
                 resolve(res[0]['count(*)'] != 0);
                  
             });
@@ -151,7 +150,6 @@ module.exports = {
                         db_err: err
                     });
                 } 
-                console.log(res);
                 resolve(res[0]['count(*)'] != 0);
                  
             });
