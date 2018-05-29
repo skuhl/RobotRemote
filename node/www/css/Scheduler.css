@@ -16,13 +16,17 @@
     background-color: #d2d2d2;
 }
 
+.request_table_row:nth-child(odd) {
+    background-color: white;
+}
+
 .request_table_cell{
     padding: 0 15px 0 15px;
 }
 
 #schedule_table {
     border-collapse: collapse;
-    margin: 20px auto 20px auto;
+    margin: 20px 20px 20px auto;
 }
 
 .schedule_table_element {
@@ -42,11 +46,15 @@
     background-color: #d2d2d2;
 }
 
+.schedule_table_row:nth-child(odd) {
+    background-color: white;
+}
+
 #schedule_key {
-   display:inline-block;
-   margin: 0 20px 0 0;
-   text-align: center;
-   float: right;
+    display: inline-block;
+    position: fixed;
+    text-align: center;
+    margin: 0 0 0 8%;
 }
 
 .td_accepted {
