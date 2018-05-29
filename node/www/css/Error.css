@@ -1,6 +1,22 @@
 #error{
-   position: absolute;
+    position:absolute;
+    width: 400px;
+    top: 50%;
+    left: 50%;
+    margin-top: -140px;
+    margin-left: -170px;
+    background: #fff;
+    border-radius: 3px;
+    border: 1px solid #ccc;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, .1);
+}
+
+#error_text {
    font-size: -webkit-xxx-large;
-   top: 30%;
-   left: 50%;
+   text-align:center;
+   padding: 15px 0 15px 0;
+}
+
+#help_message {
+   padding: 0 10px 10px 10px;
 }
