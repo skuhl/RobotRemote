@@ -87,11 +87,13 @@ var GenerateGrid = function(elements){
 
             if(my_json !== undefined){
                 table_class = my_json.accepted ? 'td_accepted' : 'td_pending';
-                can_select = !my_json.accepted;
+                //Can't select them if they are already ours.
+                can_select = false;
             }else if(other_json !== undefined){
                 table_class = other_json.accepted ? 'td_other_accepted' : 'td_other_pending';
                 can_select = !other_json.accepted;
             }
+
             if(element_date < start_date){
                 can_select = false;
             }
@@ -248,6 +250,7 @@ var SubmitSelected = function(){
         }
 
         if(req.readyState === 4){
+            //I don't know why 
             setTimeout(function(){
                 document.getElementById('req_submit').disabled = false;
             }, 1000);
