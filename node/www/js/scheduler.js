@@ -64,7 +64,7 @@ var GenerateGrid = function(elements){
     var start_day_date = new Date(start_date.getFullYear(), start_date.getMonth(), start_date.getDate());
     var html = '<table id="schedule_table" class="schedule_table_element" onmouseleave="TableLeave(this)" onmouseup="TableMouseUp(this)" ><tr class="schedule_table_element schedule_table_row">'
     var i, j;
-    //Generate days
+    //Generate days (headers)
     for(i = 0; i < num_days; i++){
         var col_date = new Date(start_day_date.getTime() + i*24*60*60*1000);
         html += '<th class="schedule_table_element schedule_table_cell"><span class="block">' + day_index_to_string[col_date.getDay()] +
@@ -74,7 +74,7 @@ var GenerateGrid = function(elements){
 
     html += '</tr>';
 
-    //Generate elements for dates 
+    //Generate elements for dates (table cells) 
     for( i = 0; i < num_rows; i++){
         html += '<tr class="schedule_table_element schedule_table_row">';
         for(j = 0; j < num_columns; j++){

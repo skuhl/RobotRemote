@@ -105,9 +105,36 @@ module.exports = {
         })
         
     },
+    //date is a date object that is the start time, duration is duration in seconds.
+    does_request_overlap_own: async function(date, duration, user_id){
+        /*
+            check if begin time or end time is between any of the users own..
+        */
+        return new Promise((resolve, reject) => {
+            let start_date = date;
+            let end_date = new Date(date.getTime() + duration*1000);
+            connection.query("SELECT count(*) FROM timeslots WHERE user_id=? AND"+
+                " ((start_time <= ? AND DATE_ADD(start_time, INTERVAL duration SECOND) >= ?)"+
+                " OR (start_time <= ? AND DATE_ADD(start_time, INTERVAL duration SECOND) >= ?))",
+            [user_id, start_date, start_date, end_date, end_date], 
+            function(err, res, fields){
+                if(err){
+                    return reject({
+                        reason: 'Error selecting from timeslots.',
+                        client_reason: 'Internal database error.',
+                        db_err: err
+                    });
+                } 
+                console.log(res);
+                resolve(res[0]['count(*)'] != 0);
+                 
+            });
+        });
+    },
+    //date is a date object that is the start time, duration is duration in seconds.
     does_request_overlap_accepted: async function(date, duration){
         /*
-            check if begin time or end time is between any others. 
+            check if begin time or end time is between any approved others. 
         */
         return new Promise((resolve, reject) => {
             let start_date = date;
@@ -130,10 +157,12 @@ module.exports = {
             });
         });
     },
+    //date is a date object that is the start time, duration is duration in seconds.
     add_request: async function(date, duration, user_id){
         let self = this;
         return new Promise((resolve, reject) => {
-            let ret = {};
+            let overlap_accepted = null;
+            let overlap_own = null;
             //This needs to be transactional; 2 connections that read then insert could conflict (first one reads, second reads, both attempt to insert).
             connection.beginTransaction(async function(err){
                 if(err){
@@ -145,12 +174,13 @@ module.exports = {
                 }
 
                 try {
-                    ret = await self.does_request_overlap_accepted(date, duration);
+                    overlap_accepted = await self.does_request_overlap_accepted(date, duration);
+                    overlap_own = await self.does_request_overlap_own(date, duration, user_id);
                 }catch(error){
                     return connection.rollback(function(){reject(error)});
                 }
 
-                if(ret !== false){
+                if(overlap_accepted !== false || overlap_own !== false){
                     return connection.rollback(function(){
                         reject({
                             reason: 'Timeslot already taken!',
