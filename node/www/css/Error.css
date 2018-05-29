@@ -1,6 +1,19 @@
 #error{
-   position: absolute;
+    position:absolute;
+    width: 400px;
+    top: 50%;
+    left: 50%;
+    margin-top: -140px;
+    margin-left: -170px;
+}
+
+#error_text {
    font-size: -webkit-xxx-large;
-   top: 30%;
-   left: 50%;
+   text-align:center;
+   padding: 15px 0 15px 0;
+}
+
+#help_message {
+   padding: 0 20px 10px 20px;
+   text-align: justify;
 }
