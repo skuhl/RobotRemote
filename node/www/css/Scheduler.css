@@ -17,7 +17,7 @@
 }
 
 .request_table_row:nth-child(odd) {
-    background-color: white;
+    background-color: #f0f0f0;
 }
 
 .request_table_cell{
@@ -25,8 +25,9 @@
 }
 
 #schedule_table {
-    border-collapse: collapse;
-    margin: 20px 20px 20px auto;
+   border-collapse: collapse;
+   position: relative;
+   margin: 20px auto 20px auto;
 }
 
 .schedule_table_element {
@@ -47,7 +48,7 @@
 }
 
 .schedule_table_row:nth-child(odd) {
-    background-color: white;
+    background-color: #f0f0f0;
 }
 
 #schedule_key {
