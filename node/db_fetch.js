@@ -72,7 +72,7 @@ module.exports = {
     /*Timeframe */
     user_get_timeslot_requests: async function(beginDate, endDate, email){
         return new Promise((resolve, reject) => {
-            connection.query('SELECT users.email, timeslots.start_time, timeslots.duration, timeslots.approved FROM users INNER JOIN timeslots ON users.id = timeslots.user_id WHERE start_time > ? AND start_time < ?', [beginDate, endDate], function(err, res, fields){
+            connection.query('SELECT timeslots.id, users.email, timeslots.start_time, timeslots.duration, timeslots.approved FROM users INNER JOIN timeslots ON users.id = timeslots.user_id WHERE start_time > ? AND start_time < ?', [beginDate, endDate], function(err, res, fields){
                 let mine = [];
                 let others = [];
                 if(err){
@@ -86,6 +86,7 @@ module.exports = {
                 for(let i = 0; i<res.length; i++){
                     if(res[i].email == email){
                         mine.push({
+                            id: res[i].id,
                             starttime: res[i].start_time,
                             duration: res[i].duration,
                             accepted: res[i].approved
@@ -211,6 +212,27 @@ module.exports = {
                         resolve('Succesfully inserted.');
                     });
                 });
+            });
+        });
+    },
+    delete_request: function(req_id, user_id){
+        return new Promise((resolve, reject)=>{
+            connection.query("DELETE FROM timeslots WHERE user_id=? AND id=?", [user_id, req_id], function(err, res, fields){
+                if(err){
+                    return reject({
+                        reason: 'Could not delete!',
+                        client_reason: 'Internal database error.',
+                        db_err: err
+                    });
+                }
+
+                if(res.affectedRows <= 0){
+                    return reject({
+                        reason: 'Could not delete! Already deleted OR attempt to delete when it was not their request.',
+                        client_reason: 'Already deleted!'
+                    });
+                }
+                resolve();
             });
         });
     }

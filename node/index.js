@@ -155,6 +155,7 @@ app.post('/Login.html', function(req, res){
     }
 
     user_auth.verify_credentials(req.body.username, req.body.password).then((info)=>{
+        req.session.loggedin = true;
         req.session.email = req.body.username;
         req.session.is_admin = info.is_admin;
         req.session.user_id = info.id;
@@ -170,6 +171,7 @@ app.post('/Login.html', function(req, res){
 });
 
 app.get('/Logout', function(req, res){
+    req.session.loggedin = false;
     delete req.session;
     res.status(200).send('deleted session');
 });
@@ -229,6 +231,10 @@ app.get('/verify', function(req,res){
 });
 
 app.get('/admin/Admin.html', function(req, res){
+    if(!req.session.loggedin){
+        res.redirect(302, '/Login.html');
+        return;
+    }
     if(req.session.is_admin === undefined){
         res.redirect(302, '/Login.html');
         return;
@@ -248,6 +254,10 @@ app.get('/admin/Admin.html', function(req, res){
     }
 */
 app.get('/admin/loginrequests', function(req, res){
+    if(!req.session.loggedin){
+        res.redirect(302, '/Login.html');
+        return;
+    }
     if(req.session.is_admin === undefined){
         res.redirect(302, '/Login.html');
         return;
@@ -274,6 +284,10 @@ app.get('/admin/loginrequests', function(req, res){
     }
 */
 app.get('/admin/timeslotrequests', function(req, res){
+    if(!req.session.loggedin){
+        res.redirect(302, '/Login.html');
+        return;
+    }
     if(req.session.is_admin === undefined){
         res.redirect(302, '/Login.html');
         return;
@@ -287,6 +301,10 @@ app.get('/admin/timeslotrequests', function(req, res){
     Request to reject login request with given id
 */
 app.get('/admin/rejectloginrequest/:id', function(req, res){
+    if(!req.session.loggedin){
+        res.redirect(302, '/Login.html');
+        return;
+    }
     if(req.session.is_admin === undefined){
         res.redirect(302, '/Login.html');
         return;
@@ -300,6 +318,10 @@ app.get('/admin/rejectloginrequest/:id', function(req, res){
     Request to accept login request with given id
 */
 app.get('/admin/acceptloginrequest/:id', function(req, res){
+    if(!req.session.loggedin){
+        res.redirect(302, '/Login.html');
+        return;
+    }
     if(req.session.is_admin === undefined){
         res.redirect(302, '/Login.html');
         return;
@@ -313,6 +335,10 @@ app.get('/admin/acceptloginrequest/:id', function(req, res){
     Request to reject timeslot request with given id
 */
 app.get('/admin/rejecttimeslotrequest/:id', function(req, res){
+    if(!req.session.loggedin){
+        res.redirect(302, '/Login.html');
+        return;
+    }
     if(req.session.is_admin === undefined){
         res.redirect(302, '/Login.html');
         return;
@@ -326,6 +352,10 @@ app.get('/admin/rejecttimeslotrequest/:id', function(req, res){
     Request to accept timeslot request with given id
 */
 app.get('/admin/accepttimeslotrequest/:id', function(req, res){
+    if(!req.session.loggedin){
+        res.redirect(302, '/Login.html');
+        return;
+    }
     if(req.session.is_admin === undefined){
         res.redirect(302, '/Login.html');
         return;
@@ -345,7 +375,7 @@ app.get('/admin/accepttimeslotrequest/:id', function(req, res){
 */
 app.get('/timeslotrequests', function(req, res){
     
-    if(req.session.email === undefined){
+    if(!req.session.loggedin){
         //not logged in
         res.status(403).send('Not logged in!');
         return;
@@ -368,7 +398,7 @@ app.get('/timeslotrequests', function(req, res){
     provide start time in milliseconds since the unix epoch, and duration in milliseconds.
 */
 app.post('/requesttimeslot', function(req, res){ 
-    if(req.session.email === undefined){
+    if(!req.session.loggedin){
         res.status(403).send('Not logged in!');
         return;
     }
@@ -404,7 +434,17 @@ app.post('/requesttimeslot', function(req, res){
 //This endpoint deletes the request with id,
 //only if the logged in user made it.
 app.get('/deletetimeslot/:id', function(req, res){
+    if(!req.session.loggedin){
+        res.status(403).send("Not logged in!");
+        return;
+    }
 
+    db_fetch.delete_request(req.params.id, req.session.user_id).then(()=>{
+        res.status(200).send('Success');
+    },(err)=>{
+        console.log(err);
+        res.status(500).send(err.client_reason);
+    });
 });
 
 app.all('*', function(req, res){
