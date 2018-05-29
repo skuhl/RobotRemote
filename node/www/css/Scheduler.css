@@ -45,8 +45,9 @@
 }
 
 #schedule_key {
-    text-align: center;
-    float: right;
+   display:inline-block;
+   text-align: center;
+   float: right;
 }
 
 .td_accepted {
@@ -68,8 +69,4 @@
 
 .td_selected {
     background-color: #fca801;
-}
-
-.block {
-    display: block;
 }
