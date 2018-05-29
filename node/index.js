@@ -391,7 +391,7 @@ app.post('/requesttimeslot', function(req, res){
     
     console.log(date);
 
-    db_fetch.add_request(date, req.body.duration / 1000, req.session.user_id).then((val) => {
+    db_fetch.add_request(date, (req.body.duration / 1000) - 1, req.session.user_id).then((val) => {
         res.status(200).send("Success");
     }, (err)=>{
         console.log(err);
