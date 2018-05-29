@@ -11,6 +11,7 @@ const db_fetch = require('./db_fetch.js');
 const html_fetcher = require('./html_fetcher');
 const bodyParser = require('body-parser')
 const session = require('express-session');
+const mysql = require('mysql');
 const MySQLStore = require('express-mysql-session')(session);
 
 const options = require('./settings.json');
@@ -44,8 +45,26 @@ let cacert = fs.readFileSync(options['ca_file']);
 
 let secure_context = null;
 
-user_auth.init_mysql(options['mysql_host'], options['mysql_user'], options['mysql_pass'], options['mysql_db']);
-db_fetch.init_mysql(options['mysql_host'], options['mysql_user'], options['mysql_pass'], options['mysql_db']);
+let mysql_pool = mysql.createPool({
+    connectionLimit: 10,
+    host: options['mysql_host'],
+    user:  options['mysql_user'],
+    password: options['mysql_pass'],
+    database: options['mysql_db'],
+    /*This code snippet found from  https://www.bennadel.com/blog/3188-casting-bit-fields-to-booleans-using-the-node-js-mysql-driver.htm*/
+    typeCast: function castField( field, useDefaultTypeCasting ) {
+        if (field.type === "BIT" && field.length === 1) {
+            let bytes = field.buffer();
+            return bytes[0] === 1;
+
+        }
+
+        return useDefaultTypeCasting();
+    }
+});
+
+user_auth.init_mysql(mysql_pool);
+db_fetch.init_mysql(mysql_pool);
 
 if(options['debug']){
     secure_context = tls.createSecureContext({
@@ -431,7 +450,7 @@ app.post('/requesttimeslot', function(req, res){
         res.status(400).send('Start time before current time.');
         return;
     }
-    
+
     if(req.body.start_time > Date.now() + num_days*24*60*60*1000){
         res.status(400).send('Requested date too far in the future.');
         return;
