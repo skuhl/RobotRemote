@@ -5,7 +5,7 @@ var max_quantums = 24;
 var select_begin_index = -1;
 var select_end_index = -1;
 
-var time_quantum = 30; /*Time quantum in minutes */
+var time_quantum = 60; /*Time quantum in minutes */
 var num_days = 14; /*Number of days to display*/
 
 var day_index_to_string = {
@@ -54,6 +54,32 @@ function Hour24To12(hour){
     if(hour == 0) return 12;
     if(hour > 12) return hour % 12;
     return hour;
+}
+
+var GenerateTable = function(my_elements){
+    var html = '';
+    for(var i = 0; i < my_elements.length; i++){
+        let start = my_elements[i].start_date;
+        let end = my_elements[i].end_date;
+        html+='<tr class="request_table_row request_table_element">';
+        //TODO pretty print dates?
+        html+='<td class="request_table_element request_table_cell">' + (start.getMonth()+1) + '/' + start.getDate() + '/' + start.getFullYear() + 
+        ' ' + PadNumber(2, '0', Hour24To12(start.getHours()), 0) + ':' + PadNumber(2, '0', start.getMinutes(), 0) +  ' ' + 
+        (start.getHours() < 12 ? 'AM' : 'PM') +'</td>';
+        
+        html+='<td class="request_table_element request_table_cell">' + (end.getMonth()+1) + '/' + end.getDate() + '/' + end.getFullYear() + 
+        ' ' + PadNumber(2, '0', Hour24To12(end.getHours()), 0) + ':' + PadNumber(2, '0', end.getMinutes(), 0) +  ' ' + 
+        (end.getHours() < 12 ? 'AM' : 'PM') +'</td>';
+        
+        html+='<td class="request_table_element request_table_cell">' + (my_elements[i].approved ? "Yes" : "Awaiting") + '</td>';
+        html+='<td class="request_table_element request_table_cell"><button class="delete_button" onclick="DeleteTimeslot(' + my_elements[i].id + ')">Delete</button></td>';
+        html+='</tr>';
+    }
+    document.getElementById('my_req_table').innerHTML += html;
+}
+
+var DeleteTimeslot = function(id){
+    console.log('Deleting ' + id);
 }
 
 var GenerateGrid = function(elements){
@@ -109,14 +135,14 @@ var GenerateGrid = function(elements){
                     '" can_select="' +
                     can_select +
                     '" onmousedown="GridMouseDown(this)" onmouseover="GridMouseOver(this)">';
-            if(element_date >= start_date) html += PadNumber(2, '0', Hour24To12(element_date.getHours()%12), 0) + ':' + PadNumber(2, '0', element_date.getMinutes(), 0); 
+            if(element_date >= start_date) html += PadNumber(2, '0', Hour24To12(element_date.getHours()), 0) + ':' + PadNumber(2, '0', element_date.getMinutes(), 0); 
             html += '</td>';
         }
         html += '</tr>';
     }
     html += '</table>';
 
-    document.getElementsByTagName("body")[0].innerHTML += html;
+    document.getElementById('table_content').innerHTML += html;
 }
 
 function SelectElement(element){
@@ -284,7 +310,7 @@ req.onreadystatechange = function(){
                 res.others[i].duration*1000);
             console.log("Starts: " + res.others[i].start_date + ", Ends: " + res.others[i].end_date);
         }
-
+        GenerateTable(res.mine);
         GenerateGrid(res);
     }else if(req.readyState === 4){
         console.log('Error getting timeslot requests.');

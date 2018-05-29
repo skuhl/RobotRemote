@@ -1,3 +1,25 @@
+#my_req_table {
+    border-collapse: collapse;
+}
+
+.request_table_element{
+    border: 1px solid black;
+    text-align: center;
+    vertical-align: center;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.request_table_row {
+
+}
+
+.request_table_cell{
+    padding: 0 15px 0 15px;
+}
+
 #schedule_table {
     border-collapse: collapse;
 }

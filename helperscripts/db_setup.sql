@@ -1,6 +1,6 @@
 /*Create the RobotRun database*/
-create database if not exists RobotRemote;
-use RobotRemote;
+CREATE DATABASE IF NOT EXISTS RobotRemote;
+USE RobotRemote;
 /*Create user table*/
 CREATE TABLE IF NOT EXISTS users (id INT UNSIGNED AUTO_INCREMENT KEY NOT NULL,
                                   email CHAR(191) NOT NULL UNIQUE, 
