@@ -100,6 +100,10 @@ app.get('/', function(req, res){
 
 app.get('/ControlPanel.html', function(req, res){
     console.log("Connecting to main page");
+    if(!req.session.loggedin){
+        res.redirect(303, '/Login.html')
+        return;
+    }
     actuator_comm.getFreeActuator(actuators).then((act)=>{
         //send client details (secret).
         act.sendClientDetails().then((secret) => {
@@ -217,6 +221,10 @@ app.post('/Request.html', function(req, res){
 });
 
 app.get('/Scheduler.html', function(req, res){
+    if(!req.session.loggedin){
+        res.redirect(303, '/Login.html')
+        return;
+    
     res.send(html_fetcher(__dirname + '/www/Scheduler.html'));
 });
 
