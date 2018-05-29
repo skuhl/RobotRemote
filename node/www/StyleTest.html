@@ -5,6 +5,7 @@
     <link rel="stylesheet" type="text/css" href="./css/Button.css">
     <link rel="stylesheet" type="text/css" href="./css/Form.css">
     <link rel="stylesheet" type="text/css" href="./css/Error.css">
+    <link rel="stylesheet" type="text/css" href="./css/Scheduler.css">
   </head>
   <body>  
     <h1 class="Title">
@@ -20,15 +21,47 @@
       <li style="float:right"><a href="/Login.html">Login</a></li>
     </ul>
     
-    <div id="error">
-      <p id="error_text">404 Error</p>
-      <p id= "help_message"> Somehow you ended up here, this probably isn't what you intended. </br>
-          Please check the spelling of your url or use the navigation bar to get to your desired page.</p>
+    <script src="js/scheduler.js"></script>
+    <table id="my_req_table">
+        <tr class="request_table_element">
+            <th class="request_table_element">Start time</th>
+            <th class="request_table_element">End time</th>
+            <th class="request_table_element">Accepted</th>
+            <th class="request_table_element">Remove</th>
+        </tr>
+    </table>
+    
+        <div id= "key">
+        <table id="schedule_key">
+            <tr>
+                <td class="td_key">Key:</td>
+            </tr>
+            <tr>
+                <td class="td_accepted">Accepted</td>
+            </tr>
+            <tr>
+                <td class="td_pending">Pending</td>
+            </tr>
+            <tr>
+                <td class="td_other_accepted">Taken</td>
+            </tr>
+            <tr>
+                <td class="td_other_pending">Requested By Other</td>
+            </tr>
+            <tr>
+                <td class="td_selected">Selected</td>
+            </tr>
+        </table>
     </div>
-    <script src="/js/login.js"></script>
-    <script>
-      document.addEventListener("DOMContentLoaded", CheckError);
-    </script>
+    
+    <div id="table_msg">
+    </div>
+    <div id="table_content">
+    </div>
+
+    <button id="req_submit" onclick="SubmitSelected()">
+        Request
+    </button>
 
   </body>
 </html>
