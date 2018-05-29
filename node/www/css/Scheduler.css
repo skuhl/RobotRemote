@@ -46,6 +46,7 @@
 
 #schedule_key {
     text-align: center;
+    float: right;
 }
 
 .td_accepted {
