@@ -77,6 +77,8 @@ let session_store = new MySQLStore({
 });
 
 app.use(bodyParser.urlencoded({extended: false}));
+app.use(bodyParser.json());
+
 app.use(session({
     secret:'alkshflkasf',
     store: session_store,
@@ -152,9 +154,12 @@ app.post('/Login.html', function(req, res){
         return;
     }
 
-    user_auth.verify_credentials(req.body.username, req.body.password).then((is_admin)=>{
+    user_auth.verify_credentials(req.body.username, req.body.password).then((info)=>{
         req.session.email = req.body.username;
-        req.session.is_admin = is_admin;
+        req.session.is_admin = info.is_admin;
+        req.session.user_id = info.id;
+        console.log("Logged in :" );
+        console.log(req.session);
         res.redirect(302, '/Scheduler.html');
     },(err)=>{
         console.log('Error verifying user '  + req.body.username + ': ' + err.reason);
@@ -339,9 +344,10 @@ app.get('/admin/accepttimeslotrequest/:id', function(req, res){
     }
 */
 app.get('/timeslotrequests', function(req, res){
+    
     if(req.session.email === undefined){
         //not logged in
-        res.redirect(302, '/Login.html');
+        res.status(403).send('Not logged in!');
         return;
     }
     
@@ -353,6 +359,42 @@ app.get('/timeslotrequests', function(req, res){
     },(err)=>{
         console.log('Error fetching timeslot requests: ' + err.reason);
         console.log(err.db_err);
+        res.status(500).send(err.client_reason);
+    });
+
+});
+/*
+    Endpoint for timeslot request. Client needs to 
+    provide start time in milliseconds since the unix epoch, and duration in milliseconds.
+*/
+app.post('/requesttimeslot', function(req, res){ 
+    if(req.session.email === undefined){
+        res.status(403).send('Not logged in!');
+        return;
+    }
+    console.log(req.body);
+    if(req.body.start_time === undefined || req.body.duration === undefined){
+        res.status(400).send('Missing request paramaters.');
+        return;
+    }
+
+    if(typeof req.body.start_time !== 'number' || typeof req.body.duration !== 'number'){
+        res.status(400).send('Invalid request paramaters.');
+        return;
+    }
+    //TODO validate that requested time isn't too far in the future.
+    if(req.body.start_time < Date.now()){
+        res.status(400).send('Start time before current time.');
+    }
+
+    let date = new Date(req.body.start_time);
+    
+    console.log(date);
+
+    db_fetch.add_request(date, req.body.duration / 1000, req.session.user_id).then((val) => {
+        res.status(200).send("Success");
+    }, (err)=>{
+        console.log(err);
         res.status(500).send(err.client_reason);
     });
 

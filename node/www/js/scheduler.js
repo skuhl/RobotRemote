@@ -225,6 +225,41 @@ var TableLeave = function(table) {
     mouse_down = false;
 }
 
+var SubmitSelected = function(){
+    
+    if(select_begin_index == -1 || select_end_index == -1){
+        document.getElementById('table_msg').innerText = "You need to select a timeframe to request first!";
+        return;
+    }
+
+    var xhr = new XMLHttpRequest();
+    //Time since UTC epoch, in ms
+    var begin_utc_time = new Date(document.getElementById('schedule-'+select_begin_index).getAttribute('date')).getTime();
+    //selected duration, in ms
+    var duration = (select_end_index - select_begin_index + 1) * time_quantum * 60 * 1000;
+
+    xhr.onreadystatechange = function(){
+        if(req.readyState === 4 && req.status === 200){
+            document.getElementById('table_msg').innerText = "Successfully requested timeslot!";
+            //Update table (or remake it, or something)
+            console.log('Success!');
+        }else if(req.readyState === 4){
+            document.getElementById('table_msg').innerText = "Error submitting timeslot request!";
+        }
+
+        if(req.readyState === 4){
+            setTimeout(function(){
+                document.getElementById('req_submit').disabled = false;
+            }, 1000);
+        }
+    }
+
+    xhr.open("POST",'http://' + window.location.host + '/requesttimeslot');
+    xhr.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
+    document.getElementById('req_submit').disabled = true;
+    xhr.send(JSON.stringify({start_time: begin_utc_time, duration: duration}));
+}
+
 var req = new XMLHttpRequest();
 
 req.onreadystatechange = function(){

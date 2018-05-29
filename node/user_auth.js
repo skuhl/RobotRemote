@@ -32,7 +32,7 @@ module.exports = {
     */
     verify_credentials: function(username, password){
         return new Promise ((resolve, reject) => {
-            connection.query('SELECT passhash, passsalt, approved, admin from users where email = ?', [username], (err, res, fields)=>{
+            connection.query('SELECT id, passhash, passsalt, approved, admin from users where email = ?', [username], (err, res, fields)=>{
                 if(err){
                     console.log(err);
                     reject({
@@ -79,13 +79,13 @@ module.exports = {
                     return;
                 }
                 //TODO does something need to be passed here? 
-                resolve(res[0].admin);
+                resolve({is_admin: res[0].admin, id: res[0].id});
             });
         });
     },
     /* 
-    Similar to above, but creates a non-approved login_request.
-    return value is the same.
+    Creates a non-approved login_request.
+    Return value is the same as above.
     */
    login_request: function(email, password, comment){
         

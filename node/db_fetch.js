@@ -23,7 +23,7 @@ module.exports = {
         });
     },
     /* if num_requests <= 0, we get all requests. */
-    get_login_requests: function(start_at, num_requests){
+    get_login_requests: async function(start_at, num_requests){
         let json = [];
         return new Promise((resolve, reject) => {
             if(num_requests <= 0 ){
@@ -70,7 +70,7 @@ module.exports = {
         });
     },
     /*Timeframe */
-    user_get_timeslot_requests: function(beginDate, endDate, email){
+    user_get_timeslot_requests: async function(beginDate, endDate, email){
         return new Promise((resolve, reject) => {
             connection.query('SELECT users.email, timeslots.start_time, timeslots.duration, timeslots.approved FROM users INNER JOIN timeslots ON users.id = timeslots.user_id WHERE start_time > ? AND start_time < ?', [beginDate, endDate], function(err, res, fields){
                 let mine = [];
@@ -104,5 +104,86 @@ module.exports = {
             });
         })
         
+    },
+    does_request_overlap_accepted: async function(date, duration){
+        /*
+            check if begin time or end time is between any others. 
+        */
+        return new Promise((resolve, reject) => {
+            let start_date = date;
+            let end_date = new Date(date.getTime() + duration*1000);
+            connection.query("SELECT count(*) FROM timeslots WHERE approved=1 AND"+
+                " ((start_time <= ? AND DATE_ADD(start_time, INTERVAL duration SECOND) >= ?)"+
+                " OR (start_time <= ? AND DATE_ADD(start_time, INTERVAL duration SECOND) >= ?))",
+            [start_date, start_date, end_date, end_date], 
+            function(err, res, fields){
+                if(err){
+                    return reject({
+                        reason: 'Error selecting from timeslots.',
+                        client_reason: 'Internal database error.',
+                        db_err: err
+                    });
+                } 
+                console.log(res);
+                resolve(res[0]['count(*)'] != 0);
+                 
+            });
+        });
+    },
+    add_request: async function(date, duration, user_id){
+        let self = this;
+        return new Promise((resolve, reject) => {
+            let ret = {};
+            //This needs to be transactional; 2 connections that read then insert could conflict (first one reads, second reads, both attempt to insert).
+            connection.beginTransaction(async function(err){
+                if(err){
+                    return reject({
+                        reason: 'Error beginning transaction.',
+                        client_reason: 'Internal database error.',
+                        db_err: err
+                    });
+                }
+
+                try {
+                    ret = await self.does_request_overlap_accepted(date, duration);
+                }catch(error){
+                    return connection.rollback(function(){reject(error)});
+                }
+
+                if(ret !== false){
+                    return connection.rollback(function(){
+                        reject({
+                            reason: 'Timeslot already taken!',
+                            client_reason: 'Requested timeslot overlaps!',
+                        });
+                    });
+                }
+
+                connection.query("INSERT INTO timeslots (user_id, start_time, duration) VALUES (?, ?, ?)", [user_id, date, duration], function(err, res, fields){
+                    if(err){
+                        return connection.rollback(function(){
+                            reject({
+                                reason: 'Error inserting into timeslots.',
+                                client_reason: 'Internal database error.',
+                                db_err: err
+                            });
+                        });
+                        
+                    }
+                    connection.commit(function(err){
+                        if(err){
+                            return connection.rollback(function(){
+                                reject({
+                                    reason: 'Could not commit!',
+                                    client_reason: 'Internal database error.',
+                                    db_err: err
+                                });
+                            });
+                        }
+                        resolve('Succesfully inserted.');
+                    });
+                });
+            });
+        });
     }
 }
