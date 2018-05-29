@@ -34,9 +34,9 @@
         clear: both;
       }
    .button{
-        background-color:#555555;
+        background-color:#d2d2d2;
         border: none;
-        color: white;
+        color: #333;
         padding: 4px 5px;
         width: 60px;
         text-align: center;
