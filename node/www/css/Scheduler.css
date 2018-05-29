@@ -82,4 +82,10 @@
 #req_submit{
    background-color:#d2d2d2;
    color: #333;
+   background-color: #d2d2d2;
+   color: #333;
+   position: absolute;
+   left: 50%;
+   margin: 15px -50% 15px 0;
+   transform: translate(-50%, -50%);
 }
