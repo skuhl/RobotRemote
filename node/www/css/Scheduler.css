@@ -50,6 +50,7 @@
 
 .td_pending {
     background-color: #1c22ea;
+    color: white;
 }
 
 .td_other_accepted {

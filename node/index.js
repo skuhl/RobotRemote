@@ -372,7 +372,7 @@ app.post('/requesttimeslot', function(req, res){
         res.status(403).send('Not logged in!');
         return;
     }
-    
+
     if(req.body.start_time === undefined || req.body.duration === undefined){
         res.status(400).send('Missing request paramaters.');
         return;
@@ -392,13 +392,18 @@ app.post('/requesttimeslot', function(req, res){
 
     let date = new Date(req.body.start_time);
 
-
     db_fetch.add_request(date, (req.body.duration / 1000) - 1, req.session.user_id).then((val) => {
         res.status(200).send("Success");
     }, (err)=>{
         console.log(err);
         res.status(500).send(err.client_reason);
     });
+
+});
+
+//This endpoint deletes the request with id,
+//only if the logged in user made it.
+app.get('/deletetimeslot/:id', function(req, res){
 
 });
 
