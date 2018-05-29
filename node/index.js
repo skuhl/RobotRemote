@@ -224,6 +224,7 @@ app.get('/Scheduler.html', function(req, res){
     if(!req.session.loggedin){
         res.redirect(303, '/Login.html')
         return;
+    }
     
     res.send(html_fetcher(__dirname + '/www/Scheduler.html'));
 });
