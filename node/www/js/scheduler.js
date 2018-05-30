@@ -1,6 +1,6 @@
 var mouse_down = false;
 var mode = null;
-var max_quantums = 8;
+var max_quantums = 1000;
 
 var select_begin_index = -1;
 var select_end_index = -1;
