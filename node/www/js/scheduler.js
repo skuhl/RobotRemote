@@ -75,7 +75,7 @@ var GenerateTable = function(my_elements){
         (end.getHours() < 12 ? 'AM' : 'PM') +'</td>';
         
         html+='<td class="request_table_element request_table_cell">' + (my_elements[i].approved ? "Yes" : "Awaiting") + '</td>';
-        html+='<td class="request_table_element request_table_cell"><button class="delete_button" onclick="DeleteTimeslot(' + my_elements[i].id + ')">Delete</button></td>';
+        html+='<td class="request_table_element request_table_cell"><button class="delete_button" onclick="DeleteTimeslot(' + my_elements[i].id + ');location.reload();">Delete</button></td>';
         html+='</tr>';
     }
 
