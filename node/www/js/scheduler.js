@@ -277,7 +277,7 @@ var TableLeave = function(table) {
 var SubmitSelected = function(){
     
     if(select_begin_index == -1 || select_end_index == -1){
-        document.getElementById('table_msg').innerText = "You need to select a timeframe to request first!";
+        alert("You need to select a time frame to request first!");
         return;
     }
 
@@ -289,11 +289,11 @@ var SubmitSelected = function(){
 
     xhr.onreadystatechange = function(){
         if(this.readyState === 4 && this.status === 200){
-            document.getElementById('table_msg').innerText = "Successfully requested timeslot!";
+            alert("Successfully requested time slot!");
             //Update table (or remake it, or something)
             console.log('Success!');
         }else if(this.readyState === 4){
-            document.getElementById('table_msg').innerText = "Error submitting timeslot request!";
+            alert("Error submitting time slot request!");
         }
 
         if(this.readyState === 4){
