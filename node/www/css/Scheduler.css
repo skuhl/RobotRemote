@@ -1,7 +1,18 @@
+#content {
+    overflow-x: scroll;
+}
 #my_req_table {
     display: none;
     border-collapse: collapse;
     margin: 20px auto 20px auto;
+}
+
+#req_table_div {
+    display: inline-block;
+    box-sizing: border-box;
+    margin: 0 0 0 19%;
+    width: 80%;
+
 }
 
 .request_table_element{
@@ -34,6 +45,22 @@
     padding: 0 15px 0 15px;
 }
 
+#div_key {
+    display: inline-block;
+    box-sizing: border-box;
+    width: 19%;
+    margin: 0;
+    vertical-align: middle;
+}
+
+#table_div {
+    display: inline-block;
+    box-sizing: border-box;
+    width: 80%;
+    margin: 0;
+    vertical-align: middle;
+}
+
 #schedule_table {
    border-collapse: collapse;
    position: relative;
@@ -62,10 +89,9 @@
 }
 
 #schedule_key {
-    display: inline-block;
-    position: absolute;
+    display: table;
     text-align: center;
-    margin: 0 0 0 8%;
+    margin: auto;
 }
 
 .td_accepted {
