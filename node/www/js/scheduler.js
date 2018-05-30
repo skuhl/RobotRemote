@@ -79,7 +79,7 @@ var GenerateTable = function(my_elements){
 
     document.getElementById('my_req_table').innerHTML += html;
 
-    if(my_elements.length != 0) document.getElementById('my_req_table').style.display = "block";
+    if(my_elements.length != 0) document.getElementById('my_req_table').style.display = "table";
 }
 
 var DeleteTimeslot = function(id){
