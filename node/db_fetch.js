@@ -1,10 +1,14 @@
 const mysql = require('mysql');
+const minutes = 30;
 
 let pool = null;
+let db_interval = 0;
 
 module.exports = {
     init_mysql: function(conn_pool){
         pool = conn_pool;
+        //Clean the DB every X minutes
+        db_interval = setInterval(clean_db, minutes*60*1000);
     },
     /* if num_requests <= 0, we get all requests. */
     get_login_requests: async function(start_at, num_requests){
@@ -288,4 +292,38 @@ module.exports = {
             });
         });
     }
+};
+
+async function clean_db(){
+    console.log('Cleaning DB');
+    return new Promise((resolve, reject) => {
+        pool.getConnection(function(err, connection){
+            if(err){
+                return reject({
+                    reason: 'Couldn\'t get connection from pool',
+                    db_err: err
+                });
+            }
+            connection.query("DELETE FROM timeslots WHERE DATE_ADD(start_time, INTERVAL duration SECOND) <= ?", [new Date(Date.now())], function(err, res, fields){
+                if(err){
+                    return reject({
+                        reason: 'Couldn\'t delete from timeslots in clean_db.',
+                        db_err: err
+                    });
+                }
+                //Deletes logins and requests from over 2 weeks ago, if they have not been approved yet.
+                //TODO send out an email to them if this happens?
+                connection.query("DELETE FROM loginrequests WHERE date_requested < ?", [new Date(Date.now() - 14*24*60*60*1000)], function(err, res, fields) {
+                    if(err){
+                        return reject({
+                            reason: 'Couldn\'t delete from loginrequests in clean_db.',
+                            db_err: err
+                        });
+                    }
+
+                    resolve();
+                });
+            });
+        });
+    });
 }

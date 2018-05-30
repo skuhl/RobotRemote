@@ -200,7 +200,7 @@ app.get('/Logout', function(req, res){
 });
 
 app.get('/sessioninfo', function(req, res){
-    res.status(200).send(req.session.email + ", admin: " + req.session.is_admin);
+    res.status(200).send(req.session.email + ", admin: " + req.session.is_admin + ", user_id: " + req.session.user_id);
 });
 
 app.get('/Request.html', function(req, res){
