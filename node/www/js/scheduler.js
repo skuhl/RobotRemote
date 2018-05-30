@@ -58,6 +58,8 @@ function Hour24To12(hour){
 
 var GenerateTable = function(my_elements){
     var html = '';
+    
+    if(my_elements.length == 0) document.getElementById('my_req_table').style.display = "none";
 
     for(var i = 0; i < my_elements.length; i++){
         let start = my_elements[i].start_date;
@@ -78,8 +80,6 @@ var GenerateTable = function(my_elements){
     }
 
     document.getElementById('my_req_table').innerHTML += html;
-
-    if(my_elements.length != 0) document.getElementById('my_req_table').style.display = "table";
 }
 
 var DeleteTimeslot = function(id){
@@ -292,12 +292,12 @@ var SubmitSelected = function(){
             alert("Successfully requested time slot!");
             //Update table (or remake it, or something)
             console.log('Success!');
-            //reload the page
+            //reload the page becuase the table is updated
             location.reload();
         }else if(this.readyState === 4){
             alert("Error submitting time slot request!");
         }
-
+			//re enables the button(disabled somewhere else)
         if(this.readyState === 4){
             //I don't know why, but this doesn't work if it's too quick.
             setTimeout(function(){
