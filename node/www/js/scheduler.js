@@ -292,6 +292,8 @@ var SubmitSelected = function(){
             alert("Successfully requested time slot!");
             //Update table (or remake it, or something)
             console.log('Success!');
+            //reload the page(THIS MIGHT MESS SOMETHING UP IDK)
+            location.reload();
         }else if(this.readyState === 4){
             alert("Error submitting time slot request!");
         }
