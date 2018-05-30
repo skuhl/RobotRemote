@@ -69,6 +69,7 @@ module.exports = {
             });
         });
     },
+    
     /*Timeframe is between beginDate and endDate.*/
     user_get_timeslot_requests: async function(beginDate, endDate, user_id){
         return new Promise((resolve, reject) => {
