@@ -1,9 +1,9 @@
 var SubmitRequest = function(){
 	var xms = new XMLHttpRequest();
 	var form = document.forms.signup;
-	var user = form.element.username.value;
-	var pass = form.element.password.value;
-	var reason = form.element.reason.value;
+	var user = form.elements.username.value;
+	var pass = form.elements.password.value;
+	var reason = form.elements.reason.value;
 	if(!user || !pass || !reason) //in the scenario that one of these are missing
 		alert('Missing username, password, or reason for request.</br> These items are required.');
 	
