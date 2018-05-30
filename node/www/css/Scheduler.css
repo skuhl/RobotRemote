@@ -21,11 +21,11 @@
     padding: 1.5px;
 }
 
-.request_table_row:nth-child(even) {
+.request_table_row:nth-child(odd) {
     background-color: #d2d2d2;
 }
 
-.request_table_row:nth-child(odd) {
+.request_table_row:nth-child(even) {
     background-color: #f0f0f0;
 }
 
