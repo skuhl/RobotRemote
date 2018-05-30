@@ -68,24 +68,27 @@
 }
 
 .td_accepted {
-    background-color: #23ea1c;
+    background-color: #28464E;
+    color: #f0f0f0;
 }
 
 .td_pending {
-    background-color: #1c22ea;
-    color: white;
+    background-color: #173753;
+    color: #f0f0f0;
 }
 
 .td_other_accepted {
-    background-color: #ea1c1c;
+    background-color: #931621;
+    color: #f0f0f0;
 }
 
 .td_other_pending {
-    background-color: #fcf802;
+    background-color: #E8BF28;
 }
 
 .td_selected {
-    background-color: #fca801;
+    background-color: #333;
+    color: #f0f0f0;
 }
 
 #req_submit{
