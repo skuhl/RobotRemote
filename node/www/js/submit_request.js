@@ -1,6 +1,6 @@
 var SubmitRequest = function(){
 	var xms = new XMLHttpRequest();
-	var form document.forms.signup;
+	var form = document.forms.signup;
 	var user = form.element.username.value;
 	var pass = form.element.password.value;
 	var reason = form.element.reason.value;
