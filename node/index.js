@@ -312,8 +312,9 @@ app.get('/admin/loginrequests', function(req, res){
         email: <email>,
         starttime: <datetime>,
         duration: <duration in seconds>
-        accepted: <bool>
     }
+    partitioned into 2 lists, one with approved requests,
+    one with unapproved requests.
 */
 app.get('/admin/timeslotrequests', function(req, res){
     if(!req.session.loggedin){
@@ -328,6 +329,14 @@ app.get('/admin/timeslotrequests', function(req, res){
         res.redirect(302, '/Home.html');
         return;
     }
+    
+    db_fetch.admin_get_timeslot_requests(new Date(Date.now()), new Date(Date.now() + 7*24*60*60*1000)).then((val)=>{
+        res.status(200).json(val);
+    }, (err) => {
+        console.log(err);
+        res.status(500).send(err.client_reason);
+    })
+
 });
 /* 
     Request to reject login request with given id
@@ -416,7 +425,7 @@ app.get('/timeslotrequests', function(req, res){
     let now_ms = Date.now();
     let week_later_ms = now_ms + (24*60*60*1000)*7;
 
-    db_fetch.user_get_timeslot_requests(new Date(now_ms), new Date(week_later_ms), req.session.email).then((json)=>{
+    db_fetch.user_get_timeslot_requests(new Date(now_ms), new Date(week_later_ms), req.session.user_id).then((json)=>{
         res.status(200).json(json);
     },(err)=>{
         console.log('Error fetching timeslot requests: ' + err.reason);

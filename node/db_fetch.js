@@ -54,7 +54,7 @@ module.exports = {
                                 db_err: err
                             });
                         }
-                        //Is this necessary? Could we just do json = res? 
+                        
                         for(let i = 0; i<res.length; i++){
                             json.push({
                                 id: res[i].id,
@@ -69,8 +69,8 @@ module.exports = {
             });
         });
     },
-    /*Timeframe */
-    user_get_timeslot_requests: async function(beginDate, endDate, email){
+    /*Timeframe is between beginDate and endDate.*/
+    user_get_timeslot_requests: async function(beginDate, endDate, user_id){
         return new Promise((resolve, reject) => {
             pool.getConnection(function(err, connection){   
                 if(err){
@@ -80,7 +80,8 @@ module.exports = {
                         db_err: err
                     });
                 }
-                connection.query('SELECT timeslots.id, users.email, timeslots.start_time, timeslots.duration, timeslots.approved FROM users INNER JOIN timeslots ON users.id = timeslots.user_id WHERE start_time > ? AND start_time < ?', [beginDate, endDate], function(err, res, fields){
+                connection.query('SELECT id, start_time, duration, approved FROM timeslots WHERE start_time > ? AND start_time < ?', 
+                [beginDate, endDate], function(err, res, fields){
                     connection.release();
                     let mine = [];
                     let others = [];
@@ -93,11 +94,12 @@ module.exports = {
                     }
 
                     for(let i = 0; i<res.length; i++){
-                        if(res[i].email == email){
+                        if(res[i].user_id == user_id){
                             mine.push({
                                 id: res[i].id,
                                 starttime: res[i].start_time,
                                 duration: res[i].duration,
+                                email: res[i].email,
                                 accepted: res[i].approved
                             });
                         }else{
@@ -111,6 +113,57 @@ module.exports = {
                     }
 
                     resolve({mine: mine, others: others});
+                });
+            });
+        });
+        
+    },
+
+    admin_get_timeslot_requests: async function(beginDate, endDate){
+        return new Promise((resolve, reject) => {
+            pool.getConnection(function(err, connection){   
+                if(err){
+                    return reject({
+                        reason: 'Couldn\'t get connection from pool',
+                        client_reason: 'Internal database error.',
+                        db_err: err
+                    });
+                }
+
+                connection.query('SELECT users.email, timeslots.id, timeslots.start_time, timeslots.duration, timeslots.approved'+
+                ' FROM timeslots INNER JOIN users ON timeslots.user_id=users.id'+
+                ' WHERE start_time >= ? AND start_time < ?', 
+                [beginDate, endDate], function(err, res, fields){
+                    connection.release();
+                    let unapproved = [];
+                    let approved = [];
+                    if(err){
+                        return reject({
+                            reason: 'Error selecting from timeslots.',
+                            client_reason: 'Internal database error.',
+                            db_err: err
+                        });
+                    }
+
+                    for(let i = 0; i<res.length; i++){
+                        if(res[i].approved){
+                            approved.push({
+                                email: res[i].email,
+                                id: res[i].id,
+                                starttime: res[i].start_time,
+                                duration: res[i].duration,
+                            });
+                        }else{
+                            unapproved.push({
+                                email: res[i].email,
+                                id: res[i].id,
+                                starttime: res[i].start_time,
+                                duration: res[i].duration,
+                            });
+                        }                        
+                    }
+
+                    resolve({approved: approved, unapproved: unapproved});
                 });
             });
         });
