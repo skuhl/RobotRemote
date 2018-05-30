@@ -58,8 +58,6 @@ function Hour24To12(hour){
 
 var GenerateTable = function(my_elements){
     var html = '';
-    
-    if(my_elements.length == 0) document.getElementById('my_req_table').style.display = "none";
 
     for(var i = 0; i < my_elements.length; i++){
         let start = my_elements[i].start_date;
@@ -80,6 +78,8 @@ var GenerateTable = function(my_elements){
     }
 
     document.getElementById('my_req_table').innerHTML += html;
+
+    if(my_elements.length != 0) document.getElementById('my_req_table').style.display = "table";
 }
 
 var DeleteTimeslot = function(id){

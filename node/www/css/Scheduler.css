@@ -1,4 +1,5 @@
 #my_req_table {
+    display: none;
     border-collapse: collapse;
     margin: 20px auto 20px auto;
 }
@@ -91,14 +92,12 @@
 }
 
 #req_submit{
+   display: block;
    width: 80px;
    height: 30px;
    background-color: #E8BF28;
    border-radius: 30px;
    border: 1px solid #f1d573;
    cursor: pointer;
-   position: absolute;
-   left: 50%;
-   margin: 15px -50% 15px 0;
-   transform: translate(-50%, -50%);
+   margin: auto;
 }
