@@ -209,14 +209,14 @@ app.get('/Request.html', function(req, res){
 
 app.post('/Request.html', function(req, res){
     if(!req.body.username || !req.body.password || !req.body.reason){
-        alert('Missing username, password, or reason for request.</br> These items are required.');
+        //alert('Missing username, password, or reason for request.</br> These items are required.');
         res.status(200).send();
         return;
     }
 
     user_auth.login_request(req.body.username, req.body.password, req.body.reason)
         .then((email_token)=>{
-            alert('Successfully added user to DB, awaiting approval.');
+            //alert('Successfully added user to DB, awaiting approval.');
             res.status(200).send();
             let link = options['domain_name'] + "/verify?email=" + encodeURIComponent(req.body.username) + "&email_tok=" + encodeURIComponent(email_token);
             mailOptions={
@@ -238,7 +238,7 @@ app.post('/Request.html', function(req, res){
 				});
 				res.redirect(303, '/Home.html')
         }, (err)=>{
-        		alert('Error adding user to DB, ' + err.client_reason);
+        		//alert('Error adding user to DB, ' + err.client_reason);
             res.status(200).send();
         });
 });
