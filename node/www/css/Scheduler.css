@@ -68,8 +68,7 @@
 }
 
 .td_accepted {
-    background-color: #3F6F77;
-    color: #f0f0f0;
+    background-color: #358C2F;
 }
 
 .td_pending {
@@ -87,7 +86,7 @@
 }
 
 .td_selected {
-    background-color: #333;
+    background-color: #D37139;
     color: #f0f0f0;
 }
 
