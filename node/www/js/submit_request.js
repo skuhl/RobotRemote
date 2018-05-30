@@ -13,8 +13,8 @@ var SubmitRequest = function(){
 			//Hey did that just work? maybe
 			console.log('Registered user');
 			//redirect to home or login???
-			location.replace('http://'+ window.location.host + 'Home.html');
-		}else{
+			location.replace('http://'+ window.location.host + '/Home.html');
+		}else if(this.readyState === 4){
 			//something goes wrong
 			alert('Error adding user to DB, ' + this.responseText);
 		}

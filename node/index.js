@@ -209,14 +209,13 @@ app.get('/Request.html', function(req, res){
 
 app.post('/Request.html', function(req, res){
     if(!req.body.username || !req.body.password || !req.body.reason){
-        //alert('Missing username, password, or reason for request.</br> These items are required.');
-        res.status(200).send();
+        res.status(200).send('Missing username, password, or reason for request.');
         return;
     }
 
     user_auth.login_request(req.body.username, req.body.password, req.body.reason)
         .then((email_token)=>{
-            res.status(200).send();
+            res.status(200).send('success!');
             let link = options['domain_name'] + "/verify?email=" + encodeURIComponent(req.body.username) + "&email_tok=" + encodeURIComponent(email_token);
             mailOptions={
 					to : req.body.username,
@@ -235,9 +234,8 @@ app.post('/Request.html', function(req, res){
 						res.end("sent");
 			    	 }
 				});
-				res.redirect(303, '/Home.html')
         }, (err)=>{
-        		res.status(200).send();
+        		res.status(200).send(err.client_reason);
         });
 });
 
@@ -252,21 +250,7 @@ app.get('/Scheduler.html', function(req, res){
 
 app.get('/verify', function(req,res){
 	user_auth.email_verify(req.query.email, req.query.email_tok).then(function(){
-        let admin_link = options['domain_name'] + "/admin/Admin.html"; 
-        smtpTransport.sendMail({
-            to: options['admin_email'],
-            from: options['mailer_email'],
-            subject: "User " + req.query.email + " Verified.",
-            html: "User " + req.query.email + " has verified their email. Please visit <a href='" + admin_link + "'> the admin control panel </a> to verify."
-        }).then((res)=>{
-            console.log("Sent mail to admin.");    
-        }, (err)=>{
-            console.log('Failed to send mail to admin!');
-            console.log(err);
-        });
-        
-        //TODO success message?
-        res.redirect(303, '/Login.html');
+		res.status(200).send('email veirfied');
 	},function(error){
 	   console.log(error.reason);
        console.log(error.db_err);
@@ -310,14 +294,12 @@ app.get('/admin/loginrequests', function(req, res){
         res.redirect(302, '/Home.html');
         return;
     }
-
     db_fetch.get_login_requests(0, -1).then((json)=>{
         res.status(200).json({requests: json});
     }, (err)=>{
         res.status(500).send('Error getting login requests');
         console.log(err.db_err);
     });
-    
 });
 
 /*Returns JSON encoded list of requests:
