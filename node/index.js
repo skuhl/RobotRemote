@@ -252,7 +252,21 @@ app.get('/Scheduler.html', function(req, res){
 
 app.get('/verify', function(req,res){
 	user_auth.email_verify(req.query.email, req.query.email_tok).then(function(){
-		res.status(200).send('email veirfied');
+        let admin_link = options['domain_name'] + "/admin/Admin.html"; 
+        smtpTransport.sendMail({
+            to: options['admin_email'],
+            from: options['mailer_email'],
+            subject: "User " + req.query.email + " Verified.",
+            html: "User " + req.query.email + " has verified their email. Please visit <a href='" + admin_link + "'> the admin control panel </a> to verify."
+        }).then((res)=>{
+            console.log("Sent mail to admin.");    
+        }, (err)=>{
+            console.log('Failed to send mail to admin!');
+            console.log(err);
+        });
+        
+        //TODO success message?
+        res.redirect(303, '/Login.html');
 	},function(error){
 	   console.log(error.reason);
        console.log(error.db_err);
@@ -296,12 +310,14 @@ app.get('/admin/loginrequests', function(req, res){
         res.redirect(302, '/Home.html');
         return;
     }
+
     db_fetch.get_login_requests(0, -1).then((json)=>{
         res.status(200).json({requests: json});
     }, (err)=>{
         res.status(500).send('Error getting login requests');
         console.log(err.db_err);
     });
+    
 });
 
 /*Returns JSON encoded list of requests:

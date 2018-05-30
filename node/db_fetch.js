@@ -69,6 +69,7 @@ module.exports = {
             });
         });
     },
+    
     /*Timeframe is between beginDate and endDate.*/
     user_get_timeslot_requests: async function(beginDate, endDate, user_id){
         return new Promise((resolve, reject) => {
@@ -80,7 +81,7 @@ module.exports = {
                         db_err: err
                     });
                 }
-                connection.query('SELECT id, start_time, duration, approved FROM timeslots WHERE start_time > ? AND start_time < ?', 
+                connection.query('SELECT id, start_time, duration, approved, user_id FROM timeslots WHERE start_time > ? AND start_time < ?', 
                 [beginDate, endDate], function(err, res, fields){
                     connection.release();
                     let mine = [];
@@ -94,6 +95,7 @@ module.exports = {
                     }
 
                     for(let i = 0; i<res.length; i++){
+
                         if(res[i].user_id == user_id){
                             mine.push({
                                 id: res[i].id,
