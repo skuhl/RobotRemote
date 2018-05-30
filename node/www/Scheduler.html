@@ -1,39 +1,45 @@
 <script src="js/scheduler.js"></script>
-<table id="my_req_table">
-    <tr class="request_table_element">
-        <th class="request_table_element">Start time</th>
-        <th class="request_table_element">End time</th>
-        <th class="request_table_element">Accepted</th>
-        <th class="request_table_element">Remove</th>
-    </tr>
-</table>
+<div id="content">
+    <div id="req_table_div">
+        <table id="my_req_table">
+            <tr class="request_table_element">
+                <th class="request_table_element">Start time</th>
+                <th class="request_table_element">End time</th>
+                <th class="request_table_element">Accepted</th>
+                <th class="request_table_element">Remove</th>
+            </tr>
+        </table>
+    </div>
 
-<div id="table_content">
-<div>
-    <table id="schedule_key">
-        <tr>
-            <td class="td_key">Key</td>
-        </tr>
-        <tr>
-            <td class="td_accepted">Accepted</td>
-        </tr>
-        <tr>
-            <td class="td_pending">Pending</td>
-        </tr>
-        <tr>
-            <td class="td_other_accepted">Taken</td>
-        </tr>
-        <tr>
-            <td class="td_other_pending">Requested By Other</td>
-        </tr>
-        <tr>
-            <td class="td_selected">Selected</td>
-        </tr>
-    </table>
+    <div id="schedule_area">
+        <div id='div_key'>
+            <table id="schedule_key">
+                <tr>
+                    <td class="td_key">Key</td>
+                </tr>
+                <tr>
+                    <td class="td_accepted">Accepted</td>
+                </tr>
+                <tr>
+                    <td class="td_pending">Pending</td>
+                </tr>
+                <tr>
+                    <td class="td_other_accepted">Taken</td>
+                </tr>
+                <tr>
+                    <td class="td_other_pending">Requested By Other</td>
+                </tr>
+                <tr>
+                    <td class="td_selected">Selected</td>
+                </tr>
+            </table>
+        </div>
+        <div id="table_div">
+            <div id="table_content">
+            </div>
+            <button id="req_submit" onclick="SubmitSelected()">
+                Request
+            </button>
+        </div>
+    </div>
 </div>
-
-</div>
-
-<button id="req_submit" onclick="SubmitSelected()">
-    Request
-</button>
