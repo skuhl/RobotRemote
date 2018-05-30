@@ -93,12 +93,11 @@
 
 #req_submit{
    display: block;
-   /*width: 80px;
-   height: 30px;*/
+   width: 80px;
+   height: 30px;
    background-color: #E8BF28;
    border-radius: 30px;
    border: 1px solid #f1d573;
-   padding: 3px 5px 3px 5px;
    cursor: pointer;
    margin: auto;
 }
