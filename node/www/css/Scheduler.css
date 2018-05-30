@@ -15,6 +15,10 @@
 
 }
 
+.block {
+    display: block;
+}
+
 .request_table_element{
     text-align: center;
     vertical-align: center;

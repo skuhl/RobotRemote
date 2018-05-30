@@ -4,8 +4,10 @@ var SubmitRequest = function(){
 	var user = form.elements.username.value;
 	var pass = form.elements.password.value;
 	var reason = form.elements.reason.value;
-	if(!user || !pass || !reason) //in the scenario that one of these are missing
+	if(!user || !pass || !reason){ //in the scenario that one of these are missing
 		alert('Missing username, password, or reason for request.</br> These items are required.');
+		return;
+	}
 	
 	xms.onreadystatechange = function(){
 		if(this.readyState === 4 && this.status === 200){
