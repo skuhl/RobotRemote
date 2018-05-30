@@ -209,21 +209,23 @@ app.get('/Request.html', function(req, res){
 
 app.post('/Request.html', function(req, res){
     if(!req.body.username || !req.body.password || !req.body.reason){
-        res.status(200).send('Missing username, password, or reason for request.');
+        alert('Missing username, password, or reason for request.</br> These items are required.');
+        res.status(200).send();
         return;
     }
 
     user_auth.login_request(req.body.username, req.body.password, req.body.reason)
         .then((email_token)=>{
-            res.status(200).send('Succesfully added user to DB, awaiting approval.');
+            alert('Successfully added user to DB, awaiting approval.');
+            res.status(200).send();
             let link = options['domain_name'] + "/verify?email=" + encodeURIComponent(req.body.username) + "&email_tok=" + encodeURIComponent(email_token);
             mailOptions={
 					to : req.body.username,
 					from : options['mailer_email'],
 					subject : "Please confirm your Email account",
 					html : "Hello,<br> Please Click on the link to verify your email.<br><a href="+link+">Click here to verify</a>",	
-                    text : "Hello, Please visit the following URL to verify your email." + link
-                }
+               text : "Hello, Please visit the following URL to verify your email." + link
+            }
 				console.log(mailOptions);
 				smtpTransport.sendMail(mailOptions, function(error, response){
 			   	 if(error){
@@ -234,8 +236,10 @@ app.post('/Request.html', function(req, res){
 						res.end("sent");
 			    	 }
 				});
+				res.redirect(303, '/Home.html')
         }, (err)=>{
-            res.status(200).send('Error adding user to DB, ' + err.client_reason);
+        		alert('Error adding user to DB, ' + err.client_reason);
+            res.status(200).send();
         });
 });
 
