@@ -10,9 +10,10 @@ html, body {
 }
 
 h1{
-   display: Block;
+   display: inline-block;
    margin: 0;
    padding: 14px 16px 14px 16px;
+   width: 100%;
    font-weight: bold;
    background: #ffcd00;
    color:black;
