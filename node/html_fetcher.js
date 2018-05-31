@@ -4,6 +4,7 @@ const header_file = __dirname + '/www/Header.html'
 const navbar_file = __dirname + '/www/Navbar.html'
 
 function get_navbar(session){
+    
     if(session && session.loggedin){
         return `
         <h1 class="Title">
@@ -15,6 +16,7 @@ function get_navbar(session){
             <li><a href="/Home.html">Information</a></li>
             <li><a href="/Scheduler.html">Scheduler</a></li>
             <li><a href="/ControlPanel.html">Control Panel</a></li>
+            ${session.is_admin ? '<li style="float:right"><a href="/admin/Admin.html">Admin</a></li>' : ''}
             <li style="float:right"><a href="/Logout">Logout</a></li>
         </ul>
         `;
