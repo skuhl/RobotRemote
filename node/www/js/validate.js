@@ -1,8 +1,8 @@
 var form = document.forms.signup;
-var password = form.elements.password.value;
-var passConfirm = form.elements.REpassword.value;
-var email = form.elements.username.value;
-var reason = form.elements.reason.value;
+var password = form.elements.password;
+var passConfirm = form.elements.REpassword;
+var email = form.elements.username;
+var reason = form.elements.reason;
 /*
 email.addEventListener("keyup", function(event){
 	if(!email.validity.valid){
