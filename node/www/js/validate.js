@@ -4,38 +4,6 @@ var passConfirm = form.elements.REpassword.value;
 var email = form.elements.username.value;
 var reason = form.elements.reason.value;
 
-email.addEventListener("keyup", function(event){
-	if(!email.validity.valid){
-		email.setCustomValidity("Email format nonstandard!");
-	}
-	else{
-		email.setCustomValidity("");
-	}
-
-},false);
-
-passConfirm.addEventListener("keyup", function(event){
-	//Check that the passwords match
-	if(password.value != passConfirm.value)
-	{
-		console.log('SetCustomValidity');
-		passConfirm.setCustomValidity("Passwords don't match!");
-	}else
-	{
-		passConfirm.setCustomValidity("");
-	}
-}, false);
-
-reason.addEventListener("keyup", function(event){
-	if(reason === null || reason === "")
-	{
-		reason.setCustomValidity("Please provide a reason for your request!");
-	}else
-	{
-		reason.setCustomValidity("");
-	}
-},false);
-
 function validate()
 {
 	console.log('validate called');

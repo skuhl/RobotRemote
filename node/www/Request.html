@@ -20,3 +20,37 @@
 </div>
 <script src="/js/submit_request.js"></script>
 <script src="/js/validate.js"></script>
+<script>
+  email.addEventListener("keyup", function(event){
+  	if(!email.validity.valid){
+  		email.setCustomValidity("Email format nonstandard!");
+  	}
+  	else{
+  		email.setCustomValidity("");
+  	}
+
+  },false);
+
+  passConfirm.addEventListener("keyup", function(event){
+  	//Check that the passwords match
+  	if(password.value != passConfirm.value)
+  	{
+  		console.log('SetCustomValidity');
+  		passConfirm.setCustomValidity("Passwords don't match!");
+  	}else
+  	{
+  		passConfirm.setCustomValidity("");
+  	}
+  }, false);
+
+  reason.addEventListener("keyup", function(event){
+  	if(reason === null || reason === "")
+  	{
+  		reason.setCustomValidity("Please provide a reason for your request!");
+  	}else
+  	{
+  		reason.setCustomValidity("");
+  	}
+  },false);
+
+</script>
