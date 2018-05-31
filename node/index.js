@@ -209,10 +209,19 @@ app.get('/Request.html', function(req, res){
 });
 
 app.post('/Request.html', function(req, res){
+    /*Email regex, ripped off https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/email#Validation  */
+    const email_regex = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+    
     if(!req.body.username || !req.body.password || !req.body.reason){
-        res.status(500).send('Missing username, password, or reason for request.');
+        res.status(400).send('Missing email, password, or reason for request.');
         return;
     }
+
+    if(!email_regex.test(req.body.username)){
+        res.satus(400).send('Invalid email.');
+        return;
+    }
+    //TODO password tests? (length, numbers, symbols maybe?)
 
     user_auth.login_request(req.body.username, req.body.password, req.body.reason)
         .then((email_token)=>{
