@@ -224,16 +224,17 @@ app.post('/Request.html', function(req, res){
 					html : "Hello,<br> Please Click on the link to verify your email.<br><a href="+link+">Click here to verify</a>",	
                text : "Hello, Please visit the following URL to verify your email." + link
             }
-				console.log(mailOptions);
-				smtpTransport.sendMail(mailOptions, function(error, response){
-			   	 if(error){
-			        	console.log(error);
-						res.end("error");
-				 	}else{
-			        	console.log("Message sent: " + response.message);
-						res.end("sent");
-			    	 }
-				});
+            
+            smtpTransport.sendMail(mailOptions, function(error, response){
+                if(error){
+                    console.log(error);
+                    res.end("error");
+                }else{
+                    console.log("Message sent: " + response.message);
+                    res.end("sent");
+                    }
+            });
+
         }, (err)=>{
         		res.status(200).send(err.client_reason);
         });
@@ -350,6 +351,37 @@ app.get('/admin/rejectloginrequest/:id', function(req, res){
         res.redirect(302, '/Home.html');
         return;
     }
+
+    db_fetch.delete_timeslotrequest_admin(req.params.id).then(async function(user_id){
+        try{
+            let user = await db_fetch.get_user_by_id(user_id);
+            mailOptions={
+                to : user.email,
+                from : options['mailer_email'],
+                subject : "Timeslot Request Rejected",
+                html : "Hello,<br> We regret to inform you that one of your timeslot requests has been rejected.",	
+            }
+            
+            smtpTransport.sendMail(mailOptions, function(error, response){
+                if(error){
+                    console.log(error);
+                    res.end("error");
+                }else{
+                    console.log("Message sent: " + response.message);
+                    res.end("sent");
+                    }
+            });
+            
+            res.status(200).send("Success");
+
+        }catch(err){
+            res.status(500).send(err.client_reason);    
+        }
+    }, (err)=>{
+        console.log(err);
+        res.status(500).send(err.client_reason);
+    });
+
 });
 /* 
     Request to accept login request with given id

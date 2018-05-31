@@ -69,7 +69,37 @@ module.exports = {
             });
         });
     },
-    
+    /*Gets info about user with given id. Will use given connection if provided, otherwise uses an independant conneciton */
+    get_user_by_id: async function(id, connection){
+        return new Promise(function(resolve, reject){
+            if(connection){
+                connection.query();
+            }else{
+                pool.query("SELECT * FROM users WHERE id=?", [id], function(err, res, fields){
+                    if(err){
+                        return reject({
+                            reason: "Failed selecting user from DB!",
+                            client_reason: "Internal database error",
+                            db_err: err
+                        });
+                    }
+
+                    if(res.length < 1){
+                        return reject({
+                            reason: "Couldn't find given user!",
+                            client_reason: "User does not exist.",
+                            db_err: err
+                        });
+                    }
+
+                    //TODO possibly put other stuff here?
+                    resolve({id: res[0].id, email: res[0].email});
+                });
+            }
+        });
+        
+        
+    },
     /*Timeframe is between beginDate and endDate.*/
     user_get_timeslot_requests: async function(beginDate, endDate, user_id){
         return new Promise((resolve, reject) => {
@@ -346,6 +376,60 @@ module.exports = {
                 });
             });
         });
+    },
+    /*
+    Deletes timeslot request with the given ID from the database. 
+    On success, returns the ID of the user that was just deleted.
+    */
+    delete_timeslotrequest_admin: async function(id){
+        return new Promise(function(resolve, reject){
+            pool.getConnection(function(err, connection){
+                if(err){
+                    return reject({
+                        reason: 'Couldn\'t get connection from pool',
+                        client_reason: 'Internal database error.',
+                        db_err: err
+                    });
+                }
+                
+                connection.query("SELECT user_id FROM timeslots WHERE id=?", [id], function(err, res, fields){
+                    if(err){
+                        connection.release();
+                        return reject({
+                            reason: 'Couldn\'t select userid in admin timeslot delete',
+                            client_reason: 'Internal database error.',
+                            db_err: err
+                        });
+                    }
+
+                    if(res.length < 1){
+                        connection.release();
+                        return reject({
+                            reason: 'Bad ID for timeslot.',
+                            client_reason: 'Couldn\'t find timeslot in database!',
+                            db_err: err
+                        });
+                    }
+
+                    let user_id = res[0].user_id;
+
+                    connection.query("DELETE FROM timeslots WHERE id=?", [id], function(err, res, fields){
+                        connection.release();
+                        if(err){
+                            return reject({
+                                reason: 'Couldn\'t select userid in admin timeslot delete',
+                                client_reason: 'Internal database error.',
+                                db_err: err
+                            });
+                        }
+
+                        resolve(user_id);
+                    });
+
+                });
+
+            });
+        });
     }
 };
 
@@ -361,6 +445,7 @@ async function clean_db(){
             }
             connection.query("DELETE FROM timeslots WHERE DATE_ADD(start_time, INTERVAL duration SECOND) <= ?", [new Date(Date.now())], function(err, res, fields){
                 if(err){
+                    connection.release();
                     return reject({
                         reason: 'Couldn\'t delete from timeslots in clean_db.',
                         db_err: err
@@ -369,6 +454,7 @@ async function clean_db(){
                 //Deletes logins and requests from over 2 weeks ago, if they have not been approved yet.
                 //TODO send out an email to them if this happens?
                 connection.query("DELETE FROM loginrequests WHERE date_requested < ?", [new Date(Date.now() - 14*24*60*60*1000)], function(err, res, fields) {
+                    connection.release();
                     if(err){
                         return reject({
                             reason: 'Couldn\'t delete from loginrequests in clean_db.',
