@@ -15,25 +15,26 @@ const mysql = require('mysql');
 const MySQLStore = require('express-mysql-session')(session);
 
 const options = require('./settings.json');
-
-const smtpTransport = 
-options["smtp_auth"] ?
-nodemailer.createTransport({
-    host: options['smtp_host'],
-    port: options['smtp_port'],
-    secure: options['smtp_tls'],
-    auth: {
-        user: options['smtp_username'],
-        pass: options['smtp_password']
-    }
-}) :
-nodemailer.createTransport({
-    host: options['smtp_host'],
-    port: options['smtp_port'],
-    secure: options['smtp_tls'],
-})
-;
-
+//Create mail connection
+let smtpTransport = null;
+if(options["smtp_auth"]){
+    smtpTransport = nodemailer.createTransport({
+        host: options['smtp_host'],
+        port: options['smtp_port'],
+        secure: options['smtp_tls'],
+        auth: {
+            user: options['smtp_username'],
+            pass: options['smtp_password']
+        }
+    }); 
+}else{
+    smtpTransport = nodemailer.createTransport({
+        host: options['smtp_host'],
+        port: options['smtp_port'],
+        secure: options['smtp_tls'],
+    });
+}
+//Print warning for debug option being enabled.
 if(options['debug']){
     console.log('WARNING: Server was started in debug mode. This is insecure, and meant only for testing purposes.');
 }
@@ -45,6 +46,21 @@ let cacert = fs.readFileSync(options['ca_file']);
 
 let secure_context = null;
 
+if(options['debug']){
+    secure_context = tls.createSecureContext({
+        rejectUnauthorized: false,
+        requestCert: false
+    });
+}else{
+    secure_context = tls.createSecureContext({
+        key: my_key,
+        cert: cert,
+        ca: cacert,
+        rejectUnauthorized: true,
+        requestCert: true
+    });
+}
+//initialize mysqljs stuff.
 let mysql_pool = mysql.createPool({
     connectionLimit: 10,
     host: options['mysql_host'],
@@ -66,20 +82,6 @@ let mysql_pool = mysql.createPool({
 user_auth.init_mysql(mysql_pool);
 db_fetch.init_mysql(mysql_pool);
 
-if(options['debug']){
-    secure_context = tls.createSecureContext({
-        rejectUnauthorized: false,
-        requestCert: false
-    });
-}else{
-    secure_context = tls.createSecureContext({
-        key: my_key,
-        cert: cert,
-        ca: cacert,
-        rejectUnauthorized: true,
-        requestCert: true
-    });
-}
 let actuators = [];
 
 //initialize actuators
@@ -107,18 +109,17 @@ app.use(session({
     cookie:{maxAge: 36000000}
 }));
 
-//routing
+//Static routes (mirrors directory structure for these routes)
 app.use('/css', express.static(__dirname + '/www/css'));
 app.use('/js', express.static(__dirname +'/www/js'));
 app.use('/img', express.static(__dirname +'/www/img'));
 
+//Other routes
 app.get('/', function(req, res){
-    console.log("Redirect from / to /static/");
     res.redirect(301, '/Home.html');
 });
 
 app.get('/ControlPanel.html', function(req, res){
-    console.log("Connecting to main page");
     if(!req.session.loggedin){
         res.redirect(303, '/Login.html')
         return;
@@ -251,7 +252,21 @@ app.get('/Scheduler.html', function(req, res){
 
 app.get('/verify', function(req,res){
 	user_auth.email_verify(req.query.email, req.query.email_tok).then(function(){
-		res.status(200).send('email veirfied');
+		let admin_link = options['domain_name'] + "/admin/Admin.html"; 
+        
+        smtpTransport.sendMail({
+            to: options['admin_email'],
+            from: options['mailer_email'],
+            subject: "User " + req.query.email + " Verified.",
+            html: "User " + req.query.email + " has verified their email. Please visit <a href='" + admin_link + "'> the admin control panel </a> to verify."
+        }).then((res)=>{
+            console.log("Sent mail to admin.");    
+        }, (err)=>{
+            console.log('Failed to send mail to admin!');
+            console.log(err);
+        });
+        
+        res.redirect(303, '/Login.html');
 	},function(error){
 	   console.log(error.reason);
        console.log(error.db_err);
@@ -517,6 +532,21 @@ app.post('/requesttimeslot', function(req, res){
 
     db_fetch.add_request(date, (req.body.duration / 1000) - 1, req.session.user_id).then((val) => {
         res.status(200).send("Success");
+
+        let admin_link = options['domain_name'] + "/admin/Admin.html"; 
+        
+        smtpTransport.sendMail({
+            to: options['admin_email'],
+            from: options['mailer_email'],
+            subject: "User " + req.query.email + " Requested a timeslot.",
+            html: "User " + req.query.email + " has requeste a timeslot. Please visit <a href='" + admin_link + "'> the admin control panel </a> to accept or reject."
+        }).then((res)=>{
+            console.log("Sent mail to admin.");    
+        }, (err)=>{
+            console.log('Failed to send mail to admin!');
+            console.log(err);
+        });
+
     }, (err)=>{
         console.log(err);
         res.status(500).send(err.client_reason);
@@ -539,13 +569,16 @@ app.get('/deletetimeslot/:id', function(req, res){
         res.status(500).send(err.client_reason);
     });
 });
-
+/* 404 page. Can support other errors, technically, but currently is not used for anything else.*/
 app.all('*', function(req, res){
 	let opts = { };
-	if(req.session.error_status === undefined){
+    
+    if(req.session.error_status === undefined){
       req.session.error_status = 404;
-	}
-	let err_str = 'Page Not Found';
+    }
+    
+	let err_str = req.session.error_str ? req.session.error_str : 'Page Not Found';
+    
     opts.afterNavbar = ()=>('<input id="errmsg" type="hidden" value="' + err_str + '"/>');
    
 	res.status(req.session.error_status).send(html_fetcher(__dirname + '/www/Error.html', req, opts));
