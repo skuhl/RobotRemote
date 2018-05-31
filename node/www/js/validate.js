@@ -4,6 +4,7 @@ var passConfirm = form.elements.REpassword;
 var email = form.elements.username;
 var reason = form.elements.reason;
 
+/*
 email.addEventListener("keyup", function(event){
 	if(!email.validity.valid){
 		email.setCustomValidity("Email format nonstandard!");
@@ -12,7 +13,7 @@ email.addEventListener("keyup", function(event){
 		email.setCustomValidity("");
 	}
 
-},false);
+},false);*/
 
 passConfirm.addEventListener("keyup", function(event){
 	//Check that the passwords match
