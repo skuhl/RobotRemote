@@ -4,7 +4,7 @@ var passConfirm = form.elements.REpassword.value;
 var email = form.elements.username.value;
 var reason = form.elements.reason.value;
 
-email.addEventListener("input", function(event){
+email.addEventListener("keyup", function(event){
 	if(!email.validity.valid){
 		email.setCustomValidity("Email format nonstandard!");
 	}
@@ -14,7 +14,7 @@ email.addEventListener("input", function(event){
 
 },false);
 
-passConfirm.addEventListener("input", function(event){
+passConfirm.addEventListener("keyup", function(event){
 	//Check that the passwords match
 	if(password.value != passConfirm.value)
 	{
@@ -26,7 +26,7 @@ passConfirm.addEventListener("input", function(event){
 	}
 }, false);
 
-reason.addEventListener("input", function(event){
+reason.addEventListener("keyup", function(event){
 	if(reason === null || reason === "")
 	{
 		reason.setCustomValidity("Please provide a reason for your request!");
