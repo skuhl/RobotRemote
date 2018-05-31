@@ -1,13 +1,12 @@
 var form = document.forms.signup;
 var password = form.elements.password;
 var passConfirm = form.elements.REpassword;
-var email = form.elements.username;
 var reason = form.elements.reason;
 
 function validate()
 {
 	//Check that the passwords match
-	if(password != passConfirm)
+	if(password.value != passConfirm.value)
 	{
 		console.log('SetCustomValidity');
 		passConfirm.setCustomValidity("Passwords don't match!");
