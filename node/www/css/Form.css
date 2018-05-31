@@ -9,21 +9,28 @@ html, body {
     background: #f0f0f0;
      
 }
+
+#pageID {
+   color: #555;
+   text-align: center;
+   display: inherit;
+   padding-top: 10px;
+   padding-bottom: 0;
+   font-size: 20px;
+}
  
 #containerSignUp {
-    position:absolute;
-    width: 340px;
-    height: 610px;
-    top: 50%;
-    left: 50%;
-    margin-top: -140px;
-    margin-left: -170px;
-    margin-bottom:50px;
-    background: #fff;
-    border-radius: 3px;
-    border: 1px solid #ccc;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, .1);
-
+   position:absolute;
+   width: 340px;
+   top: 50%;
+   left: 50%;
+   margin-top: -140px;
+   margin-left: -170px;
+   margin-bottom:50px;
+   background: #fff;
+   border-radius: 3px;
+   border: 1px solid #ccc;
+   box-shadow: 0 1px 2px rgba(0, 0, 0, .1);
 }
 
 #container{
@@ -97,19 +104,6 @@ input[type=password] {
     background-color: #f3f9fb;
 }
 
-input[type=date],
-input[type=time],
-input[type=number]{
-       color: #777;
-       width:150px;
-       padding-left: 10px;
-       margin-top: 12px;
-       margin-left: 10px;
-       border: 1px solid #c7d0d2;
-       border-radius: 2px;
-       background-color: #f3f9fb;
-}
-
 textarea{
     color: #777;
     padding-left: 10px;
@@ -134,22 +128,10 @@ textarea{
     border-bottom-left-radius: 3px;
 }
  
-input[type=checkbox] {
-    margin-left: 20px;
-    margin-top: 30px;
-}
- 
-.check {
-    margin-left: 3px;
-    font-size: 11px;
-    color: #444;
-    text-shadow: 0 1px 0 #fff;
-}
- 
-input[type=submit] {
+input[type=submit], 
+button{
     float: right;
-    margin-right: 20px;
-    margin-top: 20px;
+    margin: 12px 20px 12px 0;
     width: 80px;
     height: 30px;
     background-color: #E8BF28;

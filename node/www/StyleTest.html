@@ -18,50 +18,31 @@
       <li><a href="/Scheduler.html">Scheduler</a></li>
       <li><a href="/ControlPanel.html">Control Panel</a></li>
       <li style="float:right"><a href="/Request.html">Sign Up</a></li>
-      <li style="float:right"><a href="/Login.html">Login</a></li>
+      <li style="float:right"><a href="./Login.html">Login</a></li>
     </ul>
     
-    <script src="js/scheduler.js"></script>
-    <table id="my_req_table">
-        <tr class="request_table_element">
-            <th class="request_table_element">Start time</th>
-            <th class="request_table_element">End time</th>
-            <th class="request_table_element">Accepted</th>
-            <th class="request_table_element">Remove</th>
-        </tr>
-    </table>
-    
-        <div id= "key">
-        <table id="schedule_key">
-            <tr>
-                <td class="td_key">Key:</td>
-            </tr>
-            <tr>
-                <td class="td_accepted">Accepted</td>
-            </tr>
-            <tr>
-                <td class="td_pending">Pending</td>
-            </tr>
-            <tr>
-                <td class="td_other_accepted">Taken</td>
-            </tr>
-            <tr>
-                <td class="td_other_pending">Requested By Other</td>
-            </tr>
-            <tr>
-                <td class="td_selected">Selected</td>
-            </tr>
-        </table>
-    </div>
-    
-    <div id="table_msg">
-    </div>
-    <div id="table_content">
-    </div>
+    <div id="containerSignUp">
+      <div id="pageID">
+          <p><b>Create an Account</b></p>
+      </div>
+      <form action="" name="signup" method="post"> <!--We will eventually need an action-->
+        <label for="username">Email:</label>
+        <input type="email" name="username" required="required" /> </br>
+      
+        <label for="password">Password: </label>
+        <input type="password" id="password" name="password" required="required" /> </br>
+        
+        <label for="REpassword">Retype Password: </label>
+        <input type="password" id="REpassword" name="REpassword" required="required" onkeyup="validate();"/> </br>
 
-    <button id="req_submit" onclick="SubmitSelected()">
-        Request
-    </button>
+        <label for="reason">Please state the reason for your request:</label>
+        <textarea name="reason" cols="20" rows="3" required></textarea> </br>
+
+        <button type="button" onclick="SubmitRequest()" >Submit</button>
+      </form>
+    </div>
+    <script src="/js/submit_request.js"></script>
+    <script src="/js/validate.js"></script>
 
   </body>
 </html>
