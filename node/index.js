@@ -140,7 +140,7 @@ app.get('/ControlPanel.html', function(req, res){
                 //TODO generate unique secrets, send them to webcams, set the cookies to them
                 res.cookie("webcam"+ (i+1) + "-secret", "secret");
             }
-            res.status(200).send(html_fetcher(__dirname + '/www/ControlPanel.html', {beforeHeader: ()=>{return '<title>Robot Remote - Control Panel</title>'}}));
+            res.status(200).send(html_fetcher(__dirname + '/www/ControlPanel.html', req, {beforeHeader: ()=>{return '<title>Robot Remote - Control Panel</title>'}}));
         },(err) => {
             console.log("Failed to connect to actuator server, " + err)
             res.status(500).send(err);
@@ -151,7 +151,7 @@ app.get('/ControlPanel.html', function(req, res){
 });
 
 app.get('/Home.html', function(req, res){
-    res.status(200).send(html_fetcher(__dirname + '/www/Home.html'));
+    res.status(200).send(html_fetcher(__dirname + '/www/Home.html', req));
 });
 
 app.get('/Login.html', function(req, res){
@@ -163,7 +163,7 @@ app.get('/Login.html', function(req, res){
         req.session.login_error = undefined;
     }
 
-    res.status(200).send(html_fetcher(__dirname + '/www/Login.html', opts));
+    res.status(200).send(html_fetcher(__dirname + '/www/Login.html', req, opts));
 });
 
 app.post('/Login.html', function(req, res){
@@ -196,7 +196,7 @@ app.post('/Login.html', function(req, res){
 app.get('/Logout', function(req, res){
     req.session.loggedin = false;
     delete req.session;
-    res.status(200).send('deleted session');
+    res.redirect(303, '/Home.html');
 });
 
 app.get('/sessioninfo', function(req, res){
@@ -204,7 +204,7 @@ app.get('/sessioninfo', function(req, res){
 });
 
 app.get('/Request.html', function(req, res){
-    res.status(200).send(html_fetcher(__dirname + '/www/Request.html'));
+    res.status(200).send(html_fetcher(__dirname + '/www/Request.html', req));
 });
 
 app.post('/Request.html', function(req, res){
@@ -245,7 +245,7 @@ app.get('/Scheduler.html', function(req, res){
         return;
     }
     
-    res.send(html_fetcher(__dirname + '/www/Scheduler.html'));
+    res.send(html_fetcher(__dirname + '/www/Scheduler.html', req));
 });
 
 app.get('/verify', function(req,res){
@@ -272,7 +272,7 @@ app.get('/admin/Admin.html', function(req, res){
         return;
     }
     //emit admin page
-    res.send('Admin page');
+    res.status(200).send(html_fetcher(__dirname + '/www/Admin.html', req));
 });
 /*Returns JSON encoded list of requests:
     {
@@ -516,7 +516,7 @@ app.all('*', function(req, res){
 	let err_str = 'Page Not Found';
     opts.afterNavbar = ()=>('<input id="errmsg" type="hidden" value="' + err_str + '"/>');
    
-	res.status(req.session.error_status).send(html_fetcher(__dirname + '/www/Error.html', opts));
+	res.status(req.session.error_status).send(html_fetcher(__dirname + '/www/Error.html', req, opts));
 	req.session.error_status = undefined;
 });
 
