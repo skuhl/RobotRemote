@@ -38,10 +38,10 @@ reason.addEventListener("keyup", function(event){
 
 function validate()
 {
-
+	/*
 	console.log('validate called');
 	//Regular expression checks for email in format " "@" "." "
-	var n = email.search(/^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/);
+	var n = email.value.search(/^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/);
 	//might need to be less than one?
 	if(n < 0)
 	{
@@ -50,6 +50,7 @@ function validate()
 	{
 		email.setCustomValidity("");
 	}
+	*/
 	
 	//Check that the passwords match
 	if(password.value != passConfirm.value)
