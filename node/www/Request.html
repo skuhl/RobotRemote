@@ -4,16 +4,16 @@
   </div>
   <form action="" name="signup" method="post"> <!--We will eventually need an action-->
     <label for="username">Email:</label>
-    <input type="email" name="username" required="required" /> </br>
+    <input type="email" name="username" required onleyup="validate()"/> </br>
   
     <label for="password">Password: </label>
-    <input type="password" name="password" required="required" /> </br>
+    <input type="password" name="password" required onkeyup="validate()"/> </br>
     
     <label for="REpassword">Retype Password: </label>
-    <input type="password" name="REpassword" required="required" onkeyup="validate();"/> </br>
+    <input type="password" name="REpassword" required onkeyup="validate()"/> </br>
 
     <label for="reason">Please state the reason for your request:</label>
-    <textarea name="reason" cols="20" rows="3" required></textarea> </br>
+    <textarea name="reason" cols="20" rows="3" required onkeyup="validate()"></textarea> </br>
 
     <button type="button" onclick="SubmitRequest()" >Submit</button>
   </form>
