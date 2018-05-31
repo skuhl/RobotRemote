@@ -1,17 +1,39 @@
-var password = document.getElementById('password');
-var passConfirm = document.getElementById('REpassword');
+var form = document.forms.signup;
+var password = form.elements.password.value;
+var passConfirm = form.elements.REpassword.value;
+var email = form.elements.username.value;
+var reason = form.elements.reason.value;
 
 function validate()
 {
 	console.log('validate called');
+	//Regular expression checks for email in format " "@" "." "
+	var n = email.search(/^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/);
+	//might need to be less than one?
+	if(n < 0)
+	{
+		email.setCustomValidity("Email format nonstandard!");
+	}else
+	{
+		email.setCustomValidity("");
+	}
+	
+	//Check that the passwords match
 	if(password.value != passConfirm.value)
 	{
 		console.log('SetCustomValidity');
 		passConfirm.setCustomValidity("Passwords don't match!");
-	}
-	else
+	}else
 	{
 		passConfirm.setCustomValidity("");
+	}
+	
+	if(reason === null || reason === "")
+	{
+		reason.setCustomValidity("Please provide a reason for your request!");
+	}else
+	{
+		reason.setCustomValidity("");
 	}
 }
 
