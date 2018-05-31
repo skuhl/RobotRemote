@@ -210,7 +210,7 @@ app.get('/Request.html', function(req, res){
 
 app.post('/Request.html', function(req, res){
     if(!req.body.username || !req.body.password || !req.body.reason){
-        res.status(200).send('Missing username, password, or reason for request.');
+        res.status(500).send('Missing username, password, or reason for request.');
         return;
     }
 
@@ -237,7 +237,7 @@ app.post('/Request.html', function(req, res){
             });
 
         }, (err)=>{
-        		res.status(200).send(err.client_reason);
+        		res.status(500).send(err.client_reason);
         });
 });
 
