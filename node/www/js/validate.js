@@ -7,7 +7,7 @@ var reason = form.elements.reason;
 function validate()
 {
 	//Check that the passwords match
-	if(password !== passConfirm)
+	if(password != passConfirm)
 	{
 		console.log('SetCustomValidity');
 		passConfirm.setCustomValidity("Passwords don't match!");
