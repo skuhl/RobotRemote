@@ -306,7 +306,7 @@ var SubmitSelected = function(){
         }
     }
 
-    xhr.open("POST",'http://' + window.location.host + '/requesttimeslot', true);
+    xhr.open("POST",location.protocol + '//' + window.location.host +  '/requesttimeslot', true);
     xhr.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
     document.getElementById('req_submit').disabled = true;
     xhr.send(JSON.stringify({start_time: begin_utc_time, duration: duration}));
@@ -341,5 +341,5 @@ req.onreadystatechange = function(){
     }
 }
 
-req.open("GET", 'http://' + window.location.host + "/timeslotrequests", true);
+req.open("GET", location.protocol + '//' + window.location.host + "/timeslotrequests", true);
 req.send();

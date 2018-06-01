@@ -22,7 +22,7 @@ var SubmitRequest = function(){
 			alert('Error, ' + this.responseText);
 		}
 	}
-	xms.open("POST", 'http://' + window.location.host+ '/Request.html', true);
+	xms.open("POST", location.protocol + '//' + window.location.host + '/Request.html', true);
 	xms.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
    xms.send(JSON.stringify({username:user, password:pass, reason:reason}));
 }
