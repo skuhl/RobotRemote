@@ -120,6 +120,7 @@ app.get('/', function(req, res){
 });
 
 app.get('/ControlPanel.html', function(req, res){
+    res.append('Cache-Control', "no-cache, no-store, must-revalidate");
     if(!req.session.loggedin){
         res.redirect(303, '/Login.html')
         return;
@@ -168,6 +169,7 @@ app.get('/Login.html', function(req, res){
 });
 
 app.post('/Login.html', function(req, res){
+    res.append('Cache-Control', "no-cache, no-store, must-revalidate");
     if(req.session.email){
         res.status(200).send('Already logged in, log out first.');
         return;
@@ -195,12 +197,14 @@ app.post('/Login.html', function(req, res){
 });
 
 app.get('/Logout', function(req, res){
+    res.append('Cache-Control', "no-cache, no-store, must-revalidate");
     req.session.loggedin = false;
     delete req.session;
     res.redirect(303, '/Home.html');
 });
 
 app.get('/sessioninfo', function(req, res){
+    res.append('Cache-Control', "no-cache, no-store, must-revalidate");
     res.status(200).send(req.session.email + ", admin: " + req.session.is_admin + ", user_id: " + req.session.user_id);
 });
 
@@ -211,6 +215,8 @@ app.get('/Request.html', function(req, res){
 app.post('/Request.html', function(req, res){
     /*Email regex, ripped off https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/email#Validation  */
     const email_regex = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+    
+    res.append('Cache-Control', "no-cache, no-store, must-revalidate");
     
     if(!req.body.username || !req.body.password || !req.body.reason){
         res.status(400).send('Missing email, password, or reason for request.');
@@ -227,12 +233,13 @@ app.post('/Request.html', function(req, res){
         .then((email_token)=>{
             res.status(200).send('success!');
             let link = options['domain_name'] + "/verify?email=" + encodeURIComponent(req.body.username) + "&email_tok=" + encodeURIComponent(email_token);
-            mailOptions={
-					to : req.body.username,
-					from : options['mailer_email'],
-					subject : "Please confirm your Email account",
-					html : "Hello,<br> Please Click on the link to verify your email.<br><a href="+link+">Click here to verify</a>",	
-               text : "Hello, Please visit the following URL to verify your email." + link
+            
+            let mailOptions = {
+                to : req.body.username,
+                from : options['mailer_email'],
+                subject : "Please confirm your Email account",
+                html : "Hello,<br> Please Click on the link to verify your email.<br><a href="+link+">Click here to verify</a>",	
+                text : "Hello, Please visit the following URL to verify your email." + link
             }
             
             smtpTransport.sendMail(mailOptions, function(error, response){
@@ -242,7 +249,7 @@ app.post('/Request.html', function(req, res){
                 }else{
                     console.log("Message sent: " + response.message);
                     res.end("sent");
-                    }
+                }
             });
 
         }, (err)=>{
@@ -251,6 +258,8 @@ app.post('/Request.html', function(req, res){
 });
 
 app.get('/Scheduler.html', function(req, res){
+    res.append('Cache-Control', "no-cache, no-store, must-revalidate");
+    console.log("Called scheduler");
     if(!req.session.loggedin){
         res.redirect(303, '/Login.html')
         return;
@@ -260,7 +269,8 @@ app.get('/Scheduler.html', function(req, res){
 });
 
 app.get('/verify', function(req,res){
-	user_auth.email_verify(req.query.email, req.query.email_tok).then(function(){
+    res.append('Cache-Control', "no-cache, no-store, must-revalidate");
+    user_auth.email_verify(req.query.email, req.query.email_tok).then(function(){
 		let admin_link = options['domain_name'] + "/admin/Admin.html"; 
         
         smtpTransport.sendMail({
@@ -284,6 +294,7 @@ app.get('/verify', function(req,res){
 });
 
 app.get('/admin/Admin.html', function(req, res){
+    res.append('Cache-Control', "no-cache, no-store, must-revalidate");
     if(!req.session.loggedin){
         res.redirect(302, '/Login.html');
         return;
@@ -307,6 +318,7 @@ app.get('/admin/Admin.html', function(req, res){
     }
 */
 app.get('/admin/loginrequests', function(req, res){
+    res.append('Cache-Control', "no-cache, no-store, must-revalidate");
     if(!req.session.loggedin){
         res.redirect(302, '/Login.html');
         return;
@@ -338,6 +350,7 @@ app.get('/admin/loginrequests', function(req, res){
     one with unapproved requests.
 */
 app.get('/admin/timeslotrequests', function(req, res){
+    res.append('Cache-Control', "no-cache, no-store, must-revalidate");
     if(!req.session.loggedin){
         res.redirect(302, '/Login.html');
         return;
@@ -363,6 +376,7 @@ app.get('/admin/timeslotrequests', function(req, res){
     Request to reject login request with given id
 */
 app.get('/admin/rejectloginrequest/:id', function(req, res){
+    res.append('Cache-Control', "no-cache, no-store, must-revalidate");
     if(!req.session.loggedin){
         res.redirect(302, '/Login.html');
         return;
@@ -379,7 +393,7 @@ app.get('/admin/rejectloginrequest/:id', function(req, res){
     db_fetch.delete_timeslotrequest_admin(req.params.id).then(async function(user_id){
         try{
             let user = await db_fetch.get_user_by_id(user_id);
-            mailOptions={
+            let mailOptions = {
                 to : user.email,
                 from : options['mailer_email'],
                 subject : "Timeslot Request Rejected",
@@ -411,6 +425,7 @@ app.get('/admin/rejectloginrequest/:id', function(req, res){
     Request to accept login request with given id
 */
 app.get('/admin/acceptloginrequest/:id', function(req, res){
+    res.append('Cache-Control', "no-cache, no-store, must-revalidate");
     if(!req.session.loggedin){
         res.redirect(302, '/Login.html');
         return;
@@ -428,6 +443,7 @@ app.get('/admin/acceptloginrequest/:id', function(req, res){
     Request to reject timeslot request with given id
 */
 app.get('/admin/rejecttimeslotrequest/:id', function(req, res){
+    res.append('Cache-Control', "no-cache, no-store, must-revalidate");
     if(!req.session.loggedin){
         res.redirect(302, '/Login.html');
         return;
@@ -445,6 +461,7 @@ app.get('/admin/rejecttimeslotrequest/:id', function(req, res){
     Request to accept timeslot request with given id
 */
 app.get('/admin/accepttimeslotrequest/:id', function(req, res){
+    res.append('Cache-Control', "no-cache, no-store, must-revalidate");
     if(!req.session.loggedin){
         res.redirect(302, '/Login.html');
         return;
@@ -467,7 +484,7 @@ app.get('/admin/accepttimeslotrequest/:id', function(req, res){
     }
 */
 app.get('/timeslotrequests', function(req, res){
-    
+    res.append('Cache-Control', "no-cache, no-store, must-revalidate");
     if(!req.session.loggedin){
         //not logged in
         res.status(403).send('Not logged in!');
@@ -495,7 +512,8 @@ const time_quantum = 60;
 const max_quantums = 8;
 const num_days = 7;
 
-app.post('/requesttimeslot', function(req, res){ 
+app.post('/requesttimeslot', function(req, res){
+    res.append('Cache-Control', "no-cache, no-store, must-revalidate"); 
     if(!req.session.loggedin){
         res.status(403).send('Not logged in!');
         return;
