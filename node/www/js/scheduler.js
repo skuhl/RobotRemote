@@ -8,54 +8,6 @@ var select_end_index = -1;
 var time_quantum = 60; /*Time quantum in minutes */
 var num_days = 7; /*Number of days to display*/
 
-var day_index_to_string = {
-    0: "Sun",
-    1: "Mon",
-    2: "Tues",
-    3: "Wed",
-    4: "Thurs",
-    5: "Fri",
-    6: "Sat"
-}
-
-var month_index_to_string = {
-    0: "Jan",
-    1: "Feb",
-    2: "Mar",
-    3: "Apr",
-    4: "May",
-    5: "Jun",
-    6: "Jul",
-    7: "Aug",
-    8: "Sept",
-    9: "Oct",
-    10: "Nov",
-    11: "Dec"
-}
-/*
-Function which pads number to num_digits digits before the decimal point,
-using the give padding character.
-*/
-function PadNumber(num_digits, padding_character, number, precision){
-    var fixed_num_str = number.toFixed(precision);
-    var cur_num_digits = fixed_num_str.indexOf('.');
-    var num_padding_needed = cur_num_digits < 0 ? num_digits - fixed_num_str.length : num_digits - cur_num_digits;
-    var final_string = fixed_num_str;
-    var i;
-
-    for(i = 0; i < num_padding_needed; i++){
-        final_string = padding_character + final_string;
-    } 
-
-    return final_string;
-}
-
-function Hour24To12(hour){
-    if(hour == 0) return 12;
-    if(hour > 12) return hour % 12;
-    return hour;
-}
-
 var GenerateTable = function(my_elements){
     var html = '';
     
@@ -66,13 +18,9 @@ var GenerateTable = function(my_elements){
         let end = my_elements[i].end_date;
         html+='<tr id="request_table_row_'+ my_elements[i].id +'"class="request_table_row request_table_element">';
         //TODO pretty print dates?
-        html+='<td class="request_table_element request_table_cell">' + (start.getMonth()+1) + '/' + start.getDate() + '/' + start.getFullYear() + 
-        ' ' + PadNumber(2, '0', Hour24To12(start.getHours()), 0) + ':' + PadNumber(2, '0', start.getMinutes(), 0) +  ' ' + 
-        (start.getHours() < 12 ? 'AM' : 'PM') +'</td>';
+        html+='<td class="request_table_element request_table_cell">' + DateTimeBeautify(start) +'</td>';
         
-        html+='<td class="request_table_element request_table_cell">' + (end.getMonth()+1) + '/' + end.getDate() + '/' + end.getFullYear() + 
-        ' ' + PadNumber(2, '0', Hour24To12(end.getHours()), 0) + ':' + PadNumber(2, '0', end.getMinutes(), 0) +  ' ' + 
-        (end.getHours() < 12 ? 'AM' : 'PM') +'</td>';
+        html+='<td class="request_table_element request_table_cell">' + DateTimeBeautify(end) +'</td>';
         
         html+='<td class="request_table_element request_table_cell">' + (my_elements[i].approved ? "Yes" : "Awaiting") + '</td>';
         html+='<td class="request_table_element request_table_cell"><button class="delete_button" onclick="DeleteTimeslot(' + my_elements[i].id + ');location.reload();">Delete</button></td>';
@@ -156,7 +104,7 @@ var GenerateGrid = function(elements){
                     '" can_select="' +
                     can_select +
                     '" onmousedown="GridMouseDown(this)" onmouseover="GridMouseOver(this)">';
-            if(element_date >= start_date) html += PadNumber(2, '0', Hour24To12(element_date.getHours()), 0) + ':' + PadNumber(2, '0', element_date.getMinutes(), 0); 
+            if(element_date >= start_date) html += TimeBeautify(element_date); 
             html += '</td>';
         }
         html += '</tr>';

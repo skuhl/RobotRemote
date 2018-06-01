@@ -315,6 +315,7 @@ app.get('/admin/Admin.html', function(req, res){
         id:  <id for request>
         email: <email>,
         reason: <reason>
+        date_requested: <datetime>
     }
 */
 app.get('/admin/loginrequests', function(req, res){
@@ -334,7 +335,7 @@ app.get('/admin/loginrequests', function(req, res){
     db_fetch.get_login_requests(0, -1).then((json)=>{
         res.status(200).json({requests: json});
     }, (err)=>{
-        res.status(500).send('Error getting login requests');
+        res.status(500).send(err.client_reason);
         console.log(err.db_err);
     });
 });

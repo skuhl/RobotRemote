@@ -24,7 +24,7 @@ module.exports = {
                 }
 
                 if(num_requests <= 0 ){
-                    connection.query('SELECT loginrequests.id, users.email, loginrequests.comment FROM users INNER JOIN loginrequests ON users.loginreq_id = loginrequests.id WHERE email_validated=1', [], function(err, res, fields){    
+                    connection.query('SELECT loginrequests.id, users.email, loginrequests.comment, loginrequests.date_requested FROM users INNER JOIN loginrequests ON users.loginreq_id = loginrequests.id WHERE email_validated=1', [], function(err, res, fields){    
                         connection.release();
                         if(err){
                             return reject({
@@ -38,14 +38,15 @@ module.exports = {
                             json.push({
                                 id: res[i].id,
                                 email: res[i].email,
-                                reason: res[i].comment
+                                reason: res[i].comment,
+                                date_requested: res[i].date_requested.toISOString()
                             });
                         }
                         resolve(json);
         
                     });
                 }else{
-                    connection.query('SELECT loginrequests.id, users.email, loginrequests.comment FROM users INNER JOIN loginrequests ON users.loginreq_id = loginrequests.id WHERE email_validated=1 LIMIT ? OFFSET ?', [num_requests, start_at], function(err, res, fields){    
+                    connection.query('SELECT loginrequests.id, users.email, loginrequests.comment, loginrequests.date_requested FROM users INNER JOIN loginrequests ON users.loginreq_id = loginrequests.id WHERE email_validated=1 LIMIT ? OFFSET ?', [num_requests, start_at], function(err, res, fields){    
                         connection.release();
                         if(err){
                             return reject({
@@ -59,9 +60,11 @@ module.exports = {
                             json.push({
                                 id: res[i].id,
                                 email: res[i].email,
-                                reason: res[i].comment
+                                reason: res[i].comment,
+                                date_requested: res[i].date_requested.toISOString()
                             });
                         }
+
                         resolve(json);
         
                     });
@@ -129,14 +132,14 @@ module.exports = {
                         if(res[i].user_id == user_id){
                             mine.push({
                                 id: res[i].id,
-                                starttime: res[i].start_time,
+                                starttime: res[i].start_time.toISOString(),
                                 duration: res[i].duration,
                                 email: res[i].email,
                                 accepted: res[i].approved
                             });
                         }else{
                             others.push({
-                                starttime: res[i].start_time,
+                                starttime: res[i].start_time.toISOString(),
                                 duration: res[i].duration,
                                 accepted: res[i].approved
                             });
@@ -182,14 +185,14 @@ module.exports = {
                             approved.push({
                                 email: res[i].email,
                                 id: res[i].id,
-                                starttime: res[i].start_time,
+                                starttime: res[i].start_time.toISOString(),
                                 duration: res[i].duration,
                             });
                         }else{
                             unapproved.push({
                                 email: res[i].email,
                                 id: res[i].id,
-                                starttime: res[i].start_time,
+                                starttime: res[i].start_time.toISOString(),
                                 duration: res[i].duration,
                             });
                         }                        
