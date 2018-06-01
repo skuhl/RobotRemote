@@ -50,11 +50,11 @@
 }
 
 #div_key {
-    display: inline-block;
-    box-sizing: border-box;
-    width: 19%;
-    margin: 0;
-    vertical-align: middle;
+   box-sizing: border-box;
+   margin: 52px 0 0 35px;
+   vertical-align: top;
+   display: inline-block;
+   width: auto;
 }
 
 #table_div {
@@ -67,8 +67,11 @@
 
 #schedule_table {
    border-collapse: collapse;
-   position: relative;
-   margin: 20px auto 20px auto;
+    position: relative;
+    left: 50%;
+    top: 30%;
+    margin-top: 20px;
+    margin-left: -285.1px
 }
 
 .schedule_table_element {
@@ -129,5 +132,5 @@
    border-radius: 30px;
    border: 1px solid #f1d573;
    cursor: pointer;
-   margin: auto;
+   margin:     margin: 20px 50% 0 0;
 }
