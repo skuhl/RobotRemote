@@ -12,7 +12,7 @@ module.exports = {
         let connection = await pool.getConnection();
             
         try{
-            var [res, field] = await connection.execute('SELECT id, passhash, passsalt, approved, admin from users where email = ?', [username]);
+            var [res, field] = await connection.query('SELECT id, passhash, passsalt, approved, admin from users where email = ?', [username]);
         }finally{
             connection.release();
         }
@@ -65,7 +65,7 @@ module.exports = {
         
         await connection.beginTransaction();
         try{
-            let [res, fields] = await connection.execute('SELECT * FROM users WHERE email = ?', [email]);
+            let [res, fields] = await connection.query('SELECT * FROM users WHERE email = ?', [email]);
                 
             if(res.length > 0){
                 throw {
@@ -74,7 +74,7 @@ module.exports = {
                 };
             }
 
-            await connection.execute('CALL user_request(?, ?, ?, ?, ?)', [email, hash, salt, email_tok, comment]);
+            await connection.query('CALL user_request(?, ?, ?, ?, ?)', [email, hash, salt, email_tok, comment]);
             await connection.commit();
         }catch(e){
             await connection.rollback();
@@ -88,7 +88,7 @@ module.exports = {
    email_verify: async function(email, email_tok){
         let connection = await pool.getConnection();
         try{
-            let [results, fields] = await connection.execute('SELECT loginreq_id FROM users WHERE email=?', [email]);
+            let [results, fields] = await connection.query('SELECT loginreq_id FROM users WHERE email=?', [email]);
             
             if(results.length != 1){
                 throw {
@@ -106,7 +106,7 @@ module.exports = {
                 };
             }
 
-            let [results1, fields1] = await connection.execute('SELECT email_token, email_validated FROM loginrequests where id=?', [request_ID]);
+            let [results1, fields1] = await connection.query('SELECT email_token, email_validated FROM loginrequests where id=?', [request_ID]);
 
             if(results1.length < 1){
                 throw {

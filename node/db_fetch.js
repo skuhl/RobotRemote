@@ -16,9 +16,9 @@ module.exports = {
         conn = await pool.getConnection();   
         try{
             if(num_requests <= 0 ){
-                var [res, field] = await connection.execute('SELECT loginrequests.id, users.email, loginrequests.comment, loginrequests.date_requested FROM users INNER JOIN loginrequests ON users.loginreq_id = loginrequests.id WHERE email_validated=1', []);    
+                var [res, field] = await connection.query('SELECT loginrequests.id, users.email, loginrequests.comment, loginrequests.date_requested FROM users INNER JOIN loginrequests ON users.loginreq_id = loginrequests.id WHERE email_validated=1', []);    
             }else{
-                var [res, field] = await connection.execute('SELECT loginrequests.id, users.email, loginrequests.comment, loginrequests.date_requested FROM users INNER JOIN loginrequests ON users.loginreq_id = loginrequests.id WHERE email_validated=1 LIMIT ? OFFSET ?', [num_requests, start_at]);
+                var [res, field] = await connection.query('SELECT loginrequests.id, users.email, loginrequests.comment, loginrequests.date_requested FROM users INNER JOIN loginrequests ON users.loginreq_id = loginrequests.id WHERE email_validated=1 LIMIT ? OFFSET ?', [num_requests, start_at]);
             }
         }finally{
             connection.release();
@@ -38,10 +38,10 @@ module.exports = {
     /*Gets info about user with given id. Will use given connection if provided, otherwise uses an independant conneciton */
     get_user_by_id: async function(id, connection){
         if(connection){
-            var [res, fields] = await connection.execute("SELECT * FROM users WHERE id=?", [id]);
+            var [res, fields] = await connection.query("SELECT * FROM users WHERE id=?", [id]);
 
         }else{
-            var [res, fields] = await pool.execute("SELECT * FROM users WHERE id=?", [id]);
+            var [res, fields] = await pool.query("SELECT * FROM users WHERE id=?", [id]);
         }
 
         if(res.length < 1){
@@ -57,7 +57,7 @@ module.exports = {
     
         let connection = await pool.getConnection();   
         try{
-            var [res, fields] = await connection.execute('SELECT id, start_time, duration, approved, user_id FROM timeslots WHERE start_time > ? AND start_time < ?', [beginDate, endDate]);
+            var [res, fields] = await connection.query('SELECT id, start_time, duration, approved, user_id FROM timeslots WHERE start_time > ? AND start_time < ?', [beginDate, endDate]);
         }finally{
             connection.release();
         }
@@ -90,7 +90,7 @@ module.exports = {
     admin_get_timeslot_requests: async function(beginDate, endDate){
         let conn = await pool.getConnection();
         try{
-            var [res, fields] = await connection.execute('SELECT users.email, timeslots.id, timeslots.start_time, timeslots.duration, timeslots.approved'+
+            var [res, fields] = await connection.query('SELECT users.email, timeslots.id, timeslots.start_time, timeslots.duration, timeslots.approved'+
             ' FROM timeslots INNER JOIN users ON timeslots.user_id=users.id'+
             ' WHERE start_time >= ? AND start_time < ?', 
             [beginDate, endDate]);
@@ -137,7 +137,7 @@ module.exports = {
             let start_date = date;
             let end_date = new Date(date.getTime() + duration*1000);
         
-            var [res, fields] = await connection.execute("SELECT count(*) FROM timeslots WHERE user_id=? AND"+
+            var [res, fields] = await connection.query("SELECT count(*) FROM timeslots WHERE user_id=? AND"+
                 " ((start_time <= ? AND DATE_ADD(start_time, INTERVAL duration SECOND) >= ?)"+
                 " OR (start_time <= ? AND DATE_ADD(start_time, INTERVAL duration SECOND) >= ?))",
             [user_id, start_date, start_date, end_date, end_date]);
@@ -161,7 +161,7 @@ module.exports = {
             let start_date = date;
             let end_date = new Date(date.getTime() + duration*1000);
             
-            var [res, fields] = await connection.execute("SELECT count(*) FROM timeslots WHERE approved=1 AND"+
+            var [res, fields] = await connection.query("SELECT count(*) FROM timeslots WHERE approved=1 AND"+
                 " ((start_time <= ? AND DATE_ADD(start_time, INTERVAL duration SECOND) >= ?)"+
                 " OR (start_time <= ? AND DATE_ADD(start_time, INTERVAL duration SECOND) >= ?))",
             [start_date, start_date, end_date, end_date]);
@@ -199,7 +199,7 @@ module.exports = {
                 };
             }
 
-            await connection.execute("INSERT INTO timeslots (user_id, start_time, duration) VALUES (?, ?, ?)", [user_id, date, duration]);
+            await connection.query("INSERT INTO timeslots (user_id, start_time, duration) VALUES (?, ?, ?)", [user_id, date, duration]);
             await connection.commit();
         }catch(e){
             //Rollback, let error bubble up.
@@ -212,7 +212,7 @@ module.exports = {
     },
     delete_request: async function(req_id, user_id){   
                 
-        let [res, fields] = await pool.execute("DELETE FROM timeslots WHERE user_id=? AND id=?", [user_id, req_id]);
+        let [res, fields] = await pool.query("DELETE FROM timeslots WHERE user_id=? AND id=?", [user_id, req_id]);
     
         if(res.affectedRows <= 0){
             throw {
@@ -231,7 +231,7 @@ module.exports = {
         let connection = await pool.getConnection();
         
         try{
-            let [res, fields] = await connection.execute("SELECT user_id FROM timeslots WHERE id=?", [id]);
+            let [res, fields] = await connection.query("SELECT user_id FROM timeslots WHERE id=?", [id]);
             
 
             if(res.length < 1){
@@ -243,7 +243,7 @@ module.exports = {
 
             var user_id = res[0].user_id;
 
-            await connection.execute("DELETE FROM timeslots WHERE id=?", [id]);
+            await connection.query("DELETE FROM timeslots WHERE id=?", [id]);
 
         }finally{
             connection.release();
@@ -257,10 +257,10 @@ module.exports = {
 async function clean_db(){
     let connection = await pool.getConnection();
     try{
-        await connection.execute("DELETE FROM timeslots WHERE DATE_ADD(start_time, INTERVAL duration SECOND) <= ?", [new Date(Date.now())]);
+        await connection.query("DELETE FROM timeslots WHERE DATE_ADD(start_time, INTERVAL duration SECOND) <= ?", [new Date(Date.now())]);
         //Deletes logins and requests from over 2 weeks ago, if they have not been approved yet.
         //TODO send out an email to them if this happens?
-        await connection.execute("DELETE FROM loginrequests WHERE date_requested < ?", [new Date(Date.now() - 14*24*60*60*1000)]);
+        await connection.query("DELETE FROM loginrequests WHERE date_requested < ?", [new Date(Date.now() - 14*24*60*60*1000)]);
     }finally{
         connection.release();
     }

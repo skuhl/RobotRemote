@@ -68,11 +68,10 @@ let mysql_pool = mysql.createPool({
     password: options['mysql_pass'],
     database: options['mysql_db'],
     /*This code snippet found from  https://www.bennadel.com/blog/3188-casting-bit-fields-to-booleans-using-the-node-js-mysql-driver.htm*/
-    typeCast: function castField( field, useDefaultTypeCasting ) {
+    typeCast: function( field, useDefaultTypeCasting ) {
         if (field.type === "BIT" && field.length === 1) {
             let bytes = field.buffer();
             return bytes[0] === 1;
-
         }
 
         return useDefaultTypeCasting();
