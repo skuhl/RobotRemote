@@ -17,7 +17,7 @@ h1{
    font-weight: bold;
    background: #ffcd00;
    color:black;
-   z-index: 3;
+   z-index: 4;
 }
 
 .Main {
@@ -40,7 +40,7 @@ ul {
    position: -webkit-sticky; /* Safari */
    position: sticky;
    top: 0;
-   z-index:3;
+   z-index:4;
 }
 li {
     float: left;
