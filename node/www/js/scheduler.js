@@ -17,11 +17,8 @@ function loader(){
             console.log(loaded.width);
             loader();
         }else{ //if the table width is non zero make it show up!
-            document.getElementById("loader").classList.remove('overlay-loader');
-			document.getElementById("loader").classList.remove('loader-background'); //might not need this one
-			document.getElementById("loader").classList.remove('color-flip');			
-			document.getElementById("loader").classList.remove('loader-icon');
-			document.getElementById("loader").classList.remove('spinning-cog');		
+				document.getElementById("loader").classname = ('shrinking-cog');
+				document.getElementById("loader").style.display = "none";	
         }
         
     },time);

@@ -1,17 +1,6 @@
 /* Basics */
- 
-html, body {
-    width: 100%;
-    height: 100%;
-    font-family: "Helvetica Neue", Helvetica, sans-serif;
-    color: #333;
-    -webkit-font-smoothing: antialiased;
-    background: #f0f0f0;
-     
-}
-
 #pageID {
-   color: #555;
+   color: #444;
    text-align: center;
    display: inherit;
    padding-top: 10px;
@@ -64,7 +53,7 @@ form {
 }
  
 label {
-    color: #555;
+    color: #444;
     display: inline-block;
     margin-left: 18px;
     padding-top: 10px;
@@ -80,7 +69,7 @@ p a {
 }
  
 p a:hover {
-    color: #555;
+    color: #444;
 }
  
 input {
