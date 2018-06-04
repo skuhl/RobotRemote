@@ -2,6 +2,9 @@ let login_elements = {};
 let timeslot_elements = {};
 
 function GenerateTimeslotTable(timeslots){
+    
+    if(timeslots.length <= 0) return null;
+
     var table = document.createElement('table');
     table.classList.add("admin_timeslot_req_table");
 
@@ -37,6 +40,9 @@ function GenerateTimeslotTable(timeslots){
 }
 
 function GenerateLoginTable(logins){
+    
+    if(logins.length <= 0) return null;
+    
     var table = document.createElement('table');
     table.classList.add("admin_login_req_table");
     //Table headers
@@ -103,8 +109,9 @@ timeslot_xhr.onreadystatechange = function(){
             json.unapproved[i].start_date = new Date(json.unapproved[i].starttime);
             json.unapproved[i].end_date = new Date(json.unapproved[i].start_date.getTime() + json.unapproved[i].duration * 1000);
         }
-
-        document.getElementsByTagName('body')[0].appendChild(GenerateTimeslotTable(json.unapproved));
+        var timeslot_table = GenerateTimeslotTable(json.unapproved);
+        if(timeslot_table != null) document.getElementsByTagName('body')[0].appendChild(timeslot_table);
+    
     }else if(this.readyState === 4){
         //failed
         alert('Couldn\'t get timeslots! <br/> ' + this.responseText);
@@ -118,7 +125,11 @@ login_xhr.onreadystatechange = function(){
     if(this.readyState === 4 && this.status === 200){
         let json = JSON.parse(this.responseText);
         console.log(json);
-        document.getElementsByTagName('body')[0].appendChild(GenerateLoginTable(json.requests));
+
+        var login_table = GenerateLoginTable(json.requests);
+
+        if(login_table != null) document.getElementsByTagName('body')[0].appendChild(login_table);
+    
     }else if(this.readyState === 4){
         //failed
         alert('Couldn\'t get pending login requests! <br/> ' + this.responseText);
