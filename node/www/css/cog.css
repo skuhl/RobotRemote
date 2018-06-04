@@ -29,62 +29,6 @@
   animation: color-flip 6.5s .6s infinite linear;
 }
 
-@-webkit-keyframes color-flip {
-  0% { background-color: #2c4762 }
-  18% { background-color: #2c4762 }
-  20% { background-color: #a77dc2 }
-  38% { background-color: #a77dc2 }
-  40% { background-color: #4aa8d8 }
-  58% { background-color: #4aa8d8 }
-  60% { background-color: #56bc8a }
-  78% { background-color: #56bc8a }
-  80% { background-color: #d95e40 }
-  98% { background-color: #d95e40 }
-  100% { background-color: #2c4762 }
-}
-
-@-moz-keyframes color-flip {
-  0% { background-color: #2c4762 }
-  18% { background-color: #2c4762 }
-  20% { background-color: #a77dc2 }
-  38% { background-color: #a77dc2 }
-  40% { background-color: #4aa8d8 }
-  58% { background-color: #4aa8d8 }
-  60% { background-color: #56bc8a }
-  78% { background-color: #56bc8a }
-  80% { background-color: #d95e40 }
-  98% { background-color: #d95e40 }
-  100% { background-color: #2c4762 }
-}
-
-@-o-keyframes color-flip {
-  0% { background-color: #2c4762 }
-  18% { background-color: #2c4762 }
-  20% { background-color: #a77dc2 }
-  38% { background-color: #a77dc2 }
-  40% { background-color: #4aa8d8 }
-  58% { background-color: #4aa8d8 }
-  60% { background-color: #56bc8a }
-  78% { background-color: #56bc8a }
-  80% { background-color: #d95e40 }
-  98% { background-color: #d95e40 }
-  100% { background-color: #2c4762 }
-}
-
-@keyframes color-flip {
-  0% { background-color: #2c4762 }
-  18% { background-color: #2c4762 }
-  20% { background-color: #a77dc2 }
-  38% { background-color: #a77dc2 }
-  40% { background-color: #4aa8d8 }
-  58% { background-color: #4aa8d8 }
-  60% { background-color: #56bc8a }
-  78% { background-color: #56bc8a }
-  80% { background-color: #d95e40 }
-  98% { background-color: #d95e40 }
-  100% { background-color: #2c4762 }
-}
-
 .overlay-loader .loader-icon {
   position: absolute;
   top: 50%;
