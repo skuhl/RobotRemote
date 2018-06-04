@@ -11,7 +11,7 @@ const db_fetch = require('./db_fetch.js');
 const html_fetcher = require('./html_fetcher');
 const bodyParser = require('body-parser')
 const session = require('express-session');
-const mysql = require('mysql');
+const mysql = require('mysql2/promise');
 const MySQLStore = require('express-mysql-session')(session);
 
 const options = require('./settings.json');

@@ -1,254 +1,140 @@
-const mysql = require('mysql');
+const mysql = require('mysql2/promise');
 const crypto = require('crypto');
 
 let pool = null;
 
 module.exports = {
     init_mysql: function(conn_pool){
-        pool = conn_pool
+        pool = conn_pool;
     },
-    /* 
-    Returns an object, such that said object has a property
-    'reason', which will give a reason if verified is false.
-    This reason may or may not be sensitive, so this reason will not
-    be shown to the client.
-    'client_reason' is the reason we give to the client.
-    */
-    verify_credentials: function(username, password){
-        return new Promise ((resolve, reject) => {
-            pool.getConnection(function(err, connection){
-                if(err){
-                    return reject({
-                        reason: 'Couldn\'t get connection from pool',
-                        client_reason: 'Internal database error.',
-                        db_err: err
-                    });
-                }
 
-                connection.query('SELECT id, passhash, passsalt, approved, admin from users where email = ?', [username], (err, res, fields)=>{
-                    connection.release();
-                    if(err){
-                        reject({
-                            reason: 'Error performing query.',
-                            client_reason: 'Internal database error.',
-                            db_err: err
-                        });
-                        return;
-                    }
-                    if(res.length < 1){
-                        reject({
-                            reason: 'Couldn\'t find username in DB.',
-                            client_reason: 'Invalid email or password.'
-                        }); 
-                        return;
-                    }
-    
-                    console.log(res);
-    
-                    if(res.length > 1){
-                        reject({
-                            reason: 'More than 1 user with given email!',
-                            client_reason: 'Internal database error.'
-                        });
-                        return;
-                    }
-    
-                    let hash = crypto.createHash('sha256').update(password + res[0].passsalt).digest('hex');
-                    
-                    if(hash !== res[0].passhash){
-                        reject({
-                            reason: 'Invalid password.',
-                            client_reason: 'Invalid email or password.'
-                        });
-                        return;
-                    }
-    
-                    console.log('Approved: ' + res[0].approved);
-                    if(res[0].approved == false){
-                        reject({
-                            reason: 'User has not been approved yet.',
-                            client_reason: 'Your login is still awaiting approval.'
-                        });
-                        return;
-                    }
-                    //TODO does something need to be passed here?
-                    resolve({is_admin: res[0].admin, id: res[0].id});
-                });
-            });
-        });
+    verify_credentials: async function(username, password){
+        let connection = await pool.getConnection();
+            
+        try{
+            var [res, field] = await connection.execute('SELECT id, passhash, passsalt, approved, admin from users where email = ?', [username]);
+        }finally{
+            connection.release();
+        }
+
+        if(res.length < 1){
+            throw {
+                reason: 'Couldn\'t find username in DB.',
+                client_reason: 'Invalid email or password.'
+            }
+        }
+
+        
+        if(res.length > 1){
+            throw {
+                reason: 'More than 1 user with given email!',
+                client_reason: 'Internal database error.'
+            };
+        }
+
+        let hash = crypto.createHash('sha256').update(password + res[0].passsalt).digest('hex');
+        
+        if(hash !== res[0].passhash){
+            throw {
+                reason: 'Invalid password.',
+                client_reason: 'Invalid email or password.'
+            };
+        }
+
+        if(res[0].approved == false){
+            throw {
+                reason: 'User has not been approved yet.',
+                client_reason: 'Your login is still awaiting approval.'
+            };
+        }
+        
+        return {is_admin: res[0].admin, id: res[0].id};
     },
     /* 
     Creates a non-approved login_request.
     Return value is the same as above.
     */
-   login_request: function(email, password, comment){
+   login_request: async function(email, password, comment){
         
-        return new Promise((resolve, reject) => {
-            pool.getConnection(function(err, connection){
-                if(err){
-                    return reject({
-                        reason: 'Couldn\'t get connection from pool',
-                        client_reason: 'Internal database error.',
-                        db_err: err
-                    });
-                }
-                let salt = crypto.randomBytes(32).toString('hex');
-                let email_tok = crypto.randomBytes(16).toString('hex');
-                let hash = crypto.createHash('sha256').update(password + salt).digest('hex');
-
-                console.log(salt);
-                console.log(email_tok);
-                console.log(hash);
-
-                connection.beginTransaction(function(err){
-                    if(err) {
-                        connection.release();
-                        return reject({
-                            reason: 'Failed to start transaction!',
-                            client_reason: 'Internal database error.',
-                            db_err: err
-                        });
-                    }
-                    connection.query('SELECT * FROM users WHERE email = ?', [email], function(err, res, field){
-                        if(err){
-                            connection.release();
-                            return connection.rollback(function(){
-                                reject({
-                                    reason: 'Failed trying to see if user already in DB.',
-                                    client_reason: 'Internal database error.',
-                                    db_err: err
-                                });
-                            });
-                        }
-
-                        if(res.length > 0){
-                            connection.release();
-                            return connection.rollback(function(){
-                                reject({
-                                    reason: 'User already in DB.',
-                                    client_reason: 'Email already in use.',
-                                    db_err: null
-                                });
-                            });
-                        }
-
-                        connection.query('CALL user_request(?, ?, ?, ?, ?)', [email, hash, salt, email_tok, comment], function(err, res, field){
-                            if(err){
-                                connection.release();
-                                return connection.rollback(function(){
-                                    reject({
-                                        reason: 'Failed to call stored procedure!',
-                                        client_reason: 'Internal database error.',
-                                        db_err: err
-                                    });
-                                });
-                            }
         
-                            connection.commit(function(err){
-                                if(err){
-                                    return connection.rollback(function(){
-                                        connection.release();
-                                        reject({
-                                            reason: 'Commit failed!',
-                                            client_reason: 'Internal database error.',
-                                            db_err: err
-                                        });
-                                    });
-                                }
-                                connection.release();
-                                //Maybe return something here?
-                                resolve(email_tok);
-                            });
-                        });
-                    });
-                });
-            });
-        });
+        let connection = await pool.getConnection();
+        
+        let salt = crypto.randomBytes(32).toString('hex');
+        let email_tok = crypto.randomBytes(16).toString('hex');
+        let hash = crypto.createHash('sha256').update(password + salt).digest('hex');
+        
+        await connection.beginTransaction();
+        try{
+            let [res, fields] = await connection.execute('SELECT * FROM users WHERE email = ?', [email]);
+                
+            if(res.length > 0){
+                throw {
+                    reason: 'User already in DB.',
+                    client_reason: 'Email already in use.',
+                };
+            }
+
+            await connection.execute('CALL user_request(?, ?, ?, ?, ?)', [email, hash, salt, email_tok, comment]);
+            await connection.commit();
+        }catch(e){
+            await connection.rollback();
+            throw e;
+        }finally{
+            connection.release();
+        }
+
+        return email_tok;
    },
-   email_verify: function(email, email_tok){
-        return new Promise(function(resolve, reject){
-            pool.getConnection(function(err, connection){   
-                if(err){
-                    return reject({
-                        reason: 'Couldn\'t get connection from pool',
-                        client_reason: 'Internal database error.',
-                        db_err: err
-                    });
+   email_verify: async function(email, email_tok){
+        let connection = await pool.getConnection();
+        try{
+            let [results, fields] = await connection.execute('SELECT loginreq_id FROM users WHERE email=?', [email]);
+            
+            if(results.length != 1){
+                throw {
+                    reason: "Couldn't find user with that email!",
+                    client_reason: 'Invalid query string.'
                 }
-                connection.query('SELECT loginreq_id FROM users WHERE email=?', [email], function(error, results, fields){
-                    if(error){
-                        connection.release();
-                        return reject({
-                        reason: 'Failed to select by email!',
-                        client_reason: 'Internal database error.',
-                        db_err: error
-                    });
-                    }
-                    if(results.length != 1){
-                        connection.release();
-                        return reject({
-                        reason: "Couldn't find user with that email!",
-                        client_reason: 'Internal database error.',
-                        db_err: error
-                    });
-                    }
-                    let request_ID = results[0].loginreq_id;
-                    if(request_ID == null){
-                        connection.release();
-                        return reject({
-                        reason: "Request ID was NULL",
-                        client_reason: 'Email already verified.',
-                        db_err: error
-                    });
-                    }
-                    connection.query('SELECT email_token, email_validated FROM loginrequests where id=?', [request_ID], function(error, results, fields){
-                        if(error){
-                            connection.release();
-                            return reject({
-                            reason: 'Failed to select by email!',
-                            client_reason: 'Internal database error.',
-                            db_err: error
-                            });
-                        }
-                        if(results.length < 1){
-                            connection.release();
-                            return reject({
-                            reason: "Invalid request ID!",
-                            client_reason: 'Internal database error.',
-                            db_err: error
-                            });
-                        }
-                        if(results[0].email_validated){
-                            connection.release();
-                            return reject({
-                            reason: "Request ID was NULL",
-                            client_reason: 'Email already verified.',
-                            db_err: error
-                        });
-                        }
-                        if(results[0].email_token != email_tok){
-                            connection.release();
-                            return reject({
-                            reason: "Non matching token!",
-                            client_reason: 'Invalid URL.',
-                            db_err: error
-                        });
-                        }
-                        connection.query('UPDATE loginrequests SET email_validated=1 where id=?', [request_ID],function(error, results, fields){
-                            connection.release();
-                            if(error){
-                                return reject({
-                                reason: 'Failed to update!!:(',
-                                client_reason: 'Internal database error.',
-                                db_err: error
-                                });
-                            }
-                            
-                            resolve();
-                        });
-                    });
-                });
-            });
-        });
+            }
+
+            let request_ID = results[0].loginreq_id;
+            
+            if(request_ID == null){
+                throw {
+                    reason: "Request ID was NULL",
+                    client_reason: 'Email already verified.'
+                };
+            }
+
+            let [results1, fields1] = await connection.execute('SELECT email_token, email_validated FROM loginrequests where id=?', [request_ID]);
+
+            if(results1.length < 1){
+                throw {
+                    reason: "Invalid request ID!",
+                    client_reason: 'Internal database error.'
+                };
+            }
+
+            if(results1[0].email_validated){
+                throw {
+                    reason: "Request ID was NULL",
+                    client_reason: 'Email already verified.'
+                }
+            }
+
+            if(results1[0].email_token != email_tok){
+                throw {
+                    reason: "Non matching token!",
+                    client_reason: 'Invalid email token.'
+                };
+            }
+
+            await connection.query('UPDATE loginrequests SET email_validated=1 where id=?', [request_ID]);
+        
+        }finally{
+            connection.release();
+        }
+
+        return;
     }
 }
