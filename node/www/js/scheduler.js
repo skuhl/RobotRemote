@@ -35,14 +35,18 @@ var month_index_to_string = {
 
 function loader(){
 	var time = (Math.random() * 100) + 150;
+	console.log("Loader called!");
 	window.setTimeout(function(){
 		var loaded = document.getElementById("table_content").getBoundingClientRect();
 		if(!loaded.width){ //if the table width is 0 wait some more
 			console.log(loaded.width);
 			loader();
 		}else{ //if the table width is non zero make it show up!
-			document.getElementById("loader").classList.remove('loader-background color-flip'); //might not need this one
-			document.getElementById("loader").classList.remove('loader-icon spinning-cog');
+			document.getElementById("loader").classList.remove('overlay-loader');
+			document.getElementById("loader").classList.remove('loader-background'); //might not need this one
+			document.getElementById("loader").classList.remove('color-flip');			
+			document.getElementById("loader").classList.remove('loader-icon');
+			document.getElementById("loader").classList.remove('spinning-cog');		
 		}
 		
 	},time);
