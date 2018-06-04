@@ -13,7 +13,7 @@ module.exports = {
     /* if num_requests <= 0, we get all requests. */
     get_login_requests: async function(start_at, num_requests){
         let json = [];
-        conn = await pool.getConnection();   
+        connection = await pool.getConnection();   
         try{
             if(num_requests <= 0 ){
                 var [res, field] = await connection.query('SELECT loginrequests.id, users.email, loginrequests.comment, loginrequests.date_requested FROM users INNER JOIN loginrequests ON users.loginreq_id = loginrequests.id WHERE email_validated=1', []);    
@@ -88,7 +88,7 @@ module.exports = {
     },
 
     admin_get_timeslot_requests: async function(beginDate, endDate){
-        let conn = await pool.getConnection();
+        let connection = await pool.getConnection();
         try{
             var [res, fields] = await connection.query('SELECT users.email, timeslots.id, timeslots.start_time, timeslots.duration, timeslots.approved'+
             ' FROM timeslots INNER JOIN users ON timeslots.user_id=users.id'+
@@ -217,14 +217,15 @@ module.exports = {
         if(res.affectedRows <= 0){
             throw {
                 reason: 'Could not delete! Already deleted OR attempt to delete when it was not their request.',
-                client_reason: 'Already deleted!'
+                client_reason: 'Timeslot already deleted!'
             };
         }
         return;
     },
+
     /*
     Deletes timeslot request with the given ID from the database. 
-    On success, returns the ID of the user that was just deleted.
+    On success, returns the ID of the user whos timeslot was just deleted.
     */
     delete_timeslotrequest_admin: async function(id){
         
@@ -251,7 +252,50 @@ module.exports = {
 
         return user_id;
         
+    },
+
+    /*Same general format as above. returns ID of the user 
+    who's timeslot was accepted. 
+    */
+    accept_timeslot_request: async function(id){
+
+        let connection = await pool.getConnection();
+        await connection.beginTransaction();
+
+        try{
+            let [res0, fields0] = await connection.query("SELECT user_id, start_time, duration FROM timeslots WHERE id=?", [id]);
+            
+            if(res0.length < 1){
+                throw {
+                    reason: 'Bad ID for timeslot.',
+                    client_reason: 'Couldn\'t find timeslot in database!',
+                };
+            }
+
+            var user_id = res0[0].user_id;
+            let start_date = res0[0].start_time;
+            let end_date = new Date(start_date.getTime() + res0[0].duration * 1000);
+
+            //Delete overlapping timeslots
+            await connection.query("DELETE FROM timeslots WHERE id!=? AND"+
+            " ((start_time <= ? AND DATE_ADD(start_time, INTERVAL duration SECOND) >= ?)"+
+            " OR (start_time <= ? AND DATE_ADD(start_time, INTERVAL duration SECOND) >= ?))",
+            [id, start_date, start_date, end_date, end_date]);
+
+            //Set approved for this one.
+            await connection.query("UPDATE timeslots SET approved=1 WHERE id=?", [id]);
+
+            await connection.commit();
+        }catch(e){
+            await connection.rollback();
+            throw e;
+        }finally{
+            connection.release();
+        }
+
+        return user_id;
     }
+
 };
 
 async function clean_db(){

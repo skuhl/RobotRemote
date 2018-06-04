@@ -327,15 +327,17 @@ app.get('/admin/loginrequests', function(req, res){
         res.redirect(302, '/Login.html');
         return;
     }
+
     if(!req.session.is_admin){
         res.redirect(302, '/Home.html');
         return;
     }
+
     db_fetch.get_login_requests(0, -1).then((json)=>{
         res.status(200).json({requests: json});
     }, (err)=>{
         res.status(500).send(err.client_reason);
-        console.log(err.db_err);
+        console.log(err);
     });
 });
 
@@ -377,6 +379,7 @@ app.get('/admin/timeslotrequests', function(req, res){
 */
 app.get('/admin/rejectloginrequest/:id', function(req, res){
     res.append('Cache-Control', "no-cache, no-store, must-revalidate");
+    
     if(!req.session.loggedin){
         res.redirect(302, '/Login.html');
         return;
@@ -389,43 +392,14 @@ app.get('/admin/rejectloginrequest/:id', function(req, res){
         res.redirect(302, '/Home.html');
         return;
     }
-
-    db_fetch.delete_timeslotrequest_admin(req.params.id).then(async function(user_id){
-        try{
-            let user = await db_fetch.get_user_by_id(user_id);
-            let mailOptions = {
-                to : user.email,
-                from : options['mailer_email'],
-                subject : "Timeslot Request Rejected",
-                html : "Hello,<br> We regret to inform you that one of your timeslot requests has been rejected.",	
-            }
-            
-            smtpTransport.sendMail(mailOptions, function(error, response){
-                if(error){
-                    console.log(error);
-                    res.end("error");
-                }else{
-                    console.log("Message sent: " + response.message);
-                    res.end("sent");
-                    }
-            });
-            
-            res.status(200).send("Success");
-
-        }catch(err){
-            res.status(500).send(err.client_reason);    
-        }
-    }, (err)=>{
-        console.log(err);
-        res.status(500).send(err.client_reason);
-    });
-
 });
 /* 
     Request to accept login request with given id
 */
 app.get('/admin/acceptloginrequest/:id', function(req, res){
+    
     res.append('Cache-Control', "no-cache, no-store, must-revalidate");
+    
     if(!req.session.loggedin){
         res.redirect(302, '/Login.html');
         return;
@@ -456,24 +430,95 @@ app.get('/admin/rejecttimeslotrequest/:id', function(req, res){
         res.redirect(302, '/Home.html');
         return;
     }
+
+    db_fetch.delete_timeslotrequest_admin(req.params.id).then(async function(user_id){
+        try{
+            let user = await db_fetch.get_user_by_id(user_id);
+            let mailOptions = {
+                to : user.email,
+                from : options['mailer_email'],
+                subject : "Timeslot Request Rejected",
+                html : "Hello,<br> We regret to inform you that one of your timeslot requests has been rejected.",	
+            }
+            
+            smtpTransport.sendMail(mailOptions, function(error, response){
+                if(error){
+                    console.log(error);
+                    res.end("error");
+                }else{
+                    console.log("Message sent: " + response.message);
+                    res.end("sent");
+                }
+            });
+            
+            res.status(200).send("Success");
+
+        }catch(err){
+            res.status(500).send(err.client_reason);    
+        }
+    }, (err)=>{
+        console.log(err);
+        res.status(500).send(err.client_reason);
+    });
+
 });
 /* 
     Request to accept timeslot request with given id
 */
 app.get('/admin/accepttimeslotrequest/:id', function(req, res){
     res.append('Cache-Control', "no-cache, no-store, must-revalidate");
+    
+    if(req.params.id === undefined || Number(req.params.id) == NaN){
+        res.satus(400).send("Missing/malformed id");
+    }
+
     if(!req.session.loggedin){
-        res.redirect(302, '/Login.html');
+        res.status(403).send("Not logged in!");
         return;
     }
     if(req.session.is_admin === undefined){
-        res.redirect(302, '/Login.html');
+        res.status(403).send("Not an admin!");
         return;
     }
     if(!req.session.is_admin){
-        res.redirect(302, '/Home.html');
+        res.status(403).send("Not an admin!");
         return;
     }
+
+    db_fetch.accept_timeslot_request(req.params.id)
+    .then(db_fetch.get_user_by_id)
+    .then((user)=>{
+        try{
+            let mailOptions = {
+                to : user.email,
+                from : options['mailer_email'],
+                subject : "Timeslot Request Accepted",
+                html : "Hello,<br> your timeslot request has been accepted.",	
+            }
+            
+            smtpTransport.sendMail(mailOptions, function(error, response){
+                if(error){
+                    console.log(error);
+                    res.end("error");
+                }else{
+                    console.log("Message sent: " + response.message);
+                    res.end("sent");
+                }
+            });
+            
+            res.status(200).send("Success");
+
+        }catch(err){
+            res.status(500).send(err.client_reason);    
+        }
+    }).catch((err)=>{
+        if(err.client_reason){
+            res.status(500).send(err.client_reason);
+        }else{
+            res.status(500).send("Internal server error");
+        }
+        console.log(err);
+    });
 });
 
 /*Returns JSON encoded list of requests:
@@ -513,7 +558,9 @@ const max_quantums = 8;
 const num_days = 7;
 
 app.post('/requesttimeslot', function(req, res){
+    
     res.append('Cache-Control', "no-cache, no-store, must-revalidate"); 
+    
     if(!req.session.loggedin){
         res.status(403).send('Not logged in!');
         return;
@@ -584,6 +631,9 @@ app.post('/requesttimeslot', function(req, res){
 //This endpoint deletes the request with id,
 //only if the logged in user made it.
 app.get('/deletetimeslot/:id', function(req, res){
+    
+    res.append('Cache-Control', "no-cache, no-store, must-revalidate");
+
     if(!req.session.loggedin){
         res.status(403).send("Not logged in!");
         return;
