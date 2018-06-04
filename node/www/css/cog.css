@@ -7,26 +7,27 @@
   z-index: 1000;
 }
 
-/*.overlay-loader .loader-background {
+.overlay-loader .loader-background {
   position: absolute;
-  top: 0;
+  top: 133.2;
   right: 0;
   bottom: 0;
   left: 0;
-  -webkit-transition: background-color .2s 0s linear,right .2s .3s ease-out;
+  background-color: #f0f0f0;
+  /*-webkit-transition: background-color .2s 0s linear,right .2s .3s ease-out;
   -moz-transition: background-color .2s 0s linear,right .2s .3s ease-out;
   -ms-transition: background-color .2s 0s linear,right .2s .3s ease-out;
   -o-transition: background-color .2s 0s linear,right .2s .3s ease-out;
-  transition: background-color .2s 0s linear,right .2s .3s ease-out;
-}*/
-
+  transition: background-color .2s 0s linear,right .2s .3s ease-out;*/
+}
+/*
 .overlay-loader .loader-background.color-flip {
   -webkit-animation: color-flip 6.5s .6s infinite linear;
   -moz-animation: color-flip 6.5s .6s infinite linear;
   -ms-animation: color-flip 6.5s .6s infinite linear;
   -o-animation: color-flip 6.5s .6s infinite linear;
   animation: color-flip 6.5s .6s infinite linear;
-}
+}*/
 
 .overlay-loader .loader-icon {
   position: absolute;
