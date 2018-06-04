@@ -32,6 +32,21 @@ var month_index_to_string = {
     10: "Nov",
     11: "Dec"
 }
+
+function loader(){
+	var time = (Math.random() * 100) + 150;
+	window.setTimeout(function(){
+		var loaded = document.getElementById("table_content");
+		if(!loaded.clientWidth){ //if the table width is 0 wait some more
+			loader();
+		}else{ //if the table width is non zero make it show up!
+			document.getElementById("loader").classList.remove('loader-background color-flip'); //might not need this one
+			document.getElementById("loader").classList.remove('loader-icon spinning-cog');
+		}
+		
+	},time);
+}
+
 /*
 Function which pads number to num_digits digits before the decimal point,
 using the give padding character.
