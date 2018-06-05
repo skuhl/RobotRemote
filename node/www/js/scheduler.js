@@ -1,6 +1,6 @@
 var mouse_down = false;
 var mode = null;
-var max_quantums = 1000;
+var max_quantums = 8;
 
 var select_begin_index = -1;
 var select_end_index = -1;
@@ -260,7 +260,7 @@ var SubmitSelected = function(){
             //reload the page becuase the table is updated
             location.reload();
         }else if(this.readyState === 4){
-            alert("Error submitting time slot request!");
+            alert("Error submitting time slot request! " + this.responseText);
         }
 			//re enables the button(disabled somewhere else)
         if(this.readyState === 4){
