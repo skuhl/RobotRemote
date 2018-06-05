@@ -11,7 +11,7 @@ function get_navbar(session){
 	        <h1 class="Title">
 	            <span class="Main">Robot Run</span>
 	            <span class="Sub">Robot Remote</span>
-	            <img id="logo-print" src="/img/michigan-tech-logo-new-print.png" alt="Michigan Technological University print logo">
+	            <img id="logo-print" src="/img/black.png" alt="Michigan Technological University print logo">
 	        </h1>
 	        <ul>
 	            <li><a href="/Home.html">Information</a></li>
