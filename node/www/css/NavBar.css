@@ -16,7 +16,7 @@ html, body {
    display: inline-block;
    box-sizing: border-box;
    margin: 0;
-   padding: 14px 16px 14px 16px;
+   padding: 14px 16px 10px 16px;
    width: 100%;
    font-weight: bold;
    background: #ffcd00;
