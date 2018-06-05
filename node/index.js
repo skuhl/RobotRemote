@@ -380,18 +380,24 @@ app.get('/admin/timeslotrequests', function(req, res){
 app.get('/admin/rejectloginrequest/:id', function(req, res){
     res.append('Cache-Control', "no-cache, no-store, must-revalidate");
     
+    if(req.params.id === undefined || Number(req.params.id) == NaN){
+        res.satus(400).send("Missing/malformed id");
+    }
+
     if(!req.session.loggedin){
-        res.redirect(302, '/Login.html');
+        res.status(403).send("Not logged in!");
         return;
     }
     if(req.session.is_admin === undefined){
-        res.redirect(302, '/Login.html');
+        res.status(403).send("Not an admin!");
         return;
     }
     if(!req.session.is_admin){
-        res.redirect(302, '/Home.html');
+        res.status(403).send("Not an admin!");
         return;
     }
+
+    res.satus(501).send("Not yet implemented.");
 });
 /* 
     Request to accept login request with given id
@@ -400,34 +406,47 @@ app.get('/admin/acceptloginrequest/:id', function(req, res){
     
     res.append('Cache-Control', "no-cache, no-store, must-revalidate");
     
+    if(req.params.id === undefined || Number(req.params.id) == NaN){
+        res.satus(400).send("Missing/malformed id");
+    }
+
     if(!req.session.loggedin){
-        res.redirect(302, '/Login.html');
+        res.status(403).send("Not logged in!");
         return;
     }
     if(req.session.is_admin === undefined){
-        res.redirect(302, '/Login.html');
+        res.status(403).send("Not an admin!");
         return;
     }
     if(!req.session.is_admin){
-        res.redirect(302, '/Home.html');
+        res.status(403).send("Not an admin!");
         return;
     }
+
+    res.satus(501).send("Not yet implemented.");
 });
 /* 
     Request to reject timeslot request with given id
 */
 app.get('/admin/rejecttimeslotrequest/:id', function(req, res){
     res.append('Cache-Control', "no-cache, no-store, must-revalidate");
+    
+    if(req.params.id === undefined || Number(req.params.id) == NaN){
+        res.satus(400).send("Missing/malformed id");
+    }
+
     if(!req.session.loggedin){
-        res.redirect(302, '/Login.html');
+        res.status(403).send("Not logged in!");
         return;
     }
+    
     if(req.session.is_admin === undefined){
-        res.redirect(302, '/Login.html');
+        res.status(403).send("Not an admin!");
         return;
     }
+
     if(!req.session.is_admin){
-        res.redirect(302, '/Home.html');
+        res.status(403).send("Not an admin!");
         return;
     }
 
