@@ -30,7 +30,7 @@
 .delete_button {
     width: 60px;
     height: 20px;
-    background-color: #E8BF28;
+    background-color: #ffcd00;
     border-radius: 30px;
     border: 1px solid #f1d573;
     cursor: pointer;
@@ -116,7 +116,7 @@
 }
 
 .td_other_pending {
-    background-color: #E8BF28;
+    background-color: #ffcd00;
 }
 
 .td_selected {
@@ -128,7 +128,7 @@
    display: block;
    width: 80px;
    height: 30px;
-   background-color: #E8BF28;
+   background-color: #ffcd00;
    border-radius: 30px;
    border: 1px solid #f1d573;
    cursor: pointer;
