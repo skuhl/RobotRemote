@@ -553,7 +553,7 @@ app.get('/timeslotrequests', function(req, res){
     provide start time in milliseconds since the unix epoch, and duration in milliseconds.
 */
 //These should match the ones in scheduler.js
-const time_quantum = 60;
+const time_quantum = 30;
 const max_quantums = 8;
 const num_days = 7;
 
