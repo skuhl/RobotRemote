@@ -294,8 +294,62 @@ module.exports = {
         }
 
         return user_id;
-    }
+    },
+    /*
+      Deletes the user and request associated with the passed in ID.
+      Returns the users email and stuff.
+    */
+    delete_user_by_request: async function(req_id){
+        let connection = await pool.getConnection();
+        try{
+            //This delete cascades;
+            //This means that any user that references this login request is removed.
+            let [res, fields] = await connection.query("SELECT id FROM users WHERE loginreq_id=?", [req_id]);
+            
+            if(res.length != 1){
+                throw {
+                    reason: "Login request doesn't exist!",
+                    client_reason:"Invalid ID."
+                };
+            }
+            
+            let user_id = res[0].id;
+            user_details = await this.get_user_by_id(user_id, connection);
 
+            await connection.query("DELETE FROM loginrequests WHERE id=?", [req_id]);
+        }finally{
+            connection.release();
+        }
+        return user_details;
+    },
+    /*
+      Marks the user as approved, and deletes the request.
+      returns ID of the approved user.
+    */
+    accept_user: async function (req_id){
+        let connection = await pool.getConnection();
+        try{
+            let [res, fields] = await connection.query("SELECT id FROM users WHERE loginreq_id=?", [req_id]);
+            
+            if(res.length != 1){
+                throw {
+                    reason: "Login request doesn't exist!",
+                    client_reason:"Invalid ID."
+                };
+            }
+            
+            var user_id = res[0].id;
+            
+            await connection.query("UPDATE users SET approved=1, loginreq_id=NULL WHERE id=?", [user_id]);
+            
+            await connection.query("DELETE FROM loginrequests WHERE id=?", req_id);
+
+        }finally{
+            connection.release();
+        }
+
+        return user_id;
+    }
 };
 
 async function clean_db(){

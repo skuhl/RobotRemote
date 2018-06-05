@@ -188,10 +188,8 @@ app.post('/Login.html', function(req, res){
         console.log(req.session);
         res.redirect(302, '/Scheduler.html');
     },(err)=>{
-        console.log('Error verifying user '  + req.body.username + ': ' + err.reason);
-        //set session error. Login.html can ask for it.
-        req.session.login_error = err.client_reason;
-        res.redirect(303, '/Login.html');
+        console.log(err);
+        res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
     });
 });
 
@@ -252,7 +250,8 @@ app.post('/Request.html', function(req, res){
             });
 
         }, (err)=>{
-        		res.status(500).send(err.client_reason);
+            console.log(err);
+            res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
         });
 });
 
@@ -285,10 +284,9 @@ app.get('/verify', function(req,res){
         });
         
         res.redirect(303, '/Login.html');
-	},function(error){
-	   console.log(error.reason);
-       console.log(error.db_err);
-       res.status(200).send('Error verifying email, ' + error.client_reason);
+	},function(err){
+        console.log(err);
+        res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
 	});
 });
 
@@ -336,8 +334,8 @@ app.get('/admin/loginrequests', function(req, res){
     db_fetch.get_login_requests(0, -1).then((json)=>{
         res.status(200).json({requests: json});
     }, (err)=>{
-        res.status(500).send(err.client_reason);
         console.log(err);
+        res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
     });
 });
 
@@ -370,7 +368,7 @@ app.get('/admin/timeslotrequests', function(req, res){
         res.status(200).json(val);
     }, (err) => {
         console.log(err);
-        res.status(500).send(err.client_reason);
+        res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
     });
 
 });
@@ -397,10 +395,18 @@ app.get('/admin/rejectloginrequest/:id', function(req, res){
         return;
     }
 
-    res.status(501).send("Not yet implemented.");
+    db_fetch.delete_user_by_request(req.params.id)
+    .then((user_details)=>{
+        //TODO send an email that tells them they are rejected.
+        res.status(200).send("Success");
+    })
+    .catch((err)=>{
+        console.log(err);
+        res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
+    });
 });
 /* 
-    Request to accept login request with given id
+    Request to accept login request with given id (for a loginrequest)
 */
 app.get('/admin/acceptloginrequest/:id', function(req, res){
     
@@ -423,7 +429,15 @@ app.get('/admin/acceptloginrequest/:id', function(req, res){
         return;
     }
 
-    res.status(501).send("Not yet implemented.");
+    db_fetch.accept_user(req.params.id)
+    .then(db_fetch.get_user_by_id)
+    .then((user_info) => {
+
+    })
+    .catch((err)=>{
+        console.log(err);
+        res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
+    });
 });
 /* 
     Request to reject timeslot request with given id
@@ -477,7 +491,7 @@ app.get('/admin/rejecttimeslotrequest/:id', function(req, res){
         }
     }, (err)=>{
         console.log(err);
-        res.status(500).send(err.client_reason);
+        res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
     });
 
 });
@@ -507,36 +521,27 @@ app.get('/admin/accepttimeslotrequest/:id', function(req, res){
     db_fetch.accept_timeslot_request(req.params.id)
     .then(db_fetch.get_user_by_id)
     .then((user)=>{
-        try{
-            let mailOptions = {
-                to : user.email,
-                from : options['mailer_email'],
-                subject : "Timeslot Request Accepted",
-                html : "Hello,<br> your timeslot request has been accepted.",	
+        let mailOptions = {
+            to : user.email,
+            from : options['mailer_email'],
+            subject : "Timeslot Request Accepted",
+            html : "Hello,<br> your timeslot request has been accepted.",	
+        }
+        
+        smtpTransport.sendMail(mailOptions, function(error, response){
+            if(error){
+                console.log(error);
+                res.end("error");
+            }else{
+                console.log("Message sent: " + response.message);
+                res.end("sent");
             }
-            
-            smtpTransport.sendMail(mailOptions, function(error, response){
-                if(error){
-                    console.log(error);
-                    res.end("error");
-                }else{
-                    console.log("Message sent: " + response.message);
-                    res.end("sent");
-                }
-            });
-            
-            res.status(200).send("Success");
-
-        }catch(err){
-            res.status(500).send(err.client_reason);    
-        }
+        });
+        
+        res.status(200).send("Success");
     }).catch((err)=>{
-        if(err.client_reason){
-            res.status(500).send(err.client_reason);
-        }else{
-            res.status(500).send("Internal server error");
-        }
         console.log(err);
+        res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
     });
 });
 
@@ -561,9 +566,8 @@ app.get('/timeslotrequests', function(req, res){
     db_fetch.user_get_timeslot_requests(new Date(now_ms), new Date(week_later_ms), req.session.user_id).then((json)=>{
         res.status(200).json(json);
     },(err)=>{
-        console.log('Error fetching timeslot requests: ' + err.reason);
-        console.log(err.db_err);
-        res.status(500).send(err.client_reason);
+        console.log(err);
+        res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
     });
 
 });
@@ -642,7 +646,7 @@ app.post('/requesttimeslot', function(req, res){
 
     }, (err)=>{
         console.log(err);
-        res.status(500).send(err.client_reason);
+        res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
     });
 
 });
@@ -662,7 +666,7 @@ app.get('/deletetimeslot/:id', function(req, res){
         res.status(200).send('Success');
     },(err)=>{
         console.log(err);
-        res.status(500).send(err.client_reason);
+        res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
     });
 });
 /* 404 page. Can support other errors, technically, but currently is not used for anything else.*/
