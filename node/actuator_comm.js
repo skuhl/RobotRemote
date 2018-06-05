@@ -165,18 +165,14 @@ function handle_data(data){
     if(this.info.data_unread[this.info.data_unread.length-1] == '\0'){
         
         let msg = this.info.data_unread.slice(0, -1).toUpperCase();
-        //Messages that may occur in any state....
-        
 
         //Main state machine
         if(this.info.state == 'READY'){
             if(msg == 'OK'){
-                //send data to server about where the client is
-
                 //TODO make the number of random bytes configurable?
                 secret = crypto.randomBytes(512);
                 this.info.client_secret = secret.toString('base64');
-                //TODO possibly generate secrets for all cameras? Or maybe one secret for all of them is good enough?
+                //TODO send this secret to the cameras as well.
                 sendString = this.info.client_secret + '\0';
                 
                 this.write(sendString, 'utf-8');
