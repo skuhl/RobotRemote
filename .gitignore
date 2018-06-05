@@ -17,6 +17,7 @@ settings.json
 #ignores for certificate files
 helperscripts/cacert
 helperscripts/cert
+helperscripts/client-cert
 cert.pem
 key.pem
 cacert.pem
