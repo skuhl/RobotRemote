@@ -135,13 +135,23 @@ function AcceptTimeslot(timeslot_id){
 }
 
 function RemoveLoginFromTable(login_id){
-    login_elements[login_id].parentElement.removeChild(login_elements[login_id]);
+    var parent = login_elements[login_id].parentElement;
+    parent.removeChild(login_elements[login_id]);
     login_elements[login_id] = undefined;
+
+    if(Object.keys(login_elements).length == 0){
+        parent.parentElement.removeChild(parent);
+    }
 }
 
 function RemoveTimeslotFromTable(timeslot_id){
-    timeslot_elements[timeslot_id].parentElement.removeChild(timeslot_elements[timeslot_id]);
+    var parent = timeslot_elements[timeslot_id].parentElement;
+    parent.removeChild(timeslot_elements[timeslot_id]);
     timeslot_elements[timeslot_id] = undefined;
+
+    if(Object.keys(timeslot_elements).length == 0){
+        parent.parentElement.removeChild(parent);
+    }
 }
 
 var timeslot_xhr = new XMLHttpRequest();
@@ -164,7 +174,7 @@ timeslot_xhr.onreadystatechange = function(){
             json.unapproved[i].end_date = new Date(json.unapproved[i].start_date.getTime() + json.unapproved[i].duration * 1000);
         }
         var timeslot_table = GenerateTimeslotTable(json.unapproved);
-        if(timeslot_table != null) document.getElementsByTagName('body')[0].appendChild(timeslot_table);
+        if(timeslot_table != null) document.getElementById("timeslot_requests").appendChild(timeslot_table);
     
     }else if(this.readyState === 4){
         //failed
@@ -182,7 +192,7 @@ login_xhr.onreadystatechange = function(){
 
         var login_table = GenerateLoginTable(json.requests);
 
-        if(login_table != null) document.getElementsByTagName('body')[0].appendChild(login_table);
+        if(login_table != null) document.getElementById('login_requests').appendChild(login_table);
     
     }else if(this.readyState === 4){
         //failed
