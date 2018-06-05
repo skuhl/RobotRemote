@@ -31,6 +31,8 @@ html, body {
    font-style: italic;
 }
 img {
+   width:205px;
+   height:68px;
    float: right;
 }
 
