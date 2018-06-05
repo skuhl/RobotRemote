@@ -75,19 +75,73 @@ function GenerateLoginTable(logins){
 }
 
 function RejectLogin(login_id){
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function(){
+        if(this.readyState === 4 && this.status === 200){
+            RemoveLoginFromTable(login_id);
+            alert("Succesfully rejected login!");
+        }else if(this.readyState === 4){
+            alert("Couldn't reject login; " + this.responseText);
+        }
+    }
 
+    xhr.open("GET", location.protocol + '//' + window.location.host + "/admin/rejectloginrequest/" + login_id);
+    xhr.send();
 }
 
 function AcceptLogin(login_id){
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function(){
+        if(this.readyState === 4 && this.status === 200){
+            RemoveLoginFromTable(login_id);
+            alert("Succesfully accepted login!");
+        }else if(this.readyState === 4){
+            alert("Couldn't accept login; " + this.responseText);
+        }
+    }
 
+    xhr.open("GET", location.protocol + '//' + window.location.host + "/admin/acceptloginrequest/" + login_id);
+    xhr.send();
 }
 
 function RejectTimeslot(timeslot_id){
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function(){
+        if(this.readyState === 4 && this.status === 200){
+            RemoveTimeslotFromTable(timeslot_id);
+            alert("Succesfully rejected timeslot!");
+        }else if(this.readyState === 4){
+            alert("Couldn't reject timeslot; " + this.responseText);
+        }
+    }
 
+    xhr.open("GET", location.protocol + '//' + window.location.host + "/admin/rejecttimeslotrequest/" + timeslot_id);
+    xhr.send();
 }
 
 function AcceptTimeslot(timeslot_id){
-    
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function(){
+        if(this.readyState === 4 && this.status === 200){
+            RemoveTimeslotFromTable(timeslot_id);
+            alert("Succesfully accepted timeslot!");
+        }else if(this.readyState === 4){
+            alert("Couldn't accept timeslot; " + this.responseText);
+        }
+    }
+
+    xhr.open("GET", location.protocol + '//' + window.location.host + "/admin/accepttimeslotrequest/" + timeslot_id);
+    xhr.send();
+}
+
+function RemoveLoginFromTable(login_id){
+    login_elements[login_id].parentElement.removeChild(login_elements[login_id]);
+    login_elements[login_id] = undefined;
+}
+
+function RemoveTimeslotFromTable(timeslot_id){
+    timeslot_elements[timeslot_id].parentElement.removeChild(timeslot_elements[timeslot_id]);
+    timeslot_elements[timeslot_id] = undefined;
 }
 
 var timeslot_xhr = new XMLHttpRequest();

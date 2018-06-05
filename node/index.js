@@ -381,7 +381,7 @@ app.get('/admin/rejectloginrequest/:id', function(req, res){
     res.append('Cache-Control', "no-cache, no-store, must-revalidate");
     
     if(req.params.id === undefined || Number(req.params.id) == NaN){
-        res.satus(400).send("Missing/malformed id");
+        res.status(400).send("Missing/malformed id");
     }
 
     if(!req.session.loggedin){
@@ -397,7 +397,7 @@ app.get('/admin/rejectloginrequest/:id', function(req, res){
         return;
     }
 
-    res.satus(501).send("Not yet implemented.");
+    res.status(501).send("Not yet implemented.");
 });
 /* 
     Request to accept login request with given id
@@ -407,7 +407,7 @@ app.get('/admin/acceptloginrequest/:id', function(req, res){
     res.append('Cache-Control', "no-cache, no-store, must-revalidate");
     
     if(req.params.id === undefined || Number(req.params.id) == NaN){
-        res.satus(400).send("Missing/malformed id");
+        res.status(400).send("Missing/malformed id");
     }
 
     if(!req.session.loggedin){
@@ -423,7 +423,7 @@ app.get('/admin/acceptloginrequest/:id', function(req, res){
         return;
     }
 
-    res.satus(501).send("Not yet implemented.");
+    res.status(501).send("Not yet implemented.");
 });
 /* 
     Request to reject timeslot request with given id
@@ -432,7 +432,7 @@ app.get('/admin/rejecttimeslotrequest/:id', function(req, res){
     res.append('Cache-Control', "no-cache, no-store, must-revalidate");
     
     if(req.params.id === undefined || Number(req.params.id) == NaN){
-        res.satus(400).send("Missing/malformed id");
+        res.status(400).send("Missing/malformed id");
     }
 
     if(!req.session.loggedin){
@@ -488,7 +488,7 @@ app.get('/admin/accepttimeslotrequest/:id', function(req, res){
     res.append('Cache-Control', "no-cache, no-store, must-revalidate");
     
     if(req.params.id === undefined || Number(req.params.id) == NaN){
-        res.satus(400).send("Missing/malformed id");
+        res.status(400).send("Missing/malformed id");
     }
 
     if(!req.session.loggedin){
