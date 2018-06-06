@@ -74,8 +74,8 @@ p a:hover {
 
 #sub {
    font-size: 9px;
-   margin-left: 18px;
-   margin-bottom:0;
+   color: #777;
+   margin: 0 20px 0 18px;
 }
  
 input {
