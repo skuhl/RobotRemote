@@ -1,6 +1,7 @@
 var form = document.forms.signup;
-var password = form.elements.password.value;
-var passConfirm = form.elements.REpassword.value;
+var email = form.elements.username;
+var password = form.elements.password;
+var passConfirm = form.elements.REpassword;
 var reason = form.elements.reason;
 
 function validate()
@@ -11,29 +12,27 @@ function validate()
 	var spc = new RegExp("/([ -/]|[:-@]|[[-`]|[{-~])/g");//covers any standard special character
 	
 	//Check that the passwords match
-	if(password != passConfirm)
+	if(password.value != passConfirm.value)
 	{
 		passConfirm.setCustomValidity("Passwords don't match!");
-	}else if(password.length < 8 || password.length > 22){
+	}else if(password.value.length < 8 || password.value.length > 22){
 		password.setCustomValidity("Password should be 8-22 characters");
-	}else if(!cap.test(password)){
+	}else if(!cap.test(password.value)){
 		passConfirm.setCustomValidity("Missing a capital letter");
 	}
-	else if(!low.test(password)){
+	else if(!low.test(password.value)){
 		passConfirm.setCustomValidity("Missing a lower case letter");
 	}
-	else if(!num.test(password)){
+	else if(!num.test(password.value)){
 		passConfirm.setCustomValidity("Missing a number");
 	}
-	else if(!spc.test(password)){
+	else if(!spc.test(password.value)){
 		passConfirm.setCustomValidity("Missing a special character");
 	}
 	else
 	{
 		passConfirm.setCustomValidity("");
 	}
-	
-	if(password)
 	
 	if(reason === null || reason === "")
 	{
