@@ -16,7 +16,7 @@ function validate()
 	{
 		passConfirm.setCustomValidity("Passwords don't match!");
 	}else if(password.value.length < 8 || password.value.length > 22){
-		console.log(password.value.length);
+		console.log(password.length);
 		password.setCustomValidity("Password should be 8-22 characters");
 	}else if(!cap.test(password.value)){
 		passConfirm.setCustomValidity("Missing a capital letter");
