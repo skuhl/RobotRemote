@@ -20,8 +20,8 @@ function validate()
 	else if(!password.includes(/([0-9])/g)){
 		passConfirm.setCustomValidity("Missing a number");
 	}
-	else if(!password.includes(/([0-9])/g)){//some range of special characters
-		passConfirm.setCustomValidity("Missing a number");
+	else if(!password.includes(/([ -/]|[:-@]|[[-`]|[{-~])/g)){//allows any standard special character
+		passConfirm.setCustomValidity("Missing a special character");
 	}
 	else
 	{
