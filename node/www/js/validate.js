@@ -1,5 +1,4 @@
 var form = document.forms.signup;
-var email = form.elements.username;
 var password = form.elements.password;
 var passConfirm = form.elements.REpassword;
 var reason = form.elements.reason;
@@ -16,7 +15,7 @@ function validate()
 	{
 		passConfirm.setCustomValidity("Passwords don't match!");
 	}else if(password.value.length < 8 || password.value.length > 22){
-		console.log(password.length);
+		console.log(password.value.length);
 		password.setCustomValidity("Password should be 8-22 characters");
 	}else if(!cap.test(password.value)){
 		passConfirm.setCustomValidity("Missing a capital letter");
@@ -44,7 +43,6 @@ function validate()
 	}
 }
 
-email.onchange = validate;
-password.onchange = validate;
+password.onkeyup = validate;
 passConfirm.onkeyup = validate;
-reason.onchange= validate;
+reason.onkeyup= validate;
