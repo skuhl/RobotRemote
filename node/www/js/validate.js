@@ -1,10 +1,10 @@
-var form = document.forms.signup;
-var password = form.elements.password;
-var passConfirm = form.elements.REpassword;
-var reason = form.elements.reason;
-
 function validate()
 {
+	var form = document.forms.signup;
+	var password = form.elements.password;
+	var passConfirm = form.elements.REpassword;
+	var reason = form.elements.reason;
+
 	var cap = new RegExp("/([A-Z])/g");
 	var low = new RegExp("/([a-z])/g");
 	var num = new RegExp("/([0-9])/g");
@@ -14,10 +14,12 @@ function validate()
 	if(password.value != passConfirm.value)
 	{
 		passConfirm.setCustomValidity("Passwords don't match!");
-	}else if(password.value.length < 8 || password.value.length > 22){
+	}
+	else if(password.value.length < 8 || password.value.length > 22){
 		console.log(password.value.length);
 		password.setCustomValidity("Password should be 8-22 characters");
-	}else if(!cap.test(password.value)){
+	}
+	else if(!cap.test(password.value)){
 		passConfirm.setCustomValidity("Missing a capital letter");
 	}
 	else if(!low.test(password.value)){
@@ -42,7 +44,3 @@ function validate()
 		reason.setCustomValidity("");
 	}
 }
-
-password.onkeyup = validate;
-passConfirm.onkeyup = validate;
-reason.onkeyup= validate;
