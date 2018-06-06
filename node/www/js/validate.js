@@ -6,7 +6,7 @@ var reason = form.elements.reason;
 function validate()
 {
 	var cap = new RegExp("/([A-Z])/g");
-	var low = new RegExp("/([a-z])/g)");
+	var low = new RegExp("/([a-z])/g");
 	var num = new RegExp("/([0-9])/g");
 	var spc = new RegExp("/([ -/]|[:-@]|[[-`]|[{-~])/g");//covers any standard special character
 	
