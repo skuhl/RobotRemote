@@ -5,22 +5,27 @@ var reason = form.elements.reason;
 
 function validate()
 {
+	var cap = new RegExp("/([A-Z])/g");
+	var low = new RegExp("/([a-z])/g)");
+	var num = new RegExp("/([0-9])/g");
+	var spc = new RegExp("/([ -/]|[:-@]|[[-`]|[{-~])/g");//covers any standard special character
+	
 	//Check that the passwords match
 	if(password != passConfirm)
 	{
 		passConfirm.setCustomValidity("Passwords don't match!");
 	}else if(password.length < 8 || password.length > 22){
 		password.setCustomValidity("Password should be 8-22 characters");
-	}else if(!password.includes(/([A-Z])/g)){
+	}else if(!cap.test(password)){
 		passConfirm.setCustomValidity("Missing a capital letter");
 	}
-	else if(!password.includes(/([a-z])/g)){
+	else if(!low.test(password)){
 		passConfirm.setCustomValidity("Missing a lower case letter");
 	}
-	else if(!password.includes(/([0-9])/g)){
+	else if(!num.test(password)){
 		passConfirm.setCustomValidity("Missing a number");
 	}
-	else if(!password.includes(/([ -/]|[:-@]|[[-`]|[{-~])/g)){//allows any standard special character
+	else if(!spc.test(password)){
 		passConfirm.setCustomValidity("Missing a special character");
 	}
 	else
