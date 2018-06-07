@@ -10,10 +10,10 @@ function validate()
 	console.log("I'm being called!");
 	clearTimeout(timeout);
 	timeout = setTimeout(function(){
-		var cap = new RegExp("/([A-Z])/g");
-		var low = new RegExp("/([a-z])/g");
-		var num = new RegExp("/([0-9])/g");
-		var spc = new RegExp("/([ -/]|[:-@]|[[-`]|[{-~])/g");//covers any standard special character
+		var cap = new RegExp("/([A-Z])/");
+		var low = new RegExp("/([a-z])/");
+		var num = new RegExp("/([0-9])/");
+		var spc = new RegExp("/([ -/]|[:-@]|[[-`]|[{-~])/");//covers any standard special character
 		
 		//Check that the passwords match
 		if((password.value != passConfirm.value)&&(password.value.length != 0 || passConfirm.value.length != 0)){
@@ -52,6 +52,3 @@ function validate()
 		}
 	},500);
 }
-
-password.onkeypress = validate();
-passConfirm.onkeypress = validate();
