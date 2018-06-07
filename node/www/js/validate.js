@@ -20,6 +20,7 @@ function validate()
 			document.getElementById("repass_error").style.display = "inline";
 		}
 		else if(password.value.length != 0 && (password.value.length < 8 || password.value.length > 22)){
+			console.log(password.value.length);
 			document.getElementById("pass_error").innerHTML = "Password should be 8-22 characters";
 			document.getElementById("pass_error").style.display = "inline";
 		}
