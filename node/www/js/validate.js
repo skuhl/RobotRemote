@@ -18,7 +18,7 @@ function validate()
 		if(password.value != passConfirm.value){
 			document.getElementById("repass_error").innerHTML = "Passwords don't match";
 		}
-		else if(password.value.length < 8 || password.value.length > 22){
+		else if(password.value.length != 0 && (password.value.length < 8 || password.value.length > 22)){
 			document.getElementById("pass_error").innerHTML = "Password should be 8-22 characters";
 		}
 		else if(!cap.test(password.value)){
@@ -42,4 +42,3 @@ function validate()
 
 password.onkeyup = validate();
 passConfirm.onkeyup = validate();
-reason.onkeyup = validate();
