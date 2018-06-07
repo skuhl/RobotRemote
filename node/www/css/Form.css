@@ -60,11 +60,11 @@ label {
     font-size: 14px;
 }
 
-label[type=password]{
+label[for=password]{
     color: #444;
     display: inline-block;
     margin-left: 18px;
-    padding-top: 10px;
+    padding-top: 20px;
     font-size: 14px;
 }
  
