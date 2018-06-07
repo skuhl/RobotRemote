@@ -21,20 +21,19 @@ function validate()
 		else if(password.value.length != 0 && (password.value.length < 8 || password.value.length > 22)){
 			document.getElementById("pass_error").innerHTML = "Password should be 8-22 characters";
 		}
-		else if(!cap.test(password.value)){
+		else if(password.value.length != 0 && !cap.test(password.value)){
 			document.getElementById("pass_error").innerHTML = "Missing a capital letter";
 		}
-		else if(!low.test(password.value)){
+		else if(password.value.length != 0 && !low.test(password.value)){
 			document.getElementById("pass_error").innerHTML = "Missing a lower case letter";
 		}
-		else if(!num.test(password.value)){
+		else if(password.value.length != 0 && !num.test(password.value)){
 			document.getElementById("pass_error").innerHTML = "Missing a number";
 		}
-		else if(!spc.test(password.value)){
+		else if(password.value.length != 0 && !spc.test(password.value)){
 			document.getElementById("pass_error").innerHTML = "Missing a special character";
 		}
-		else
-		{
+		else{
 			document.getElementById("pass_error").innerHTML = "";
 		}
 	},500);
