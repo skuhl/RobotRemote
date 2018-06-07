@@ -20,7 +20,7 @@ module.exports = {
         });
 
     },
-    mail_to_admins: async function(email_opts, file, variables){
+    mail_to_admins: async function(file, variables){
         let base_options = await get_mail_message(file, variables);
         let connection = await pool.getConnection();
         try{

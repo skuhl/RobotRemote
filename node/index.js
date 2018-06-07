@@ -396,6 +396,7 @@ app.get('/admin/acceptloginrequest/:id', function(req, res){
     db_fetch.accept_user(req.params.id)
     .then((user_id) => {
         mail.mail_to_user(user_id, __dirname + '/Emails/accepted_user.txt', {});
+        res.status(200).send('Success!');
     })
     .catch((err)=>{
         console.log(err);
