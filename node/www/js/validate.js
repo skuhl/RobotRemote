@@ -16,7 +16,7 @@ function validate()
 		var spc = new RegExp("/([ -/]|[:-@]|[[-`]|[{-~])/g");//covers any standard special character
 		
 		//Check that the passwords match
-		if((password.value != passConfirm.value)&&(password.value != '' || passConfirm.value != '')){
+		if((password.value != passConfirm.value)&&(password.value.length != 0 || passConfirm.value.length != 0)){
 			document.getElementById("repass_error").innerHTML = "Passwords don't match";
 			document.getElementById("repass_error").style.display = "inline";
 		}
@@ -30,19 +30,19 @@ function validate()
 			document.getElementById("pass_error").innerHTML = "Password should be 8-22 characters";
 			document.getElementById("pass_error").style.display = "inline";
 		}
-		else if(password.value.length != 0 && !cap.test(password.value)){
+		else if(password.value.length != 0 && cap.test(password.value)){
 			document.getElementById("pass_error").innerHTML = "Missing a capital letter";
 			document.getElementById("pass_error").style.display = "inline";
 		}
-		else if(password.value.length != 0 && !low.test(password.value)){
+		else if(password.value.length != 0 && low.test(password.value)){
 			document.getElementById("pass_error").innerHTML = "Missing a lower case letter";
 			document.getElementById("pass_error").style.display = "inline";
 		}
-		else if(password.value.length != 0 && !num.test(password.value)){
+		else if(password.value.length != 0 && num.test(password.value)){
 			document.getElementById("pass_error").innerHTML = "Missing a number";
 			document.getElementById("pass_error").style.display = "inline";
 		}
-		else if(password.value.length != 0 && !spc.test(password.value)){
+		else if(password.value.length != 0 && spc.test(password.value)){
 			document.getElementById("pass_error").innerHTML = "Missing a special character";
 			document.getElementById("pass_error").style.display = "inline";
 		}
@@ -50,7 +50,7 @@ function validate()
 			document.getElementById("pass_error").innerHTML = "";
 			document.getElementById("pass_error").style.display = "none";
 		}
-	},100);
+	},200);
 }
 
 password.onkeyup = validate();
