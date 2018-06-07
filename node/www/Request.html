@@ -4,8 +4,8 @@
   </div>
   <form action="javascript:SubmitRequest()" name="signup" method="post"> <!--We will eventually need an action-->
     <label for="username">Email:</label>
-    <input type="email" name="username" required onleyup="validate()"/> </br>
-    <p id="email_error" class="error">Error!</p></br>
+    <input type="email" name="username" required /> </br>
+    <p id="email_error" class="error"></p></br>
     
     <label for="password">Password: </label>
     <p id="sub">(Include one capital and lowercase letter, number, and special character.)</p>
@@ -17,7 +17,7 @@
     <p id="repass_error" class="error"></p>
     
     <label for="reason">Please state the reason for your request:</label>
-    <textarea name="reason" cols="20" rows="3" required onkeyup="validate()"></textarea> </br>
+    <textarea name="reason" cols="20" rows="3" required></textarea> </br>
 
     <button type="submit" onsubmit="SubmitRequest()" >Submit</button>
   </form>
