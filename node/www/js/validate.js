@@ -15,37 +15,27 @@ function validate()
 		var spc = new RegExp("/([ -/]|[:-@]|[[-`]|[{-~])/g");//covers any standard special character
 		
 		//Check that the passwords match
-		if(password.value != passConfirm.value)
-		{
-			passConfirm.setCustomValidity("Passwords don't match!");
+		if(password.value != passConfirm.value){
+			document.getElementById("repass_error").innerHTML = "Passwords don't match";
 		}
 		else if(password.value.length < 8 || password.value.length > 22){
-			console.log(password.value.length);
-			password.setCustomValidity("Password should be 8-22 characters");
+			document.getElementById("pass_error").innerHTML = "Password should be 8-22 characters";
 		}
 		else if(!cap.test(password.value)){
-			passConfirm.setCustomValidity("Missing a capital letter");
+			document.getElementById("pass_error").innerHTML = "Missing a capital letter";
 		}
 		else if(!low.test(password.value)){
-			passConfirm.setCustomValidity("Missing a lower case letter");
+			document.getElementById("pass_error").innerHTML = "Missing a lower case letter";
 		}
 		else if(!num.test(password.value)){
-			passConfirm.setCustomValidity("Missing a number");
+			document.getElementById("pass_error").innerHTML = "Missing a number";
 		}
 		else if(!spc.test(password.value)){
-			passConfirm.setCustomValidity("Missing a special character");
+			document.getElementById("pass_error").innerHTML = "Missing a special character";
 		}
 		else
 		{
-			passConfirm.setCustomValidity("");
-		}
-		
-		if(reason === null || reason === "")
-		{
-			reason.setCustomValidity("Please provide a reason for your request!");
-		}else
-		{
-			reason.setCustomValidity("");
+			document.getElementById("pass_error").innerHTML = "";
 		}
 	},500);
 }

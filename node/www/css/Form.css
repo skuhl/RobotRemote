@@ -89,7 +89,6 @@ input[type=email],
 input[type=password] {
     color: #777;
     padding-left: 10px;
-    margin: 10px;
     margin-top: 12px;
     margin-left: 18px;
     width: 290px;
@@ -138,4 +137,12 @@ button{
 /*Make text areas non-resizable.*/
 textarea {
     resize: none;
+}
+
+.error {
+   color: red;
+   display: inline-block;
+   margin-left: 18px;
+   padding-top: 0;
+   font-size: 14px;
 }
