@@ -1,10 +1,10 @@
 const express = require("express");
-var nodemailer = require("nodemailer");
 const request = require('request');
 const app = express();
 const tls = require('tls');
 const net = require('net');
 const fs = require('fs');
+const mail = require('./mail');
 const actuator_comm = require('./actuator_comm');
 const user_auth = require('./user_auth.js');
 const db_fetch = require('./db_fetch.js');
@@ -15,25 +15,7 @@ const mysql = require('mysql2/promise');
 const MySQLStore = require('express-mysql-session')(session);
 
 const options = require('./settings.json');
-//Create mail connection
-let smtpTransport = null;
-if(options["smtp_auth"]){
-    smtpTransport = nodemailer.createTransport({
-        host: options['smtp_host'],
-        port: options['smtp_port'],
-        secure: options['smtp_tls'],
-        auth: {
-            user: options['smtp_username'],
-            pass: options['smtp_password']
-        }
-    }); 
-}else{
-    smtpTransport = nodemailer.createTransport({
-        host: options['smtp_host'],
-        port: options['smtp_port'],
-        secure: options['smtp_tls'],
-    });
-}
+
 //Print warning for debug option being enabled.
 if(options['debug']){
     console.log('WARNING: Server was started in debug mode. This is insecure, and meant only for testing purposes.');
@@ -77,6 +59,15 @@ let mysql_pool = mysql.createPool({
         return useDefaultTypeCasting();
     }
 });
+//mail
+if(options["smtp_auth"]){        
+    mail.init_mail(mysql_pool, options['mailer_email'], options['smtp_host'], options['smtp_port'],  options['smtp_tls'], {
+        user: options['smtp_username'],
+        pass: options['smtp_password']
+    });
+}else{
+    mail.init_mail(mysql_pool, options['mailer_email'], options['smtp_host'], options['smtp_port'],  options['smtp_tls']);
+}
 
 user_auth.init_mysql(mysql_pool);
 db_fetch.init_mysql(mysql_pool);
@@ -231,23 +222,7 @@ app.post('/Request.html', function(req, res){
             res.status(200).send('success!');
             let link = options['domain_name'] + "/verify?email=" + encodeURIComponent(req.body.username) + "&email_tok=" + encodeURIComponent(email_token);
             
-            let mailOptions = {
-                to : req.body.username,
-                from : options['mailer_email'],
-                subject : "Please confirm your Email account",
-                html : "Hello,<br> Please Click on the link to verify your email.<br><a href="+link+">Click here to verify</a>",	
-                text : "Hello, Please visit the following URL to verify your email." + link
-            }
-            
-            smtpTransport.sendMail(mailOptions, function(error, response){
-                if(error){
-                    console.log(error);
-                    res.end("error");
-                }else{
-                    console.log("Message sent: " + response.message);
-                    res.end("sent");
-                }
-            });
+            mail.mail(req.body.username, __dirname + '/Emails/confirm_email.txt', {link: link, name: req.body.username});
 
         }, (err)=>{
             console.log(err);
@@ -271,17 +246,7 @@ app.get('/verify', function(req,res){
     user_auth.email_verify(req.query.email, req.query.email_tok).then(function(){
 		let admin_link = options['domain_name'] + "/admin/Admin.html"; 
         
-        smtpTransport.sendMail({
-            to: options['admin_email'],
-            from: options['mailer_email'],
-            subject: "User " + req.query.email + " Verified.",
-            html: "User " + req.query.email + " has verified their email. Please visit <a href='" + admin_link + "'> the admin control panel </a> to verify."
-        }).then((res)=>{
-            console.log("Sent mail to admin.");    
-        }, (err)=>{
-            console.log('Failed to send mail to admin!');
-            console.log(err);
-        });
+        mail.mail_to_admins(__dirname + '/Emails/new_confirmation.txt', {});
         
         res.redirect(303, '/Login.html');
 	},function(err){
@@ -395,9 +360,8 @@ app.get('/admin/rejectloginrequest/:id', function(req, res){
         return;
     }
 
-    db_fetch.delete_user_by_request(req.params.id)
-    .then((user_details)=>{
-        //TODO send an email that tells them they are rejected.
+    db_fetch.delete_user_by_request(req.params.id).then((user_id)=>{
+        mail.mail_to_user(user_id, __dirname + '/Emails/reject_user.txt', {});
         res.status(200).send("Success");
     })
     .catch((err)=>{
@@ -430,9 +394,8 @@ app.get('/admin/acceptloginrequest/:id', function(req, res){
     }
 
     db_fetch.accept_user(req.params.id)
-    .then(db_fetch.get_user_by_id)
-    .then((user_info) => {
-
+    .then((user_id) => {
+        mail.mail_to_user(user_id, __dirname + '/Emails/accepted_user.txt', {});
     })
     .catch((err)=>{
         console.log(err);
@@ -464,32 +427,11 @@ app.get('/admin/rejecttimeslotrequest/:id', function(req, res){
         return;
     }
 
-    db_fetch.delete_timeslotrequest_admin(req.params.id).then(async function(user_id){
-        try{
-            let user = await db_fetch.get_user_by_id(user_id);
-            let mailOptions = {
-                to : user.email,
-                from : options['mailer_email'],
-                subject : "Timeslot Request Rejected",
-                html : "Hello,<br> We regret to inform you that one of your timeslot requests has been rejected.",	
-            }
-            
-            smtpTransport.sendMail(mailOptions, function(error, response){
-                if(error){
-                    console.log(error);
-                    res.end("error");
-                }else{
-                    console.log("Message sent: " + response.message);
-                    res.end("sent");
-                }
-            });
-            
+    db_fetch.delete_timeslotrequest_admin(req.params.id)
+    .then(function(user_id){
+            mail.mail_to_user(user_id, __dirname + '/Emails/reject_time.txt', {});
             res.status(200).send("Success");
-
-        }catch(err){
-            res.status(500).send(err.client_reason);    
-        }
-    }, (err)=>{
+    }).catch((err)=>{
         console.log(err);
         res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
     });
@@ -519,25 +461,8 @@ app.get('/admin/accepttimeslotrequest/:id', function(req, res){
     }
 
     db_fetch.accept_timeslot_request(req.params.id)
-    .then(db_fetch.get_user_by_id)
-    .then((user)=>{
-        let mailOptions = {
-            to : user.email,
-            from : options['mailer_email'],
-            subject : "Timeslot Request Accepted",
-            html : "Hello,<br> your timeslot request has been accepted.",	
-        }
-        
-        smtpTransport.sendMail(mailOptions, function(error, response){
-            if(error){
-                console.log(error);
-                res.end("error");
-            }else{
-                console.log("Message sent: " + response.message);
-                res.end("sent");
-            }
-        });
-        
+    .then((user_id)=>{
+        mail.mail_to_user(user_id, __dirname + '/Emails/accept_time.txt', {});
         res.status(200).send("Success");
     }).catch((err)=>{
         console.log(err);
