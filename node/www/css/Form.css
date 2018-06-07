@@ -59,6 +59,14 @@ label {
     padding-top: 10px;
     font-size: 14px;
 }
+
+label[for=password]{
+    color: #444;
+    display: inline-block;
+    margin-left: 18px;
+    padding-top: 20px;
+    font-size: 14px;
+}
  
 p a {
     font-size: 11px;

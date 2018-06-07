@@ -7,6 +7,7 @@ var timeout = null;
 
 function validate()
 {
+	console.log("I'm being called!");
 	clearTimeout(timeout);
 	timeout = setTimeout(function(){
 		var cap = new RegExp("/([A-Z])/g");
@@ -19,7 +20,13 @@ function validate()
 			document.getElementById("repass_error").innerHTML = "Passwords don't match";
 			document.getElementById("repass_error").style.display = "inline";
 		}
-		else if(password.value.length != 0 && (password.value.length < 8 || password.value.length > 22)){
+		else{
+			document.getElementById("pass_error").innerHTML = "";
+			document.getElementById("pass_error").style.display = "none";
+		}
+		
+		if(password.value.length != 0 && (password.value.length < 8 || password.value.length > 22)){
+			console.log(password.value.length);
 			document.getElementById("pass_error").innerHTML = "Password should be 8-22 characters";
 			document.getElementById("pass_error").style.display = "inline";
 		}
