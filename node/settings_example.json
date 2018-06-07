@@ -27,6 +27,5 @@
     "smtp_port":587,
     "smtp_tls":true,
     "mailer_email":"",
-    "admin_email":"",
     "domain_name":"http://localhost:3000"
 }
