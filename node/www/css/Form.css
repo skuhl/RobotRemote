@@ -140,7 +140,7 @@ textarea {
 }
 
 .error {
-   display:none;
+   visibility:hidden;
    color: red;
    display: inline-block;
    margin-left: 18px;
