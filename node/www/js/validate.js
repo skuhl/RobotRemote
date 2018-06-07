@@ -16,7 +16,7 @@ function validate()
 		var spc = new RegExp("/([ -/]|[:-@]|[[-`]|[{-~])/g");//covers any standard special character
 		
 		//Check that the passwords match
-		if(password.value != passConfirm.value){
+		if((password.value != passConfirm.value)&&(password.value != '' || passConfirm.value != ''){
 			document.getElementById("repass_error").innerHTML = "Passwords don't match";
 			document.getElementById("repass_error").style.display = "inline";
 		}
