@@ -50,7 +50,7 @@ function validate()
 			document.getElementById("pass_error").innerHTML = "";
 			document.getElementById("pass_error").style.display = "none";
 		}
-	},500);
+	},100);
 }
 
 password.onkeyup = validate();
