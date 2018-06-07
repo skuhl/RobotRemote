@@ -59,6 +59,14 @@ label {
     padding-top: 10px;
     font-size: 14px;
 }
+
+label[type=password]{
+    color: #444;
+    display: inline-block;
+    margin-left: 18px;
+    padding-top: 10px;
+    font-size: 14px;
+}
  
 p a {
     font-size: 11px;
@@ -85,22 +93,11 @@ input {
 }
  
 input[type=text],
-input[type=email]{
-    color: #777;
-    padding-left: 10px;
-    margin-top: 12px;
-    margin-left: 18px;
-    width: 290px;
-    height: 35px;
-    border: 1px solid #c7d0d2;
-    border-radius: 2px;
-    background-color: #f3f9fb;
-}
-
+input[type=email],
 input[type=password] {
     color: #777;
     padding-left: 10px;
-    margin-top: 22px;
+    margin-top: 12px;
     margin-left: 18px;
     width: 290px;
     height: 35px;
