@@ -1,3 +1,9 @@
+#request {
+   text-align: center;
+   font-weight: bold;
+   font-size: 20px;
+}
+
 #login_requests {
     border-collapse: collapse;
     margin: 20px auto 20px auto;
