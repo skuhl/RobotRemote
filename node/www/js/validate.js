@@ -7,6 +7,7 @@ var timeout = null;
 
 function validate()
 {
+	console.log("I'm being called!");
 	clearTimeout(timeout);
 	timeout = setTimeout(function(){
 		var cap = new RegExp("/([A-Z])/g");
