@@ -14,13 +14,13 @@ function validate()
 	var spc = /([ -/]|[:-@]|[[-`]|[{-~])/; //covers any standard special character
 	
 	//Check that the passwords match
-	if((password.value != passConfirm.value) && password.value.length != 0 && passConfirm.value.length != 0){
+	if(password.value != passConfirm.value && password.value.length != 0 && passConfirm.value.length != 0){
 		document.getElementById("repass_error").innerHTML = "Passwords don't match";
 		document.getElementById("repass_error").style.display = "inline";
 	}
 	else{
-		document.getElementById("pass_error").innerHTML = "";
-		document.getElementById("pass_error").style.display = "none";
+		document.getElementById("repass_error").innerHTML = "";
+		document.getElementById("repass_error").style.display = "none";
 	}
 	
 	if(password.value.length != 0 && (password.value.length < 8 || password.value.length > 22)){
