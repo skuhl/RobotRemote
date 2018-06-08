@@ -8,7 +8,7 @@ var timeout = null;
 function validate()
 {
 	document.getElementById("sub_btn").disabled = true;
-	var pass[] = [0,0];
+	var pass = [0,0];
 
 	var cap = /([A-Z])/;
 	var low = /([a-z])/;
