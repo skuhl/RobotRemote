@@ -7,7 +7,9 @@ var timeout = null;
 
 function validate()
 {
-	console.log("I'm being called!");
+	document.getElementById("sub_btn").disabled = true;
+	var pass[] = [0,0];
+
 	var cap = /([A-Z])/;
 	var low = /([a-z])/;
 	var num = /([0-9])/;
@@ -21,6 +23,7 @@ function validate()
 	else{
 		document.getElementById("repass_error").innerHTML = "";
 		document.getElementById("repass_error").style.display = "none";
+		pass[0] = 1;
 	}
 	
 	if(password.value.length != 0 && (password.value.length < 8 || password.value.length > 22)){
@@ -47,5 +50,10 @@ function validate()
 	else{
 		document.getElementById("pass_error").innerHTML = "";
 		document.getElementById("pass_error").style.display = "none";
+		pass[1] = 1;
+	}
+	
+	if(pass[0] == 1 && pass[1] ==1){
+		document.getElementById("sub_btn").disabled = false;
 	}
 }
