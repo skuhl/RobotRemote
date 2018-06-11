@@ -7,7 +7,7 @@ function GenerateTimeslotTable(timeslots){
 
     var table = document.createElement('table');
     table.classList.add("admin_timeslot_req_table");
-	 table.rows.className =("admin_timeslot_rows");
+	 table.rows.setAttribute =("class", "admin_timeslot_rows");
 	 
     table.appendChild(CreateTableRow([
         "Email",
