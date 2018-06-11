@@ -167,11 +167,11 @@ app.post('/Login.html', function(req, res){
     
     if(!req.body.username || !req.body.password){
         res.status(200).send('Missing username or password');
-        return;
-    }
+    	return;
+	}
 
 	user_auth.verify_credentials(req.body.username, req.body.password).then((info)=>{
-		var prev = document.referrer;//gets previous page off history stack
+		var prev = req.body.prev;
         
       req.session.loggedin = true;
       req.session.email = req.body.username;
