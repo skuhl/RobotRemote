@@ -12,12 +12,19 @@
     <label for="password">Password: </label>
     <input type="password" name="password" required="required" /> </br>
     
-    <input type="hidden" name="prev" id="prev" value="getPrev(){return document.referrer;}" />
+    <input type="hidden" name="prev" id="prev" value="" />
     
     <input type="submit" value="Submit" />
   </form>
 </div>
 <script src="/js/login.js"></script>
+<script>
+  document.referrer;
+  (function getPrev(){
+    let elm = document.getElementById("prev");
+    elem.value = document.referrer;
+  })();
+</script>
 <script>
   document.addEventListener("DOMContentLoaded", CheckError);
 </script>
