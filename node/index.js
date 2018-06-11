@@ -170,14 +170,21 @@ app.post('/Login.html', function(req, res){
         return;
     }
 
-    user_auth.verify_credentials(req.body.username, req.body.password).then((info)=>{
-        req.session.loggedin = true;
-        req.session.email = req.body.username;
-        req.session.is_admin = info.is_admin;
-        req.session.user_id = info.id;
-        console.log("Logged in :" );
-        console.log(req.session);
+	user_auth.verify_credentials(req.body.username, req.body.password).then((info)=>{
+		var prev = document.referrer;//gets previous page off history stack
+        
+      req.session.loggedin = true;
+      req.session.email = req.body.username;
+      req.session.is_admin = info.is_admin;
+      req.session.user_id = info.id;
+      console.log("Logged in :" );
+      console.log(req.session);
+      //check if page is in our domain
+    	if(prev.startswith('http://www.ourDomain', 0)){		//is in our domain
+			res.redirect(302, prev);
+		}else{															//else take them to the schedual page
         res.redirect(302, '/Scheduler.html');
+      }
     },(err)=>{
         console.log(err);
         res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
