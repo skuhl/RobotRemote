@@ -182,7 +182,7 @@ wsServer.listen(WEBSOCKET_PORT);
 var streamServer = http.createServer( function(request, response) {
 	var params = request.url.substr(1).split('/');
 	//Only allow local connections.
-	if (message.socket.remoteAddress !== '127.0.0.1' && message.socket.remoteAddress !== '::1') {
+	if (request.socket.remoteAddress !== '127.0.0.1' && request.socket.remoteAddress !== '::1') {
 		console.log(
 			'Failed Stream Connection: '+ request.socket.remoteAddress + ':' +
 			request.socket.remotePort + ' - not local.'
