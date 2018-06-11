@@ -180,7 +180,7 @@ app.post('/Login.html', function(req, res){
       console.log("Logged in :" );
       console.log(req.session);
       //check if page is in our domain
-    	if(prev.startswith('http://www.ourDomain', 0)){		//is in our domain
+    	if(prev.startswith('http://141.219.124.132:3000/', 0)){		//is in our domain
 			res.redirect(302, prev);
 		}else{															//else take them to the schedual page
         res.redirect(302, '/Scheduler.html');
