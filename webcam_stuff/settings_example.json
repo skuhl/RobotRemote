@@ -1,0 +1,9 @@
+{
+    "websock_port": 4001,
+    "stream_port": 8080,
+    "webserver_listen_port":4002,
+    "ssl": true,
+    "cert": "cert/cert.pem",
+    "key": "cert/key.pem",
+    "client_ca" : "cert/cacert.pem"
+}

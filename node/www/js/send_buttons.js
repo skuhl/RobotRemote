@@ -75,7 +75,7 @@ function replacePort(num){
     let ws = GetCookie("webcam-" + num);						//get cookie with IP and port
 	let cam = document.getElementById("cam" + num);		//get the correct camera based on arg
 	if(ws == null || secret == null) return;
-    var player = new JSMpeg.Player("ws://" + ws + "/" + secret, {canvas:cam, autoplay: true});
+    var player = new JSMpeg.Player(ws + "/" + encodeURIComponent(secret), {canvas:cam, autoplay: true});
 }
 
 function keyDown(event){ 

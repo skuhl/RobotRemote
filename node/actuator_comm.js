@@ -9,11 +9,10 @@ module.exports = {
     //Holds a socket open until it breaks down, essentially.
     Actuator: class {
 
-        constructor(ip, port, websock_port, webcams, client_key, client_cert, server_ca){
+        constructor(ip, port, websock_port, client_key, client_cert, server_ca){
             this.ip = ip;
             this.port = port;
             this.websock_port = websock_port;
-            this.webcams = webcams;
             this.client_key = client_key;
             this.client_cert = client_cert;
             this.server_ca = server_ca;
@@ -21,6 +20,7 @@ module.exports = {
             this.socketOpen = false;
             this.dateConnected = null;
             this.isFree = true;
+            this.webcams = [];
         }
 
         async sendClientDetails(){
@@ -127,8 +127,11 @@ module.exports = {
             });
 
         }
-    },
 
+        addWebcam(webcam){
+            this.webcams.push(webcam);
+        }
+    },
     //Gets the first free actuator server
     getFreeActuator: async function(actuators){
         return new Promise(async (resolve, reject) => {

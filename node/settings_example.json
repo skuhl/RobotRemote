@@ -11,7 +11,9 @@
             "web_cams":[ 
                 {
                     "ip":"127.0.0.1",
-                    "port":8082
+                    "websock_port": 4001,
+                    "secure": true,
+                    "comm_port":4002
                 }
             ]
         }

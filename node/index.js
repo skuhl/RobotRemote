@@ -6,6 +6,7 @@ const net = require('net');
 const fs = require('fs');
 const mail = require('./mail');
 const actuator_comm = require('./actuator_comm');
+const webcam_comm = require('./webcam_comm');
 const user_auth = require('./user_auth.js');
 const db_fetch = require('./db_fetch.js');
 const html_fetcher = require('./html_fetcher');
@@ -76,7 +77,14 @@ let actuators = [];
 
 //initialize actuators
 for(let act of options['actuator_servers']){
-    actuators.push(new actuator_comm.Actuator(act.ip, act.socket_port, act.websock_port, act.web_cams, my_key, cert, cacert));
+    let act_inst = new actuator_comm.Actuator(act.ip, act.socket_port, act.websock_port, my_key, cert, cacert);
+    
+    for(let cam of act.web_cams){
+        let web_cam = new webcam_comm.Webcam(act_inst, cam.ip, cam.comm_port, cam.websock_port, cam.secure, my_key, cert, cacert);
+        act_inst.addWebcam(web_cam);
+    }
+
+    actuators.push(act_inst);
 }
 //middleware
 let session_store = new MySQLStore({
@@ -127,18 +135,29 @@ app.get('/ControlPanel.html', function(req, res){
             //TODO Spin up every webcam (probably in the actuator_comm code)
             //This probably means having some small server listen for messages,
             //meaning an extra parameter for each webcam.
+            let secret_promises = [];
             for(let i = 0; i < act.webcams.length; i++){
-                res.cookie("webcam-" + (i+1), act.webcams[i].ip + ':' +  act.webcams[i].port);
-                //TODO generate unique secrets, send them to webcams, set the cookies to them
-                res.cookie("webcam"+ (i+1) + "-secret", "secret");
+                // 30 second secret TODO change to duration of timeslot.
+                //Currently all webcams share a secret. Changing this should be easy, if needed.
+                secret_promises.push(
+                    act.webcams[i].setSecret(secret, 30*1000).then(()=>{
+                        res.cookie("webcam-" + (i+1), (act.webcams[i].secure ? 'wss' : 'ws')+'://' + act.webcams[i].ip + ':' +  act.webcams[i].sock_port);
+                        res.cookie("webcam"+ (i+1) + "-secret", secret);
+                    })
+                );
             }
-            res.status(200).send(html_fetcher(__dirname + '/www/ControlPanel.html', req, {beforeHeader: ()=>{return '<title>Robot Remote - Control Panel</title>'}}));
+
+            Promise.all(secret_promises).then( ()=>{
+                res.status(200).send(html_fetcher(__dirname + '/www/ControlPanel.html', req, {beforeHeader: ()=>{return '<title>Robot Remote - Control Panel</title>'}})); 
+            });
+            
         },(err) => {
             console.log("Failed to connect to actuator server, " + err)
             res.status(500).send(err);
         });
-    },(err)=>{
-        res.status(200).send(err);
+    })
+    .catch((err)=>{
+        res.status(500).send(err);
     });
 });
 
