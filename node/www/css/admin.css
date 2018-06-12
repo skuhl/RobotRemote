@@ -11,7 +11,7 @@
    margin: 20px auto 20px auto;
    left: 50%;
    table-layout: auto;
-   width: 900px;
+   width: 1000px;
    margin: 20px auto 20px auto;
 }
 
@@ -47,4 +47,22 @@
    cursor: pointer;
    padding: 1.5px;
    margin: 10px 20px;
+}
+
+admin_login_col-2{
+   width: 70px;
+}
+admin_login_col-3,
+admin_login_col-4 {
+   width: 50px;
+}
+
+admin_timeslot_col-1,
+admin_timeslot_col-2 {
+   width: 70px;
+}
+
+admin_timeslot_col-1,
+admin_timeslot_col-2 {
+   width: 50px;
 }
