@@ -1,6 +1,8 @@
 const express = require("express");
 const request = require('request');
 const app = express();
+const http = require('http');
+const https = require('https');
 const tls = require('tls');
 const net = require('net');
 const fs = require('fs');
@@ -23,8 +25,10 @@ if(options['debug']){
 }
 
 //load ssl stuff into mem.
-let my_key = fs.readFileSync(options['key_file']);
-let cert = fs.readFileSync(options['cert_file']);
+let client_key = fs.readFileSync(options['client_key_file']);
+let client_cert = fs.readFileSync(options['client_cert_file']);
+let server_key = fs.readFileSync(options['server_key_file']);
+let server_cert = fs.readFileSync(options['server_cert_file']);
 let cacert = fs.readFileSync(options['ca_file']);
 
 let secure_context = null;
@@ -36,8 +40,8 @@ if(options['debug']){
     });
 }else{
     secure_context = tls.createSecureContext({
-        key: my_key,
-        cert: cert,
+        key: client_key,
+        cert: client_cert,
         ca: cacert,
         rejectUnauthorized: true,
         requestCert: true
@@ -77,10 +81,10 @@ let actuators = [];
 
 //initialize actuators
 for(let act of options['actuator_servers']){
-    let act_inst = new actuator_comm.Actuator(act.ip, act.socket_port, act.websock_port, my_key, cert, cacert);
+    let act_inst = new actuator_comm.Actuator(act.ip, act.socket_port, act.websock_port, client_key, client_cert, cacert);
     
     for(let cam of act.web_cams){
-        let web_cam = new webcam_comm.Webcam(act_inst, cam.ip, cam.comm_port, cam.websock_port, cam.secure, my_key, cert, cacert);
+        let web_cam = new webcam_comm.Webcam(act_inst, cam.ip, cam.comm_port, cam.websock_port, cam.secure, client_key, client_cert, cacert);
         act_inst.addWebcam(web_cam);
     }
 
@@ -123,6 +127,12 @@ app.get('/ControlPanel.html', function(req, res){
         res.redirect(303, '/Login.html')
         return;
     }
+
+    if(!req.secure){
+        res.redirect(301, options['domain_name_secure'] + req.originalUrl);
+        return;
+    }
+
     actuator_comm.getFreeActuator(actuators).then((act)=>{
         //send client details (secret).
         act.sendClientDetails().then((secret) => {
@@ -199,7 +209,7 @@ app.post('/Login.html', function(req, res){
       console.log("Logged in :" );
       console.log(req.session);
       //check if page is in our domain
-    	if(prev.startsWith('http://')){		//is it in our domain
+    	if(prev.startsWith('http://') || prev.startsWith('https://')){		//is it in our domain
 			res.redirect(302, prev);
 		}else{																	//else take them to the schedule page
         res.redirect(302, '/Scheduler.html');
@@ -246,7 +256,7 @@ app.post('/Request.html', function(req, res){
     user_auth.login_request(req.body.username, req.body.password, req.body.reason)
         .then((email_token)=>{
             res.status(200).send('success!');
-            let link = options['domain_name'] + "/verify?email=" + encodeURIComponent(req.body.username) + "&email_tok=" + encodeURIComponent(email_token);
+            let link = options['domain_name_secure'] + "/verify?email=" + encodeURIComponent(req.body.username) + "&email_tok=" + encodeURIComponent(email_token);
             
             mail.mail(req.body.username, __dirname + '/Emails/confirm_email.txt', {link: link, name: req.body.username});
 
@@ -260,7 +270,7 @@ app.get('/Scheduler.html', function(req, res){
     res.append('Cache-Control', "no-cache, no-store, must-revalidate");
     console.log("Called scheduler");
     if(!req.session.loggedin){
-        res.redirect(303, '/Login.html')
+        res.redirect(303, '/Login.html');
         return;
     }
     
@@ -270,7 +280,7 @@ app.get('/Scheduler.html', function(req, res){
 app.get('/verify', function(req,res){
     res.append('Cache-Control', "no-cache, no-store, must-revalidate");
     user_auth.email_verify(req.query.email, req.query.email_tok).then(function(){
-		let admin_link = options['domain_name'] + "/admin/Admin.html"; 
+		let admin_link = options['domain_name_secure'] + "/admin/Admin.html"; 
         
         mail.mail_to_admins(__dirname + '/Emails/new_confirmation.txt', {});
         
@@ -582,7 +592,7 @@ app.post('/requesttimeslot', function(req, res){
     db_fetch.add_request(date, (req.body.duration / 1000) - 1, req.session.user_id).then((val) => {
         res.status(200).send("Success");
 
-        let admin_link = options['domain_name'] + "/admin/Admin.html"; 
+        let admin_link = options['domain_name_secure'] + "/admin/Admin.html"; 
         
         smtpTransport.sendMail({
             to: options['admin_email'],
@@ -637,4 +647,17 @@ app.all('*', function(req, res){
 	req.session.error_status = undefined;
 });
 
-let server = app.listen(options["webserver_port"], () => console.log("Listening on port" + options["webserver_port"]));
+let credentials = {
+    key: server_key,
+    cert: server_cert
+};
+
+let http_server = http.createServer(app);
+let https_server = https.createServer(credentials, app);
+
+
+http_server.listen(options['http_port']);
+https_server.listen(options['https_port']);
+
+console.log('Server listening on http://localhost:' + options['http_port'] + 
+            ' and https://localhost:' + options['https_port']);

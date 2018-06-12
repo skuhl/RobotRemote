@@ -44,7 +44,7 @@ def main():
         secure_context.load_cert_chain(opts['cert_file'], keyfile = opts['key_file'])
         secure_context.verify_mode = ssl.CERT_NONE
     else:
-        secure_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH, cafile = opts['ca_file'])
+        secure_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH, cafile = opts['client_ca_file'])
         secure_context.load_cert_chain(opts['cert_file'], keyfile = opts['key_file'])
         secure_context.verify_mode = ssl.CERT_REQUIRED
     

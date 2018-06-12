@@ -18,9 +18,7 @@ settings.json
 helperscripts/cacert
 helperscripts/cert
 helperscripts/client-cert
-cert.pem
-key.pem
-cacert.pem
+*.pem
 
 #ignore vscode files
 .vscode/

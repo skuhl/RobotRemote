@@ -1,5 +1,6 @@
 {
-    "webserver_port":80,
+    "http_port":3000,
+    "https_port":3001,
     "mysql_host":"",
     "mysql_user":"",
     "mysql_pass":"",
@@ -19,8 +20,10 @@
             ]
         }
     ],
-    "cert_file": "cert/cert.pem",
-    "key_file":"cert/key.pem",
+    "client_cert_file": "cert/client_cert.pem",
+    "client_key_file":"cert/client_key.pem",
+    "server_cert_file": "cert/server_cert.pem",
+    "server_key_file": "cert/server_key.pem",
     "ca_file":"cert/cacert.pem",
     "debug":true,
     "smtp_auth": true,
@@ -30,5 +33,6 @@
     "smtp_port":587,
     "smtp_tls":true,
     "mailer_email":"",
-    "domain_name":"http://localhost:3000"
+    "domain_name":"http://localhost:3000",
+    "domain_name_secure": "https://localhost:3001"
 }
