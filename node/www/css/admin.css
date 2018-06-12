@@ -1,8 +1,13 @@
-#request {
+#request1,
+#request2 {
    text-align: center;
    font-weight: bold;
-   font-size: 20px;
+   font-size: 25px;
    margin-top:40px;
+}
+
+#request2 {
+   margin-top:100px;
 }
 
 .admin_login_req_table,
