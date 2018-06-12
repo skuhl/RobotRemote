@@ -27,23 +27,7 @@
 
 .admin_timeslot_row,
 .admin_login_row {
-   
-}
-
-.admin_timeslot_row:nth-child(even) {
-   background-color: #d2d2d2;
-}
-
-.admin_login_row:nth-child(even) {
-   background-color: #d2d2d2;
-}
-
-.admin_timeslot_row:nth-child(odd) {
-   background-color: #f0f0f0;
-}
-
-.admin_login_row:nth-child(odd) {
-   background-color: #f0f0f0;
+    background-color: #d2d2d2;  
 }
 
 .admin_timeslot_element,
