@@ -29,8 +29,8 @@ function GenerateTimeslotTable(timeslots){
                 '</span><span class="block">' +
                 TimeBeautify(timeslots[i].end_date) +
             "</span>",
-            '<button onclick="AcceptTimeslot(' + timeslots[i].id + ')">Accept</button>',
-            '<button onclick="RejectTimeslot(' + timeslots[i].id + ')">Reject</button>'          
+            '<button class="admin_button" onclick="AcceptTimeslot(' + timeslots[i].id + ')">Accept</button>',
+            '<button class="admin_button" onclick="RejectTimeslot(' + timeslots[i].id + ')">Reject</button>'          
         ], "admin_timeslot_row", "admin_timeslot_element");
         table.appendChild(row);
         timeslot_elements[timeslots[i].id] = row;
@@ -64,8 +64,8 @@ function GenerateLoginTable(logins){
                 '</span><span class="block">' +
                 TimeBeautify(new Date(logins[i].date_requested)) +
             "</span>",
-            '<button onclick="AcceptLogin(' + logins[i].id + ')">Accept</button>',
-            '<button onclick="RejectLogin(' + logins[i].id + ')">Reject</button>'
+            '<button class="admin_button" onclick="AcceptLogin(' + logins[i].id + ')">Accept</button>',
+            '<button class="admin_button" onclick="RejectLogin(' + logins[i].id + ')">Reject</button>'
         ], "admin_login_row", "admin_login_element");
         table.appendChild(row);
         login_elements[logins[i].id] = row;
