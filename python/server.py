@@ -48,6 +48,10 @@ def main():
         secure_context.load_cert_chain(opts['cert_file'], keyfile = opts['key_file'])
         secure_context.verify_mode = ssl.CERT_REQUIRED
     
+    websock_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+    websock_context.load_cert_chain(opts['cert_file'], keyfile = opts['key_file'])
+    websock_context.verify_mode = ssl.CERT_NONE
+
     if opts['verbose']:
         print('Starting up server...')
     
@@ -58,7 +62,7 @@ def main():
     loop.run_until_complete(webserver_server)
     
     #Create websocket server
-    websock = WebSocketServer.do_websock('', opts['websocket_port'], opts['websocket_accepted_origins'], accepting_semaphore, None, pressed_data_lock, pressed_data)
+    websock = WebSocketServer.do_websock('', opts['websocket_port'], opts['websocket_accepted_origins'], accepting_semaphore, websock_context, pressed_data_lock, pressed_data)
 
     loop.run_forever()
     loop.close()

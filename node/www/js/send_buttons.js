@@ -29,7 +29,7 @@ function UpdatePresses(){
 }
 
 var InitSocket = function(){
-    socket = new WebSocket('ws://' + GetCookie('act-url'));
+    socket = new WebSocket('wss://' + GetCookie('act-url'));
     socket.onopen = SocketReady;
     socket.onmessage = SocketMessage;
     socket.onerror = SocketError;
