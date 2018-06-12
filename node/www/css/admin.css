@@ -4,15 +4,11 @@
    font-size: 20px;
 }
 
-#login_requests,
-#timeslot_requests {
+.admin_login_req_table,
+.admin_timeslot_req_table {
    border-collapse: collapse;
    margin: 20px auto 20px auto;
    left: 50%;
-}
-
-.admin_login_req_table,
-.admin_timeslot_req_table {
    table-layout: auto;
    width: 700px;
    margin: 20px auto 20px auto;
@@ -51,5 +47,5 @@
 }
 
 .admin_button {
-   margin: 10px 5px;
+   margin: 10px 20px;
 }
