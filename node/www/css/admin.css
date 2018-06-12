@@ -15,6 +15,16 @@
    margin: 20px auto 20px auto;
 }
 
+.admin_login_req_table td {
+    text-align: center; 
+    vertical-align: middle;
+}
+
+.admin_timeslot_req_table td {
+    text-align: center; 
+    vertical-align: middle;
+}
+
 .admin_timeslot_row,
 .admin_login_row {
    
