@@ -10,7 +10,6 @@ var num_days = 7; /*Number of days to display*/
 
 function loader(){
     var time = (Math.random() * 100) + 150;
-    console.log("Loader called!");
     window.setTimeout(function(){
         var loaded = document.getElementById("table_content").getBoundingClientRect();
         if(!loaded.width){ //if the table width is 0 wait some more
