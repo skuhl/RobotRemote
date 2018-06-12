@@ -4,39 +4,37 @@
    font-size: 20px;
 }
 
-#login_requests {
-    border-collapse: collapse;
-    margin: 20px auto 20px auto;
-    left: 50%;
-}
-
+#login_requests,
 #timeslot_requests {
-    border-collapse: collapse;
-    margin: 20px auto 20px auto;
-    left: 50%;
-}
-
-.admin_login_req_table {
+   table-layout: fixed;
+   width: 700px;
+   border-collapse: collapse;
    margin: 20px auto 20px auto;
+   left: 50%;
 }
 
+.admin_login_req_table,
 .admin_timeslot_req_table {
    margin: 20px auto 20px auto;
 }
 
-.admin_timeslot_row {
+.admin_timeslot_row,
+.admin_login_row {
    
 }
 
-.admin_timeslot_row:nth-child(even) {
+.admin_timeslot_row: nth-child(even),
+.admin_login_row: nth-child(even) {
     background-color: #d2d2d2;
 }
 
-.admin_timeslot_row:nth-child(odd) {
+.admin_timeslot_row: nth-child(odd),
+.admin_login_row: nth-child(odd) {
     background-color: #f0f0f0;
 }
 
-.admin_timeslot_element {
+.admin_timeslot_element,
+.admin_login_element {
    padding: 0 15px 0 15px;
    text-align: center;
    vertical-align: center;
