@@ -7,7 +7,6 @@ function GenerateTimeslotTable(timeslots){
 
     var table = document.createElement('table');
     table.classList.add("admin_timeslot_req_table");
-	 table.rows.setAttribute =("class", "admin_timeslot_rows");
 	 
     table.appendChild(CreateTableRow([
         "Email",
@@ -15,7 +14,7 @@ function GenerateTimeslotTable(timeslots){
         "End",
         "Accept",
         "Reject"
-    ]), true);
+    ]), "admin_timeslot_row", "admin_timeslot_element", true);
     //Generate table rows
     for(var i = 0; i < timeslots.length; i++){
         var row = CreateTableRow([
@@ -32,7 +31,7 @@ function GenerateTimeslotTable(timeslots){
             "</span>",
             '<button onclick="AcceptTimeslot(' + timeslots[i].id + ')">Accept</button>',
             '<button onclick="RejectTimeslot(' + timeslots[i].id + ')">Reject</button>'          
-        ]);
+        ], "admin_timeslot_row", "admin_timeslot_element");
         table.appendChild(row);
         timeslot_elements[timeslots[i].id] = row;
     }
@@ -53,7 +52,7 @@ function GenerateLoginTable(logins){
         "Request Time",
         "Accept",
         "Reject"
-    ]), true);
+    ]), "admin_login_row", "admin_login_element", true);
 
     //Generate table rows
     for(var i = 0; i < logins.length; i++){
@@ -67,7 +66,7 @@ function GenerateLoginTable(logins){
             "</span>",
             '<button onclick="AcceptLogin(' + logins[i].id + ')">Accept</button>',
             '<button onclick="RejectLogin(' + logins[i].id + ')">Reject</button>'
-        ]);
+        ], "admin_login_row", "admin_login_element");
         table.appendChild(row);
         login_elements[logins[i].id] = row;
     }

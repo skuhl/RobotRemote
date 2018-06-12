@@ -79,15 +79,18 @@ function CreateElementWithText(tagname, content){
   Returns an element that contains all inner htmls in their own td or th elements.
   is_header controls weather to use th or not. This is an optional argument.
 */
-function CreateTableRow(inner_htmls, is_header){
+function CreateTableRow(inner_htmls, row_class, element_class, is_header){
     
     if(is_header == undefined) is_header = false;
     
     var tag_type = is_header ? 'th' : 'td';
     var tr = document.createElement('tr');
+    
+    if(row_class !== undefined) tr.classList.add(row_class);
 
     for(var i = 0; i < inner_htmls.length; i++){
         var td = document.createElement(tag_type);
+        if(element_class !== undefined) td.classList.add(element_class);
         td.innerHTML = inner_htmls[i];
         tr.appendChild(td);
     }
