@@ -2,12 +2,12 @@
    text-align: center;
    font-weight: bold;
    font-size: 20px;
-   margin-top:25px;
+   margin-top:40px;
 }
 
 .admin_login_req_table,
 .admin_timeslot_req_table {
-   border-collapse: collapse;
+   border-collapse: separate;
    margin: 20px auto 20px auto;
    left: 50%;
    table-layout: auto;
