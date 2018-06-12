@@ -14,7 +14,7 @@ function GenerateTimeslotTable(timeslots){
         "End",
         "Accept",
         "Reject"
-    ]), "admin_timeslot_row", "admin_timeslot_element", true);
+    ], "admin_timeslot_row", "admin_timeslot_element", true));
     //Generate table rows
     for(var i = 0; i < timeslots.length; i++){
         var row = CreateTableRow([
@@ -52,7 +52,7 @@ function GenerateLoginTable(logins){
         "Request Time",
         "Accept",
         "Reject"
-    ]), "admin_login_row", "admin_login_element", true);
+    ], "admin_login_row", "admin_login_element", true));
 
     //Generate table rows
     for(var i = 0; i < logins.length; i++){
