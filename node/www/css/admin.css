@@ -30,6 +30,10 @@
     background-color: #d2d2d2;  
 }
 
+th {
+   background-color: #f0f0f0;
+}
+
 .admin_timeslot_element,
 .admin_login_element {
    padding: 0 15px 0 15px;
@@ -49,20 +53,20 @@
    margin: 10px 20px;
 }
 
-admin_login_col-2{
+.admin_login_col-2{
    width: 70px;
 }
-admin_login_col-3,
-admin_login_col-4 {
+.admin_login_col-3,
+.admin_login_col-4 {
    width: 50px;
 }
 
-admin_timeslot_col-1,
-admin_timeslot_col-2 {
+.admin_timeslot_col-1,
+.admin_timeslot_col-2 {
    width: 70px;
 }
 
-admin_timeslot_col-1,
-admin_timeslot_col-2 {
+.admin_timeslot_col-1,
+.admin_timeslot_col-2 {
    width: 50px;
 }
