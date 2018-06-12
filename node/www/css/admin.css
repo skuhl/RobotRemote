@@ -6,8 +6,6 @@
 
 #login_requests,
 #timeslot_requests {
-   table-layout: fixed;
-   width: 700px;
    border-collapse: collapse;
    margin: 20px auto 20px auto;
    left: 50%;
@@ -15,6 +13,8 @@
 
 .admin_login_req_table,
 .admin_timeslot_req_table {
+   table-layout: auto;
+   width: 700px;
    margin: 20px auto 20px auto;
 }
 
@@ -23,14 +23,20 @@
    
 }
 
-.admin_timeslot_row: nth-child(even),
-.admin_login_row: nth-child(even) {
-    background-color: #d2d2d2;
+.admin_timeslot_row:nth-child(even) {
+   background-color: #d2d2d2;
 }
 
-.admin_timeslot_row: nth-child(odd),
-.admin_login_row: nth-child(odd) {
-    background-color: #f0f0f0;
+.admin_login_row:nth-child(even) {
+   background-color: #d2d2d2;
+}
+
+.admin_timeslot_row:nth-child(odd) {
+   background-color: #f0f0f0;
+}
+
+.admin_login_row:nth-child(odd) {
+   background-color: #f0f0f0;
 }
 
 .admin_timeslot_element,
@@ -45,5 +51,5 @@
 }
 
 .admin_button {
-   padding: 10px 5px;
+   margin: 10px 5px;
 }
