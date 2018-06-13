@@ -1,10 +1,11 @@
 #request1,
 #request2,
 #users {
-   text-align: center;
+   left: 50%;
    font-weight: bold;
    font-size: 25px;
    margin-top:40px;
+
 }
 
 #request2 {
