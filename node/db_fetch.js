@@ -40,9 +40,9 @@ module.exports = {
         connection = await pool.getConnection();   
         try{
             if(num_requests <= 0 ){
-                var [res, field] = await connection.query('SELECT users.email FROM users WHERE email_validated=1', []);    
+                var [res, field] = await connection.query('SELECT email FROM users WHERE email_validated=1', []);    
             }else{
-                var [res, field] = await connection.query('SELECT users.email FROM users WHERE email_validated=1 LIMIT ? OFFSET ?', [num_requests, start_at]);
+                var [res, field] = await connection.query('SELECT email FROM users WHERE email_validated=1 LIMIT ? OFFSET ?', [num_requests, start_at]);
             }
         }finally{
             connection.release();

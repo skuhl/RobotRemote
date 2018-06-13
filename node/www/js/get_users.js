@@ -59,7 +59,7 @@ user_xhr.onreadystatechange = function(){
    
    }else if(this.readyState === 4){
    		//failed
-   		alert('Count not get current users! <br/>' + this.reaponseText);
+   		alert('Could not get current users! <br/>' + this.reaponseText);
    }
 }
 
