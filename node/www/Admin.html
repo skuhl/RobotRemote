@@ -11,7 +11,7 @@
 <script>
 function myFunction() {
   // Get the checkbox
-  var head = document.getElementByTagName('head')[0];
+  var head = document.getElementsByTagName('head')[0];
   var js = document.createElement("script");
   var checkBox = document.getElementById("toggle");
 
@@ -25,7 +25,6 @@ function myFunction() {
     //run pending requests script
     js.src = "/js/admin.js";
   }
-  
   head.appendChild(js);
 }
 </script>
