@@ -1,7 +1,7 @@
 #request1,
 #request2,
 #users {
-   left: 50%;
+   text-align: center;
    font-weight: bold;
    font-size: 25px;
    margin-top:40px;
@@ -87,7 +87,7 @@ th {
   width: 60px;
   height: 34px;
   margin: 0;
-  left: 50%;
+  left: 48%;
 }
 
 /* Hide default HTML checkbox */
