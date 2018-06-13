@@ -340,6 +340,30 @@ app.get('/admin/loginrequests', function(req, res){
     });
 });
 
+app.get('/admin/currentusers', function(req, res){
+    res.append('Cache-Control', "no-cache, no-store, must-revalidate");
+    if(!req.session.loggedin){
+        res.redirect(302, '/Login.html');
+        return;
+    }
+    if(req.session.is_admin === undefined){
+        res.redirect(302, '/Login.html');
+        return;
+    }
+
+    if(!req.session.is_admin){
+        res.redirect(302, '/Home.html');
+        return;
+    }
+
+    db_fetch.get_current_users(0, -1).then((json)=>{
+        res.status(200).json({requests: json});
+    }, (err)=>{
+        console.log(err);
+        res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
+    });
+});
+
 /*Returns JSON encoded list of requests:
     {
         id: <id for request>

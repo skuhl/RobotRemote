@@ -35,6 +35,25 @@ module.exports = {
         return json;
     
     },
+    get_current_users: async function(start_at, num_requests){
+        let json = [];
+        connection = await pool.getConnection();   
+        try{
+            if(num_requests <= 0 ){
+                var [res, field] = await connection.query('SELECT users.email FROM users WHERE email_validated=1', []);    
+            }else{
+                var [res, field] = await connection.query('SELECT users.email FROM users WHERE email_validated=1 LIMIT ? OFFSET ?', [num_requests, start_at]);
+            }
+        }finally{
+            connection.release();
+        }
+        for(let i = 0; i<res.length; i++){
+            json.push({
+                email: res[i].email,
+            });
+        }
+        return json;
+    },
     /*Gets info about user with given id. Will use given connection if provided, otherwise uses an independant conneciton */
     get_user_by_id: async function(id, connection){
         if(connection){
