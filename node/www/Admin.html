@@ -2,4 +2,30 @@
 <div id="login_requests"></div>
 <p id="request2">Timeslot Requests</p>
 <div id="timeslot_requests"></div>
-<script src="/js/admin.js"></script>
+
+<label class="switch">
+  <input type="checkbox" id="toggle" onclick="myFunction()">
+  <span class="slider round"></span>
+</label>
+
+<script>
+function myFunction() {
+  // Get the checkbox
+  var head = document.getElementByTagName('head')[0];
+  var js = document.createElement("script");
+  var checkBox = document.getElementById("toggle");
+
+  js.type = "text/javascript";
+
+  // If the checkbox is checked, display the output text
+  if (checkBox.checked == true){
+    //run user list script
+    js.src = "/js/get_users.js";
+  } else {
+    //run pending requests script
+    js.src = "/js/admin.js";
+  }
+  
+  head.appendChild(js);
+}
+</script>
