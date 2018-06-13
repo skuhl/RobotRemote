@@ -63,5 +63,5 @@ user_xhr.onreadystatechange = function(){
    }
 }
 
-user_xhr.open("GET", location.protocol + '//' + window.location.host + "/admin/loginrequests");
+user_xhr.open("GET", location.protocol + '//' + window.location.host + "/admin/currentusers");
 user_xhr.send();
