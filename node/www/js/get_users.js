@@ -55,7 +55,7 @@ user_xhr.onreadystatechange = function(){
         console.log(json);
         
         var user_table = GenerateUserTable(json.requests);
-        if(login_table != null) document.getElementById('current_users').appendChild(user_table);
+        if(user_table != null) document.getElementById('current_users').appendChild(user_table);
    
    }else if(this.readyState === 4){
    		//failed
