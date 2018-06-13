@@ -47,7 +47,7 @@ function RemoveUserFromTable(user_id){
 	 }
 }
 
-var user_xhr = new HMLHttpRequest();
+var user_xhr = new XMLHttpRequest();
 
 user_xhr.onreadystatechange = function(){
 	if(this.readyState === 4 && this.status === 200){
