@@ -7,7 +7,7 @@ function GenerateUserTable(users){
 	table.classList.add("user_table");
 	
 	table.appendChild(CreateTableRow([
-		"Email",
+		"",
 		" "
 	], "user_table_", true));
 		
