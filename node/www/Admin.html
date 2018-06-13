@@ -12,10 +12,14 @@
 function myFunction() {
   // Get the checkbox
   var head = document.getElementsByTagName('head')[0];
-  var js = document.createElement("script");
+  var js = document.getElementById('script_switch');
   var checkBox = document.getElementById("toggle");
-
+  
+  if(js)
+    elem.parentNode.removeChild(js);
+  
   js.type = "text/javascript";
+  js.id = "script_switch";
 
   // If the checkbox is checked, display the output text
   if (checkBox.checked == true){
