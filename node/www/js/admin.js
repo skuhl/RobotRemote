@@ -12,8 +12,8 @@ function GenerateTimeslotTable(timeslots){
         "Email",
         "Start",
         "End",
-        "Accept",
-        "Reject"
+        "",
+        ""
     ], "admin_timeslot_", true));
     //Generate table rows
     for(var i = 0; i < timeslots.length; i++){
