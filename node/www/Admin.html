@@ -3,31 +3,50 @@
 <p id="request2">Timeslot Requests</p>
 <div id="timeslot_requests"></div>
 
+<p style="display:none;" id="users">Current Users</p>
+<div style="display:none;" id="current_users"></div>
+
 <label class="switch">
   <input type="checkbox" id="toggle" onclick="myFunction()">
   <span class="slider round"></span>
 </label>
 
+<script id="script_switch" src=""></script>
+<script id="script_switch" src=""></script>
+
 <script>
 function myFunction() {
   // Get the checkbox
-  var head = document.getElementsByTagName('head')[0];
-  var js = document.getElementById('script_switch');
   var checkBox = document.getElementById("toggle");
+  //headings
+  var title1 = document.getElementById("request1");
+  var title2 = document.getElementById("request2");
+  var title3 = document.getElementById("users");
+  //tables
+  var table1 = document.getElementById("login_requests");
+  var table2 = document.getElementById("timeslot_requests");
+  var table3 = document.getElementById("current_users");
   
-  if(js)
-    js.parentNode.removeChild(js);
-  
-  js.type = "text/javascript";
-  js.id = "script_switch";
 
   // If the checkbox is checked, display the output text
   if (checkBox.checked == true){
-    //run user list script
-    js.src = "/js/get_users.js";
+    //hide requests
+    title1.style.display = 'none';
+    title2.style.display = 'none';
+    table1.style.display = 'none';
+    table2.style.display = 'none';
+    //show user list 
+    title3.style.display = 'block';
+    table3.style.display = 'block';
   } else {
-    //run pending requests script
-    js.src = "/js/admin.js";
+    //hide user table
+    title3.style.display = 'none';
+    table3.style.display = 'none';
+    //show pending requests
+    title1.style.display = 'block';
+    title2.style.display = 'block';
+    table1.style.display = 'block';
+    table2.style.display = 'block';
   }
   head.appendChild(js);
 }
