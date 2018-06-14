@@ -453,7 +453,7 @@ app.get('/admin/removeuser/:id', function(req, res){
     }
 
     db_fetch.delete_user_by_ID(req.params.id).then((user_id)=>{
-        //Do we want a account terminated email???
+        //Do we want a account terminated email??? my guess is nah
         //mail.mail_to_user(user_id, __dirname + '/Emails/reject_user.txt', {});
         res.status(200).send("Success");
     })

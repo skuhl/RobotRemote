@@ -7,13 +7,15 @@ function GenerateUserTable(users){
 	table.classList.add("user_table");
 	
 	table.appendChild(CreateTableRow([
-		"",
+		"ID",
+		"Email",
 		" "
 	], "user_table_", true));
 		
 	//generate table rows
 	for(var i = 0; i < users.length; i++){
 		var row = CreateTableRow([
+			users[i].id,
 			users[i].email,
 			'<button class="admin_button" onclick="RemoveUser(' + users[i].id + ')">Remove</button>'
 		], "user_table_");

@@ -40,15 +40,16 @@ module.exports = {
         connection = await pool.getConnection();   
         try{
             if(num_requests <= 0 ){
-                var [res, field] = await connection.query('SELECT users.email FROM users WHERE approved=1', []);    
+                var [res, field] = await connection.query('SELECT users.email, users.id FROM users WHERE approved=1', []);    
             }else{
-                var [res, field] = await connection.query('SELECT users.email FROM users WHERE approved=1 LIMIT ? OFFSET ?', [num_requests, start_at]);
+                var [res, field] = await connection.query('SELECT users.email, users.id FROM users WHERE approved=1 LIMIT ? OFFSET ?', [num_requests, start_at]);
             }
         }finally{
             connection.release();
         }
         for(let i = 0; i<res.length; i++){
             json.push({
+            	 id: res[i].id,
                 email: res[i].email
             });
         }
@@ -350,8 +351,6 @@ module.exports = {
     delete_user_by_ID: async function(req_id){
         let connection = await pool.getConnection();
         try{
-            //This delete cascades;
-            //This means that any user that references this login request is removed.
             let [res, fields] = await connection.query("SELECT id FROM users WHERE id=?", [req_id]);
             
             if(res.length != 1){
