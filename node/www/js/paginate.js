@@ -1,4 +1,4 @@
-var perPage = 20;
+var perPage = 5;
 
 function genTables() {
     var tables = document.querySelectorAll(".pagination");
@@ -76,9 +76,5 @@ function createFooters(table) {
     }
 
     // insert page at the top of the table
-    table.parentNode.insertBefore(pager, table);
+    table.parentNode.insertAfter(pager, table);
 }
-
-window.addEventListener('load', function() {
-    genTables();
-});
