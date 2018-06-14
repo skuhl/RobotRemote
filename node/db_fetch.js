@@ -352,11 +352,11 @@ module.exports = {
         try{
             //This delete cascades;
             //This means that any user that references this login request is removed.
-            let [res, fields] = await connection.query("SELECT id FROM users WHERE loginreq_id=?", [req_id]);
+            let [res, fields] = await connection.query("SELECT id FROM users WHERE id=?", [req_id]);
             
             if(res.length != 1){
                 throw {
-                    reason: "Login request doesn't exist!",
+                    reason: "User doesn't exist!",
                     client_reason:"Invalid ID."
                 };
             }
