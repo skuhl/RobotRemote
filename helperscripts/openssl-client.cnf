@@ -11,23 +11,20 @@ string_mask        = utf8only
 
 ####################################################################
 [ client_distinguished_name ]
-countryName         = Country Name (2 letter code)
-countryName_default = US
+C         = Country Name (2 letter code)
+C_default = US
 
-stateOrProvinceName         = State or Province Name (full name)
-stateOrProvinceName_default = MI
+ST         = State or Province Name (full name)
+ST_default = MI
 
-localityName         = Locality Name (eg, city)
-localityName_default = Houghton
+L         = Locality Name (eg, city)
+L_default = Houghton
 
-organizationName            = Organization Name (eg, company)
-organizationName_default    = Test Server, Limited
+O            = Organization Name (eg, company)
+O_default    = Test Server, Limited
 
-commonName           = Common Name (e.g. server FQDN or YOUR name)
-commonName_default   = RobotRemote Test WebServer
-
-emailAddress         = Email Address
-emailAddress_default = test@example.com
+CN           = Common Name (e.g. server FQDN or YOUR name)
+CN_default   = RobotRemote Test WebServer
 
 ####################################################################
 [ client_req_extensions ]
