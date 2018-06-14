@@ -60,10 +60,10 @@ module.exports = {
     /*Gets info about user with given id. Will use given connection if provided, otherwise uses an independant conneciton */
     get_user_by_id: async function(id, connection){
         if(connection){
-            var [res, fields] = await connection.query("SELECT * FROM users WHERE id=?", [id]);
+            var [res, fields] = await connection.query("SELECT * FROM users WHERE id=? ORDER BY email", [id]);
 
         }else{
-            var [res, fields] = await pool.query("SELECT * FROM users WHERE id=?", [id]);
+            var [res, fields] = await pool.query("SELECT * FROM users WHERE id=? ORDER BY email", [id]);
         }
 
         if(res.length < 1){
