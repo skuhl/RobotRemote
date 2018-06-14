@@ -33,7 +33,7 @@ function RemoveUser(user_id){
 			alert("Could not remove user:" + this.responseText);
 		}
 	}
-	xhr.open("GET", location.protocol + '//' + window.location.host + "/admin/acceptloginrequest/" + user_id);
+	xhr.open("GET", location.protocol + '//' + window.location.host + "/admin/removeuser/" + user_id);
 	xhr.send();
 }
 

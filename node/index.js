@@ -430,6 +430,39 @@ app.get('/admin/rejectloginrequest/:id', function(req, res){
     });
 });
 /* 
+    Request to reject login request with given id
+*/
+app.get('/admin/removeuser/:id', function(req, res){
+    res.append('Cache-Control', "no-cache, no-store, must-revalidate");
+    
+    if(req.params.id === undefined || Number(req.params.id) == NaN){
+        res.status(400).send("Missing/malformed id");
+    }
+
+    if(!req.session.loggedin){
+        res.status(403).send("Not logged in!");
+        return;
+    }
+    if(req.session.is_admin === undefined){
+        res.status(403).send("Not an admin!");
+        return;
+    }
+    if(!req.session.is_admin){
+        res.status(403).send("Not an admin!");
+        return;
+    }
+
+    db_fetch.delete_user_by_ID(req.params.id).then((user_id)=>{
+        //Do we want a account terminated email???
+        //mail.mail_to_user(user_id, __dirname + '/Emails/reject_user.txt', {});
+        res.status(200).send("Success");
+    })
+    .catch((err)=>{
+        console.log(err);
+        res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
+    });
+});
+/* 
     Request to accept login request with given id (for a loginrequest)
 */
 app.get('/admin/acceptloginrequest/:id', function(req, res){
