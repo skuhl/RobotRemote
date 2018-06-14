@@ -6,8 +6,7 @@ function GenerateTimeslotTable(timeslots){
     if(timeslots.length <= 0) return null;
 
     var table = document.createElement('table');
-    table.classList.add("admin_timeslot_req_table", "pagination");
-	 table.setAttribute("data-pagecount", "1")
+    table.classList.add("admin_timeslot_req_table");
 	 
     table.appendChild(CreateTableRow([
         "Email",
