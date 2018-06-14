@@ -83,12 +83,13 @@ th {
 
 /* The switch - the box around the slider */
 .switch {
-  position: relative;
-  display: inline-block;
-  width: 60px;
-  height: 34px;
-  margin: 0;
-  left: 48%;
+    position: fixed;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+    margin: 0;
+    left: 48%;
+    top: 90%;
 }
 
 /* Hide default HTML checkbox */
