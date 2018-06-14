@@ -5,7 +5,7 @@ function GenerateUserTable(users){
 	
 	var table = document.createElement('table');
 	table.classList.add("user_table", "pagination");
-	table.data-pagecount = '10';
+	table.data-pagecount = 10;
 	
 	table.appendChild(CreateTableRow([
 		"ID",
