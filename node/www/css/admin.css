@@ -76,7 +76,8 @@ th {
 .admin_timeslot_col-4,
 .admin_login_col-3,
 .admin_login_col-4,
-.user_table_col-1 {
+.user_table_col-2,
+.user_table_col-0 {
    width: 50px;
 }
 
