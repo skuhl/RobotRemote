@@ -4,7 +4,8 @@ function GenerateUserTable(users){
 	if(users.length <= 0) return null;
 	
 	var table = document.createElement('table');
-	table.classList.add("user_table");
+	table.classList.add("user_table", "pagination");
+	table.data-pagecount = 10;
 	
 	table.appendChild(CreateTableRow([
 		"ID",
