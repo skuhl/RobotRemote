@@ -83,12 +83,15 @@ th {
 
 /* The switch - the box around the slider */
 .switch {
-    position: fixed;
-    display: inline-block;
     width: 60px;
     height: 34px;
     margin: 0;
-    left: 47%;
+}
+
+#button_div {
+    position: fixed;
+    display: inline-block;
+    left: 50%;
     top: 90%;
 }
 
