@@ -63,7 +63,7 @@ th {
    height: 30px;
    cursor: pointer;
    padding: 1.5px;
-   margin: 10px 20px;
+   margin: 5px;
 }
 
 .admin_login_col-2,
@@ -78,7 +78,7 @@ th {
 .admin_login_col-4,
 .user_table_col-2,
 .user_table_col-0 {
-   width: 50px;
+   width: 80px;
 }
 
 /* The switch - the box around the slider */
