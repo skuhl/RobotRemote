@@ -76,6 +76,7 @@ function createFooters(table) {
     }
 
     // insert page at the top of the table
+    referenceNode.parentNode.insertBefore(pager, table.nextSibling);
     table.parentNode.insertBefore(pager, table);
 }
 

@@ -5,7 +5,10 @@
 
 .pager
 {
-    padding: 10px 0px;
+   color: black;
+   float: left;
+   padding: 8px 16px;
+   text-decoration: none;
 }
 
 .pager .pager-item
@@ -15,17 +18,17 @@
     text-align: center;
     display: inline-block;
     cursor: pointer;
-    background-color: #1caff6;
     transition: .5s background-color;
-    color: White;
 }
 
 .pager .pager-item:hover
 {
-    background-color: #0e384c;
+    background-color: #ddd;
+    border-radius: 5px;
 }
 
 .pager .pager-item.selected
 {
-    background-color: #0e384c;
+    background-color: #ffcd00;
+    border-radius: 5px;
 }
