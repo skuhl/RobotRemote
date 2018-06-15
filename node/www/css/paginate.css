@@ -1,6 +1,6 @@
 .pagination tr.inactive
 {
-    display: none;
+   display: none;
 }
 
 .pager
@@ -14,20 +14,21 @@
 .pager .pager-item
 {
    padding: 5px 10px;
-    text-align: center;
-    display: inline-block;
-    cursor: pointer;
-    transition: .5s background-color;
+   text-align: center;
+   display: inline-block;
+   cursor: pointer;
+   transition: .5s background-color;
+   border-radius: 25px;
 }
 
 .pager .pager-item:hover
 {
-    background-color: #ddd;
-    border-radius: 25px;
+   background-color: #ddd;
+   border-radius: 25px;
 }
 
 .pager .pager-item.selected
 {
-    background-color: #ffcd00;
-    border-radius: 25px;
+   background-color: #ffcd00;
+   border-radius: 25px;
 }
