@@ -6,15 +6,13 @@
 .pager
 {
    color: black;
-   float: left;
+   text-align: center:
    padding: 8px 16px;
    text-decoration: none;
 }
 
 .pager .pager-item
 {
-    padding: 10px;
-    border: solid 1px #fff;
     text-align: center;
     display: inline-block;
     cursor: pointer;
