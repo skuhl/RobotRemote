@@ -1,8 +1,8 @@
 // Use the websocket-relay to serve a raw MPEG-TS over WebSockets. You can use
 // ffmpeg to feed the relay. ffmpeg -> websocket-relay -> browser
 // Example:
-// node websocket-relay yoursecret 8081 8082
-// ffmpeg -i <some input> -f mpegts http://localhost:8081/yoursecret
+// node websocket-relay <settings file>
+// ffmpeg -i <some input> -f mpegts http://localhost:8081
 
 // Written by Dominic Szablewski for jsmpeg, modified for Robot Remote.
 

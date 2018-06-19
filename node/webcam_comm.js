@@ -65,6 +65,7 @@ module.exports = {
             return new Promise((resolve, reject)=>{
                 let body = new Buffer(JSON.stringify({secret: secret, expires_in: time}));
                 let opts = {
+                    timeout: 500,
                     host: this.ip,
                     port: this.comm_port,
                     method: 'POST',
@@ -75,6 +76,7 @@ module.exports = {
                     path: '/',
                     timeout: 2000
                 };
+
                 let handler = function(res){
                     if(res.statusCode == 200){
                         resolve('Success');

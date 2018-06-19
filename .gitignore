@@ -9,10 +9,14 @@ python/bin
 
 #node ignores
 node_modules/
-node/npm-debug.log
+npm-debug.log
+#generated run script
+run.js
 
 #ignore settings files
 settings.json
+webcam-*.json
+arm-*.json
 
 #ignores for certificate files
 helperscripts/cacert
@@ -22,3 +26,6 @@ helperscripts/client-cert
 
 #ignore vscode files
 .vscode/
+
+#log files
+*.log

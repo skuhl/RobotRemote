@@ -1,0 +1,27 @@
+{
+  "name": "robotremote",
+  "version": "1.0.0",
+  "description": "",
+  "main": "run.js",
+  "scripts": {
+    "start": "nodejs run.js",
+    "setup-single-machine": "nodejs single_machine_setup.js",
+    "db_setup": "nodejs helperscripts/db_setup.js",
+    "start_webserver": "nodejs node/index.js",
+    "start_arm": "cd python && . bin/activate && python -u server.py",
+    "start_camera": "cd webcam_stuff && nodejs websocket-relay.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "express": "^4.16.2",
+    "express-mysql-session": "^1.3.0",
+    "express-session": "^1.15.6",
+    "mysql2": "^1.5.3",
+    "nodemailer": "^4.6.5",
+    "prompt": "^1.0.0",
+    "request": "^2.83.0",
+    "ws": "^5.2.0"
+  }
+}

@@ -1,10 +1,11 @@
 {
     "http_port":3000,
     "https_port":3001,
-    "mysql_host":"",
-    "mysql_user":"",
+    "mysql_host":"localhost",
+    "mysql_user":"RobotRemote",
+    "mysql_port":3306,
     "mysql_pass":"",
-    "mysql_db":"",
+    "mysql_db":"RobotRemote",
     "actuator_servers": [
         {
             "ip":"127.0.0.1",
@@ -25,7 +26,7 @@
     "server_cert_file": "cert/server_cert.pem",
     "server_key_file": "cert/server_key.pem",
     "ca_file":"cert/cacert.pem",
-    "debug":true,
+    "debug":false,
     "smtp_auth": true,
     "smtp_username":"",
     "smtp_password":"",
@@ -33,6 +34,6 @@
     "smtp_port":587,
     "smtp_tls":true,
     "mailer_email":"",
-    "domain_name":"http://localhost:3000",
-    "domain_name_secure": "https://localhost:3001"
+    "domain_name":"http://localhost",
+    "domain_name_secure": "https://localhost"
 }

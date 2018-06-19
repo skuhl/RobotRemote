@@ -8,14 +8,25 @@ from ssl import SSLContext
 import json
 import asyncio
 import time
+import sys
 
-SETTINGS_FILE = 'settings.json'
+DEFAULT_SETTINGS_FILE = 'settings.json'
 
 def main():
     pressed_data = []
     pressed_data_lock = Lock()
 
-    opts = get_options(SETTINGS_FILE)
+    if len(sys.argv) == 2:
+        settings_file = sys.argv[1]
+    elif len(sys.argv) > 2:
+        print('Bad number of arguments.')
+        return
+    else:
+        settings_file = DEFAULT_SETTINGS_FILE
+
+    print('Using settings file ' + settings_file)
+
+    opts = get_options(settings_file)
     if opts == None:
         #an error occured, exit
         return

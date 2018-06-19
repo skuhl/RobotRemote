@@ -24,12 +24,19 @@ if(options['debug']){
     console.log('WARNING: Server was started in debug mode. This is insecure, and meant only for testing purposes.');
 }
 
+function get_file_relative_dirname(str){
+    if(str.startsWith('/')){
+        return str;
+    }
+    return __dirname + '/' + str;
+}
+
 //load ssl stuff into mem.
-let client_key = fs.readFileSync(options['client_key_file']);
-let client_cert = fs.readFileSync(options['client_cert_file']);
-let server_key = fs.readFileSync(options['server_key_file']);
-let server_cert = fs.readFileSync(options['server_cert_file']);
-let cacert = fs.readFileSync(options['ca_file']);
+let client_key = fs.readFileSync(get_file_relative_dirname(options['client_key_file']));
+let client_cert = fs.readFileSync(get_file_relative_dirname(options['client_cert_file']));
+let server_key = fs.readFileSync(get_file_relative_dirname(options['server_key_file']));
+let server_cert = fs.readFileSync(get_file_relative_dirname(options['server_cert_file']));
+let cacert = fs.readFileSync(get_file_relative_dirname(options['ca_file']));
 
 let secure_context = null;
 
@@ -159,9 +166,13 @@ app.get('/ControlPanel.html', function(req, res){
 
             Promise.all(secret_promises).then( ()=>{
                 res.status(200).send(html_fetcher(__dirname + '/www/ControlPanel.html', req, {beforeHeader: ()=>{return '<title>Robot Remote - Control Panel</title>'}})); 
+            }).catch((err)=>{
+                console.log("Failed to connect to a camera server, " + err)
+                res.status(500).send('Unable to communicate with webcam!');    
             });
             
-        },(err) => {
+        })
+        .catch((err) => {
             console.log("Failed to connect to actuator server, " + err)
             res.status(500).send(err);
         });

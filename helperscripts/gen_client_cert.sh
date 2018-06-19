@@ -1,3 +1,4 @@
+#!/bin/bash
 mkdir client-cert
 openssl genrsa -out client-cert/key.pem 2048
 openssl req -config openssl-client.cnf -new -sha256 -key client-cert/key.pem -out client-cert/cert.csr
