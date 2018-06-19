@@ -27,8 +27,8 @@ class SetupAction {
 }
 
 const setup_actions = [
-    new SetupAction(installPythonPackages, 'Setting up python...'), 
-    new SetupAction(setupDB, 'Setting up databse...', true),
+    //new SetupAction(installPythonPackages, 'Setting up python...'), 
+    new SetupAction(setupDB, 'Setting up database...', true),
     new SetupAction(setupSMTP, 'Setting up SMTP information...', true),
     new SetupAction(setupDomainName, 'Setting up domain name information...', true),
     new SetupAction(setupClientCertificate,'Generating client certificate...'),
