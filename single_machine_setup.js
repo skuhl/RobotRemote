@@ -53,7 +53,7 @@ let state = {
 function saveState(state){
     try{
         fs.writeFileSync(__dirname + '/setup.state.json', JSON.stringify(state), {flags: 'w'});
-    }catch{
+    }catch(err){
         console.log('Couldn\'t write last known good state!');
     }
 }
@@ -114,7 +114,7 @@ async function main(){
     //try to delete state. Could fail, don't really care.
     try{
         fs.unlinkSync(__dirname + '/setup.state.json');
-    }catch{}
+    }catch(err){}
 }
 
 let prompt_called = false;
@@ -376,7 +376,7 @@ async function setupClientCertificate(state){
 
         try{
             fs.mkdirSync(__dirname + '/helperscripts/cacert');
-        }catch{
+        }catch(err){
 
         }
         //open and close file to create it
@@ -399,7 +399,7 @@ async function setupClientCertificate(state){
 
     try{
         fs.mkdirSync(__dirname + '/helperscripts/client-cert');
-    }catch{
+    }catch(err){
 
     }
     
@@ -432,19 +432,19 @@ async function setupClientCertificate(state){
     //make cert directorysin
     try{
         fs.mkdirSync(__dirname + '/node/cert');
-    }catch{
+    }catch(err){
         
     }
 
     try{
         fs.mkdirSync(__dirname + '/python/cert');
-    }catch{
+    }catch(err){
         
     }
 
     try{
         fs.mkdirSync(__dirname + '/webcam_stuff/cert');
-    }catch{
+    }catch(err){
         
     }
 
