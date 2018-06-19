@@ -5,11 +5,11 @@
   "main": "run.js",
   "scripts": {
     "start": "nodejs run.js",
-    "setup-single-machine": "nodejs single_machine_setup.js",
-    "db_setup": "nodejs helperscripts/db_setup.js",
-    "start_webserver": "nodejs node/index.js",
+    "setup-single-machine": "node single_machine_setup.js",
+    "db_setup": "node helperscripts/db_setup.js",
+    "start_webserver": "node node/index.js",
     "start_arm": "cd python && . bin/activate && python -u server.py",
-    "start_camera": "cd webcam_stuff && nodejs websocket-relay.js"
+    "start_camera": "cd webcam_stuff && node websocket-relay.js"
   },
   "author": "",
   "license": "ISC",
