@@ -12,8 +12,8 @@ function GenerateTimeslotTable(timeslots){
         "Email",
         "Start",
         "End",
-        "Accept",
-        "Reject"
+        "",
+        ""
     ], "admin_timeslot_", true));
     //Generate table rows
     for(var i = 0; i < timeslots.length; i++){
@@ -50,8 +50,8 @@ function GenerateLoginTable(logins){
         "Email",
         "Reason",
         "Request Time",
-        "Accept",
-        "Reject"
+        "",
+        ""
     ], "admin_login_", true));
 
     //Generate table rows
@@ -70,7 +70,6 @@ function GenerateLoginTable(logins){
         table.appendChild(row);
         login_elements[logins[i].id] = row;
     }
-
     return table;
 }
 
@@ -94,9 +93,9 @@ function AcceptLogin(login_id){
     xhr.onreadystatechange = function(){
         if(this.readyState === 4 && this.status === 200){
             RemoveLoginFromTable(login_id);
-            alert("Succesfully accepted login!");
+            alert("Successfully accepted login!");
         }else if(this.readyState === 4){
-            alert("Couldn't accept login; " + this.responseText);
+            alert("Could not accept login: " + this.responseText);
         }
     }
 

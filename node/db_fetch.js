@@ -35,13 +35,35 @@ module.exports = {
         return json;
     
     },
+    get_current_users: async function(start_at, num_requests){
+        let json = [];
+        connection = await pool.getConnection();   
+        try{
+            if(num_requests <= 0 ){
+                var [res, field] = await connection.query('SELECT users.email, users.id FROM users WHERE approved=1', []);    
+            }else{
+                var [res, field] = await connection.query('SELECT users.email, users.id FROM users WHERE approved=1 LIMIT ? OFFSET ?', [num_requests, start_at]);
+            }
+        }finally{
+            connection.release();
+        }
+        for(let i = 0; i<res.length; i++){
+            json.push({
+            	 id: res[i].id,
+                email: res[i].email
+            });
+        }
+
+        return json;
+    
+    },
     /*Gets info about user with given id. Will use given connection if provided, otherwise uses an independant conneciton */
     get_user_by_id: async function(id, connection){
         if(connection){
-            var [res, fields] = await connection.query("SELECT * FROM users WHERE id=?", [id]);
+            var [res, fields] = await connection.query("SELECT * FROM users WHERE id=? ORDER BY email", [id]);
 
         }else{
-            var [res, fields] = await pool.query("SELECT * FROM users WHERE id=?", [id]);
+            var [res, fields] = await pool.query("SELECT * FROM users WHERE id=? ORDER BY email", [id]);
         }
 
         if(res.length < 1){
@@ -317,6 +339,31 @@ module.exports = {
             user_details = await this.get_user_by_id(user_id, connection);
 
             await connection.query("DELETE FROM loginrequests WHERE id=?", [req_id]);
+        }finally{
+            connection.release();
+        }
+        return user_details;
+    },
+        /*
+      Deletes the user associated with the passed in ID.
+      Returns the users email and stuff.
+    */
+    delete_user_by_ID: async function(req_id){
+        let connection = await pool.getConnection();
+        try{
+            let [res, fields] = await connection.query("SELECT id FROM users WHERE id=?", [req_id]);
+            
+            if(res.length != 1){
+                throw {
+                    reason: "User doesn't exist!",
+                    client_reason:"Invalid ID."
+                };
+            }
+            
+            let user_id = res[0].id;
+            user_details = await this.get_user_by_id(user_id, connection);
+
+            await connection.query("DELETE FROM users WHERE id=?", [req_id]);
         }finally{
             connection.release();
         }

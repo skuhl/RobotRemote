@@ -1,17 +1,25 @@
-#request {
+#request1,
+#request2,
+#users {
    text-align: center;
    font-weight: bold;
-   font-size: 20px;
+   font-size: 25px;
    margin-top:40px;
+
+}
+
+#request2 {
+   margin-top:100px;
 }
 
 .admin_login_req_table,
-.admin_timeslot_req_table {
+.admin_timeslot_req_table, 
+.user_table{
    border-collapse: separate;
    margin: 20px auto 20px auto;
    left: 50%;
    table-layout: auto;
-   width: 900px;
+   width: 1000px;
    margin: 20px auto 20px auto;
 }
 
@@ -19,35 +27,28 @@
     text-align: center; 
     vertical-align: middle;
 }
-
 .admin_timeslot_req_table td {
+    text-align: center; 
+    vertical-align: middle;
+}
+.user_table td {
     text-align: center; 
     vertical-align: middle;
 }
 
 .admin_timeslot_row,
-.admin_login_row {
-   
+.admin_login_row,
+.user_table_row {
+    background-color: #d2d2d2;  
 }
 
-.admin_timeslot_row:nth-child(even) {
-   background-color: #d2d2d2;
-}
-
-.admin_login_row:nth-child(even) {
-   background-color: #d2d2d2;
-}
-
-.admin_timeslot_row:nth-child(odd) {
-   background-color: #f0f0f0;
-}
-
-.admin_login_row:nth-child(odd) {
+th {
    background-color: #f0f0f0;
 }
 
 .admin_timeslot_element,
-.admin_login_element {
+.admin_login_element,
+.user_table_element {
    padding: 0 15px 0 15px;
    text-align: center;
    vertical-align: center;
@@ -62,5 +63,86 @@
    height: 30px;
    cursor: pointer;
    padding: 1.5px;
-   margin: 10px 20px;
+   margin: 5px;
+}
+
+.admin_login_col-2,
+.admin_timeslot_col-1,
+.admin_timeslot_col-2 {
+   width: 70px;
+}
+
+.admin_timeslot_col-3,
+.admin_timeslot_col-4,
+.admin_login_col-3,
+.admin_login_col-4,
+.user_table_col-2,
+.user_table_col-0 {
+   width: 80px;
+}
+
+/* The switch - the box around the slider */
+.switch {
+    width: 60px;
+    height: 30px;
+    margin: 0;
+}
+
+#button_div {
+    position: fixed;
+    display: inline-block;
+    left: 50%;
+    top: 90%;
+    margin-left: -30px;
+}
+
+/* Hide default HTML checkbox */
+.switch input {display:none;}
+
+/* The slider */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: #ffcd00;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #ffcd00;
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(26px);
+  -ms-transform: translateX(26px);
+  transform: translateX(26px);
+}
+
+/* Rounded sliders */
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
 }
