@@ -10,6 +10,7 @@ python/bin
 #node ignores
 node_modules/
 npm-debug.log
+setup.state.json
 #generated run script
 run.js
 
