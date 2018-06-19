@@ -53,7 +53,7 @@ let state = {
 function saveState(state){
     try{
         fs.writeFileSync(__dirname + '/setup.state.json', JSON.stringify(state), {flags: 'w'});
-    }catch{
+    }catch(err){
         console.log('Couldn\'t write last known good state!');
     }
 }
