@@ -148,11 +148,10 @@ function getAllNetworkInterfaces(){
     let ip_proc = spawnSync('ip', ['link', 'show']);
     
     if(ip_proc.status != 0){
-        console.log('Failed to identify network interfaces!');
-        console.log('Failed output: ')
-        console.log(ip_proc.stdout.toString('utf8'));
-        console.log(ip_proc.stderr.toString('utf8'));
-        process.exit(1);
+        throw 'Failed to identify network interfaces!\n' +
+        + 'Failed output: \n' +
+        sign_client_cert.stdout ? sign_client_cert.stdout.toString('utf8') + '\n' : '' +
+        sign_client_cert.stderr ? sign_client_cert.stderr.toString('utf8') + '\n' : '';
     }
 
     let ip_proc_output = ip_proc.stdout.toString('utf8');
@@ -178,16 +177,16 @@ async function installPythonPackages(state){
     if(create_virtual_env.status != 0){
         throw 'Failed to create virtual environment! Make sure python3 and virtualenv are installed!\n' +
         'Failed output: \n' +
-        create_virtual_env.stdout.toString('utf8') + '\n' +
-        create_virtual_env.stderr.toString('utf8');
+        create_virtual_env.stdout ? create_virtual_env.stdout.toString('utf8') + '\n' : '' +
+        create_virtual_env.stderr ? create_virtual_env.stderr.toString('utf8') + '\n' : '';
     }
 
     let pip_install = spawnSync('. bin/activate && pip install -r requirements.txt && deactivate', [], {cwd: __dirname + '/python', shell: true});
     if(pip_install.status != 0){
         throw 'Failed to install pip packages! Make sure pip3 is installed!\n' + 
         'Failed output: \n' +
-        pip_install.stdout.toString('utf8') + '\n' +
-        pip_install.stderr.toString('utf8');
+        pip_install.stdout ? pip_install.stdout.toString('utf8') + '\n' : '' +
+        pip_install.stderr ? pip_install.stderr.toString('utf8') + '\n' : '';
     }
     return state;
 }
@@ -262,8 +261,8 @@ async function setupDB(state){
         'Failed output: \n' +
         //I strip the first 2 lines here, because they contain sensitive information
         //namely the passwords the user has just entered.
-        db_setup.stdout.toString('utf8').split('\n').slice(3).join('\n') + '\n' +
-        db_setup.stderr.toString('utf8').split('\n').slice(3).join('\n')
+        db_setup.stdout ? db_setup.stdout.toString('utf8').split('\n').slice(3).join('\n') + '\n' : '' +
+        db_setup.stderr ? db_setup.stderr.toString('utf8') + '\n' : '';
     }
 
     return state;
@@ -393,8 +392,8 @@ async function setupClientCertificate(state){
         if(create_ca.status != 0){
             throw 'Failed to create the CA certificate!\n'
             + 'Failed output: ' +
-            create_ca.stdout.toString('utf8') + '\n' +
-            create_ca.stderr.toString('utf8');
+            create_ca.stdout ? create_ca.stdout.toString('utf8') + '\n' : '' +
+            create_ca.stderr ? create_ca.stderr.toString('utf8') + '\n' : '';
         }       
     }
 
@@ -408,8 +407,8 @@ async function setupClientCertificate(state){
     if(create_client_key.status != 0){
         throw 'Failed to create the client key!\n' +
         'Failed output: \n' +
-        create_client_key.stdout.toString('utf8') + '\n' +
-        create_client_key.stderr.toString('utf8');
+        create_client_key.stdout ? create_client_key.stdout.toString('utf8') + '\n' : '' +
+        create_client_key.stderr ? create_client_key.stderr.toString('utf8') + '\n' : '';
     }
 
     let create_client_csr = spawnSync('openssl', ['req', '-config', 'openssl-client.cnf', '-new', '-sha256', '-key', 'client-cert/key.pem', 
@@ -418,8 +417,8 @@ async function setupClientCertificate(state){
     if(create_client_csr.status != 0){
         throw 'Failed to create the client certificate signing request!\n' +
         'Failed output: \n' +
-        create_client_csr.stdout.toString('utf8') + '\n' +
-        create_client_csr.stderr.toString('utf8');
+        create_client_csr.stdout ? create_client_csr.stdout.toString('utf8') + '\n' : '' +
+        create_client_csr.stderr ? create_client_csr.stderr.toString('utf8') + '\n' : '';
     }
 
     let sign_client_cert = spawnSync('openssl',['ca', '-batch', '-config', 'openssl-ca.cnf', '-policy', 'signing_policy', '-extensions', 'signing_req', 
@@ -427,8 +426,8 @@ async function setupClientCertificate(state){
     if(sign_client_cert.status != 0){
         throw 'Failed to sign the client certificate!\n' +
         + 'Failed output: \n' +
-        sign_client_cert.stdout.toString('utf8') + '\n' +
-        sign_client_cert.stderr.toString('utf8');
+        sign_client_cert.stdout ? sign_client_cert.stdout.toString('utf8') + '\n' : '' +
+        sign_client_cert.stderr ? sign_client_cert.stderr.toString('utf8') + '\n' : '';
     }
     //make cert directorysin
     try{
