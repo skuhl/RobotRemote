@@ -8,8 +8,8 @@ CREATE DATABASE IF NOT EXISTS sessions;
 
 CREATE USER IF NOT EXISTS 'RobotRemote'@'{host}' IDENTIFIED BY '{password}';
 
-GRANT EXECUTE, SELECT, DELETE, UPDATE ON RobotRemote.* TO 'RobotRemote'@'{host}';
-GRANT EXECUTE, SELECT, DELETE, UPDATE ON sessions.* TO 'RobotRemote'@'{host}';
+GRANT EXECUTE, INSERT, SELECT, DELETE, UPDATE ON RobotRemote.* TO 'RobotRemote'@'{host}';
+GRANT EXECUTE, INSERT, ALTER, CREATE, SELECT, DELETE, UPDATE ON sessions.* TO 'RobotRemote'@'{host}';
 
 USE RobotRemote;
 /*Create user login request table*/
