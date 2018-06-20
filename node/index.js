@@ -54,6 +54,7 @@ if(options['debug']){
         requestCert: true
     });
 }
+
 //initialize mysqljs stuff.
 let mysql_pool = mysql.createPool({
     connectionLimit: 10,
@@ -71,6 +72,7 @@ let mysql_pool = mysql.createPool({
         return useDefaultTypeCasting();
     }
 });
+
 //mail
 if(options["smtp_auth"]){        
     mail.init_mail(mysql_pool, options['mailer_email'], options['smtp_host'], options['smtp_port'],  options['smtp_tls'], {
@@ -103,7 +105,8 @@ let session_store = new MySQLStore({
     port: 3306,
     user: options['mysql_user'],
     password: options['mysql_pass'],
-    database: "sessions"
+    database: "sessions",
+    createDatabaseTable: true
 });
 
 app.use(bodyParser.urlencoded({extended: false}));
@@ -211,7 +214,7 @@ app.post('/Login.html', function(req, res){
 	}
 
 	user_auth.verify_credentials(req.body.username, req.body.password).then((info)=>{
-		var prev = req.body.prev;
+	  var prev = req.body.prev;
         
       req.session.loggedin = true;
       req.session.email = req.body.username;
@@ -223,11 +226,12 @@ app.post('/Login.html', function(req, res){
     	if(prev.startsWith('http://') || prev.startsWith('https://')){		//is it in our domain
 			res.redirect(302, prev);
 		}else{																	//else take them to the schedule page
-        res.redirect(302, '/Scheduler.html');
-      }
+            res.redirect(302, '/Scheduler.html');
+        }
     },(err)=>{
         console.log(err);
-        res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
+        req.session.login_error = err.client_reason !== undefined ? err.client_reason : "Internal server error.";
+        res.redirect(302, '/Login.html');
     });
 });
 
