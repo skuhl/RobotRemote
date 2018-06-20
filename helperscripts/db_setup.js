@@ -34,7 +34,7 @@ async function main(){
 
         prompt.start();
 
-        let result = prompt_promise(schema);
+        let result = await prompt_promise(schema);
 
         mysql_admin_pass = result.admin_pass;
         mysql_new_pass = result.new_pass;
@@ -85,10 +85,14 @@ function injectVariables(text, variables){
 /* Promise wrapper for prompt. */
 function prompt_promise(schema){
     return new Promise((resolve, reject)=>{
-        prompt.get(schema, function(err, result){
-            if(err) return reject(err);
-            resolve(result);
-        })
+        try{
+            prompt.get({properties: schema}, function(err, result){
+                if(err) return reject(err);
+                resolve(result);
+            });
+        }catch(err){
+            reject(err);
+        }
     });
 }
 
