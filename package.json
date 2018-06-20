@@ -4,7 +4,7 @@
   "description": "",
   "main": "run.js",
   "scripts": {
-    "start": "nodejs run.js",
+    "start": "node run.js",
     "setup-single-machine": "node single_machine_setup.js",
     "db_setup": "node helperscripts/db_setup.js",
     "start_webserver": "node node/index.js",
