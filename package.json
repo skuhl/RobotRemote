@@ -8,7 +8,7 @@
     "setup-single-machine": "node single_machine_setup.js",
     "db_setup": "node helperscripts/db_setup.js",
     "start_webserver": "node node/index.js",
-    "start_arm": "cd python && . bin/activate && python -u server.py",
+    "start_arm": "exit 0",
     "start_camera": "cd webcam_stuff && node websocket-relay.js"
   },
   "author": "",
