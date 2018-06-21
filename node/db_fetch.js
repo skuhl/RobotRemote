@@ -373,9 +373,12 @@ module.exports = {
     adminify: async function(req_id){
         let connection = await pool.getConnection();
         try{
+            console.log(req_id);
             let [res, fields] = await connection.query("UPDATE users SET admin=1 WHERE id=?", [req_id]);
             
-            if(res.length != 1){
+            console.log(res);
+
+            if(res.affectedRows != 1){
                 throw {
                     reason: "User doesn't exist!",
                     client_reason:"Invalid ID."
