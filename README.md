@@ -2,25 +2,27 @@
 Project to remotely control a robotic arm.
 
 ## Mechanism
-Currently, the node portion runs the webserver, which the client connects to.
-
-This webpage uses WebSockets to send data back to the node server, which then sends relays this data to the python server.
-
-The python server listens on a socket for a connection, which contains data about what solenoids to actuate. This data is send to a thread, which is constantly communicating with a PLC. This is necessary, because if there is a disconnection between the PLC and the server actuating the solenoids, we want to stop actuating said solenoids, as a sort of safety feature.
-
+There are 3 basic types processes. Each of these process can be on a different machine. The three processes are:
+- The Webserver
+- The Arm Server
+- The Webcam Server 
+The Webserver communicates with the Arm Server and the Camera Servers, in order to match a client with a group of an Arm Server with any Camera Servers it may have. All this is done over SSL, so only the certain client may connect. After this is done, websockets are used for streaming camera video to the client from the Webcam Servers, as well as for sending data about what the user is pressing. The Arm Server takes this pressed data, and sends it over modbus TCP to a connected PLC, which actuates some coils in order to press buttons on the robot. Because we are using websockets, if the client disconnects for some reason without properly terminating, say the network cable is unplugged, the Arm Server can and will detect this, and stop actuating any coils, instead of naively waiting for the client to send a message to actuate no coils.
 ## Setup
-This setup is meant for Linux. If you would like to run on Windows 10, these instructions are compatable with [Ubuntu for Windows](https://www.microsoft.com/en-us/store/p/ubuntu/9nblggh4msv6).
+This setup is meant for Linux, specifically Ubuntu. If you would like to run on Windows 10, these instructions are compatable with [Ubuntu for Windows](https://www.microsoft.com/en-us/store/p/ubuntu/9nblggh4msv6). Certain features of the setup don't work on Windows, and may need to be done manually. Currently, these features are ffmpeg webcam streaming, and forwarding port 80/443 to port 3000/30001.
 
-1. Pull this repository into a directory (`git clone https://github.com/skuhl/RobotRemote`).
-2. Install npm and node. On Debian based distributions (including ubuntu and derivatives), this would be `sudo apt-get update && sudo apt-get install nodejs`
-3. Install necessary modules for Node. This can be done through npm. CD to the node folder, then execute `npm install`.
-4. Run the node portion of the stack. This can be done by running `npm start`.
-5. Install python 3.5 or above. On Debian based distrubutions, this would be installed using `sudo apt-get install python3`. This may already be installed on your system.
-6. Install pip. Pip can typically be installed through your package manager (`sudo apt-get install pip3`), but make sure you're getting the python3 compatable version (this is the 3 at the end of pip3). Pip can also be installed as explained [here](https://pip.pypa.io/en/stable/installing/).
-7. Create a virtual environment. This can be done by first installing virtualenv (`sudo apt-get install virtualenv`). Then, navigate to the root folder of the git repository, and run `virtualenv -p python3 python`. To check to make sure that your virtual environment worked, CD into the python directory, and execute `source bin/activate`. This enters the virtual environment. Now, execute `python --version`, and verify that your python version is 3.5.x or higher.
-8. Install the python dependencies. This can be done by first entering the virtual environment for python. CD into the pyhton folder, then execute `source bin/activate`. Always do this before running the server. Then, execute `pip install -r requirements.txt` 
-9. Run the python version of the server. You can do this by executing `python server.py`
-10. Connect to `localhost:3000` in your web browser. You should now be connected to the node server. Pressing the buttons on this page should send information to the python server.
+1. Install mysql-server, openssl, and ffmpeg through apt-get. (`sudo apt-get install mysql-server openssl ffmpeg`)
+2. Install [nvm (node version manager)](https://github.com/creationix/nvm). Instructions are provided at the given link. 
+3. Install node version 10.0.0 through nvm. To do this, execute `nvm install 10.0.0`;
+4. Set version 10.0.0 as the default node version. To do this, execute `nvm alias default 10.0.0`
+5. Tell nvm to use version 10.0.0. To do this, execute `nvm use 10.0.0`
+6. Clone this directory into an easily accesible folder (`git clone https://github.com/skuhl/RobotRemote.git`)
+7. Move into the folder(`cd RobotRemote`), and execute `npm install`
+8. Startup the MySQL server, if it hasn't been started up already. To do this, you should execute `sudo service mysql start`.
+9. Execute `sudo npm run setup-single-machine`. This will ask you a series of questions, which will then be used to automatically setup the machine as an all-in-one server for controlling a robotic arm. If you are unsure of a certain option, please refer below for a more detailed explanation.
+10. (TODO automate this) Install server certificates. If you are setting up for production, this can be done by obtaining a certificate from a trusted certificate authority. If you are just locally installing for tests, you may generate your own certificates. To generate these certificates, run the `gen_cert.sh` script in the `helperscripts` folder. Copy the resulting `key.pem` and `cert.pem` files from `helperscripts/cert` to `arm_server/cert`, `node/cert`, and `webcam_stuff/cert`. If you have gotten your certificate from a trusted source, move these to the same folders, making sure they are in the .pem format, with the names `cert.pem` and `key.pem`. Depending on the format you have received, you may wish to convert it using openssl.
+11. If this is a local install, install the ca certificate (`helperscipts/cacert/cacert.pem`). This can be done by copying said file to `/usr/shader/ca-certificates/extra/robotremote.crt`, the executing `sudo dpkg-reconfigure ca-certificates`.
+12. Run the servers using `npm run start`.
+13. Connect to whatever hostname you provided through your browser, assuming you already have it pointing to you machine either through DNS or your hosts file.
 
 ## Options
 ### Node webserver (node/settings.json)
