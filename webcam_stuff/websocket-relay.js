@@ -37,26 +37,12 @@ var socketServer = new WebSocket.Server({
 
 socketServer.connectionCount = 0;
 socketServer.on('connection', function(socket, upgradeReq) {
-	socketServer.connectionCount++;
-
-	if(socketServer.connectionCount > 1){
-		socket.close(1000, 'Someone else is already connected!');
-		return;
-	}
-	
 	console.log(
 		'New WebSocket Connection: ', 
 		(upgradeReq || socket.upgradeReq).socket.remoteAddress,
 		(upgradeReq || socket.upgradeReq).headers['user-agent'],
 		'('+socketServer.connectionCount+' total)'
 	);
-	
-	socket.on('close', function(code, message){
-		socketServer.connectionCount--;
-		console.log(
-			'Disconnected WebSocket ('+socketServer.connectionCount+' total)'
-		);
-	});
 });
 
 socketServer.broadcast = function(data) {
@@ -169,6 +155,21 @@ wsServer.on('upgrade', function(request, socket, head){
 		socket.destroy();
 		return;
 	}
+
+	if(socketServer.connectionCount > 0){
+		console.log('More than one connection already!');
+		socket.destory();
+		return;
+	}
+
+	socketServer.connectionCount++;
+
+	socket.on('close', function(code, message){
+		socketServer.connectionCount--;
+		console.log(
+			'Disconnected WebSocket ('+socketServer.connectionCount+' total)'
+		);
+	});
 
 	socketServer.handleUpgrade(request, socket, head, (ws)=>{
 		socketServer.emit('connection', ws, request);
