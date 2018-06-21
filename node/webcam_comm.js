@@ -24,7 +24,7 @@ module.exports = {
                     timeout: 2000
                 };
                 
-                handler = function(res){
+                let handler = function(res){
                     if(res.statusCode == 200){
                         let data = '';
                         res.on('data', (chunk)=>{
@@ -63,7 +63,7 @@ module.exports = {
 
         setSecret(secret, time){
             return new Promise((resolve, reject)=>{
-                let body = new Buffer(JSON.stringify({secret: secret, expires_in: time}));
+                let body = Buffer.from(JSON.stringify({secret: secret, expires_in: time}));
                 let opts = {
                     timeout: 500,
                     host: this.ip,

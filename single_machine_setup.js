@@ -443,7 +443,7 @@ async function setupClientCertificate(state){
     }
 
     try{
-        fs.mkdirSync(__dirname + '/python/cert');
+        fs.mkdirSync(__dirname + '/arm_server/cert');
     }catch(err){
         
     }
@@ -458,7 +458,7 @@ async function setupClientCertificate(state){
     fs.copyFileSync(__dirname + '/helperscripts/client-cert/cert.pem', __dirname + '/node/cert/client_cert.pem');
     fs.copyFileSync(__dirname + '/helperscripts/client-cert/key.pem', __dirname + '/node/cert/client_key.pem');
     fs.copyFileSync(__dirname + '/helperscripts/cacert/cacert.pem', __dirname + '/node/cert/cacert.pem');
-    fs.copyFileSync(__dirname + '/helperscripts/cacert/cacert.pem', __dirname + '/python/cert/cacert.pem');
+    fs.copyFileSync(__dirname + '/helperscripts/cacert/cacert.pem', __dirname + '/arm_server/cert/cacert.pem');
     fs.copyFileSync(__dirname + '/helperscripts/cacert/cacert.pem', __dirname + '/webcam_stuff/cert/cacert.pem');
 
     return state;
@@ -528,7 +528,7 @@ async function setupArmsAndCameras(state){
 
         state.node_options.actuator_servers.push({ip: '127.0.0.1', socket_port: opts.socket_port, websock_port: opts.websocket_port, web_cams: webserver_cam_opts});
         
-        fs.writeFileSync(__dirname + `/python/arm-${i}.json`, JSON.stringify(opts, undefined, 4), {flags: 'w'});
+        fs.writeFileSync(__dirname + `/arm_server/arm-${i}.json`, JSON.stringify(opts, undefined, 4), {flags: 'w'});
     }
 
     return state;
@@ -555,8 +555,8 @@ ${(()=>{
         exec_arms += `let arm_${i}_proc = spawn('npm', ['run', 'start_arm', '--', 'arm-${i}.json'],
     {stdio: [
         0, 
-        fs.openSync(__dirname + '/python/arm-${i}.log', 'a'), 
-        fs.openSync(__dirname + '/python/arm-${i}-err.log', 'a')]
+        fs.openSync(__dirname + '/arm_server/arm-${i}.log', 'a'), 
+        fs.openSync(__dirname + '/arm_server/arm-${i}-err.log', 'a')]
     }       
 );\n`;
     }
@@ -699,6 +699,7 @@ async function redirectPorts(state){
         }else{
             insert_point = exit_start;
         }
+        
         //Might be a new file, needs #!/bin/sh
         if(!rc_local.startsWith('#!')){
             rc_local = '#/bin/sh\n' + rc_local;

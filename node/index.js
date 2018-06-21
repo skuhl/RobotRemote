@@ -144,8 +144,10 @@ app.get('/ControlPanel.html', function(req, res){
     }
 
     actuator_comm.getFreeActuator(actuators).then((act)=>{
+        console.log(act);
         //send client details (secret).
-        act.sendClientDetails().then((secret) => {
+        act.sendClientDetails(5*60*1000).then((secret) => {
+            console.log('Sending secret ' + secret);
             //send cookie containing client secret!
             //TODO set up these options for cookie correctly
             //(https only, age, when it expires, possibly session stuff)
@@ -181,6 +183,8 @@ app.get('/ControlPanel.html', function(req, res){
         });
     })
     .catch((err)=>{
+        console.log('Failed to get statuses???');
+        console.log(err);
         res.status(500).send(err);
     });
 });
@@ -610,7 +614,7 @@ app.get('/timeslotrequests', function(req, res){
     provide start time in milliseconds since the unix epoch, and duration in milliseconds.
 */
 //These should match the ones in scheduler.js
-const time_quantum = 60;
+const time_quantum = 30;
 const max_quantums = 8;
 const num_days = 7;
 
