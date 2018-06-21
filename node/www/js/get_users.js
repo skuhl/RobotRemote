@@ -55,10 +55,10 @@ function RemoveUser(user_id){
 function Adminify(user_id){
 	var xhr = new XMLHttpRequest();
 	xhr.onreadystatechange = function(){
-		if(this.readyState === 4 && this.status ===200){
+		if(this.readyState === 4 && this.status === 200){
 			alert("Admin status changed!");
 		}else if(this.readyState === 4){
-			alert("Could not change status:" + this.responseText);
+			alert("Could not change admin status:" + this.responseText);
 		}
 	}
 	if(!user_id.is_admin){

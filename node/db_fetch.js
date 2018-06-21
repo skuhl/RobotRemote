@@ -384,14 +384,9 @@ module.exports = {
                     client_reason:"Invalid ID."
                 };
             }
-            
-            let user_id = res[0].id;
-            user_details = await this.get_user_by_id(user_id, connection);
-
         }finally{
             connection.release();
         }
-        return user_details;
     },
     
     deAdminify: async function(req_id){
@@ -399,20 +394,15 @@ module.exports = {
         try{
             let [res, fields] = await connection.query("UPDATE users SET admin=0 WHERE id=?", [req_id]);
             
-            if(res.length != 1){
+            if(res.affectedRows != 1){
                 throw {
                     reason: "User doesn't exist!",
                     client_reason:"Invalid ID."
                 };
             }
-            
-            let user_id = res[0].id;
-            user_details = await this.get_user_by_id(user_id, connection);
-
         }finally{
             connection.release();
         }
-        return user_details;
     },
     
     /*
