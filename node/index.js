@@ -615,7 +615,7 @@ app.get('/timeslotrequests', function(req, res){
 */
 //These should match the ones in scheduler.js
 const time_quantum = 30;
-const max_quantums = 8;
+const max_quantums = 4;
 const num_days = 7;
 
 app.post('/requesttimeslot', function(req, res){

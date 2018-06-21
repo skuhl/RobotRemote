@@ -1,11 +1,11 @@
 var mouse_down = false;
 var mode = null;
-var max_quantums = 8;
+var max_quantums = 4;
 
 var select_begin_index = -1;
 var select_end_index = -1;
 
-var time_quantum = 60; /*Time quantum in minutes */
+var time_quantum = 30; /*Time quantum in minutes */
 var num_days = 7; /*Number of days to display*/
 
 function loader(){
@@ -68,20 +68,19 @@ var DeleteTimeslot = function(id){
 }
 
 var GenerateGrid = function(elements){
-	 let earliest_start = 8; // 8am earliest time to get the bot
-	 let end_time = 17;		 // 5pm is the latest time the bot my be used
+	 let earliest_start = 8*60*60*1000; // 8am earliest time to get the bot
+    let end_time_hours = 16.5;				// 5pm is the latest we want people able to schedule
     let num_columns = num_days;
     let num_rows = (9*60)/time_quantum; // 8-5 is the 9 hour period of time when the bot may be used
     
     let start_time = Date.now();
-    if(start_time.getHours < earliest_start){ //must be after 8
-    	start_time.setHours(earliest_start);
-    }
     
-    let start_date = new Date(start_time);
-    if(start_time.getHours > end_time){ //past 5 then start on the next day at 8
-    	start_time.setDate(start_time.getDate() + 1);
-    	start_time.setHours(earliest_start);
+    let start_date = new Date(start_time); 	 		// get today's date
+    start_date.setDate(start_date.getDate() + 1);  // make it start on the next day
+
+    if(start_date.getHours() >= end_time_hours){ 			// if it's past 5 start another day ahead
+    	 start_date.setDate(start_date.getDate() + 1);
+    	 start_date.setHours(0);
     }
     var start_day_date = new Date(start_date.getFullYear(), start_date.getMonth(), start_date.getDate());
     var html = '<table id="schedule_table" class="schedule_table_element" onmouseleave="TableLeave(this)" onmouseup="TableMouseUp(this)" ><tr class="schedule_table_element schedule_table_row">'
@@ -102,7 +101,7 @@ var GenerateGrid = function(elements){
         for(j = 0; j < num_columns; j++){
             var table_class = '';
             //row date = start_day + j days + i time quantums. 24*60*60*1000 = 1 day in ms
-            var element_date = new Date(start_day_date.getTime() + j*24*60*60*1000 + i*time_quantum*60*1000);
+            var element_date = new Date(start_day_date.getTime() + earliest_start + j*24*60*60*1000 + i*time_quantum*60*1000);
             var my_json = elements.mine.find(function(x){return element_date >= x.start_date && element_date <= x.end_date});
             var other_json = elements.others.find(function(x){return element_date >= x.start_date && element_date <= x.end_date});
             var can_select = true;
