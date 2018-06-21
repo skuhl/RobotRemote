@@ -101,6 +101,7 @@ var GenerateGrid = function(elements){
         for(j = 0; j < num_columns; j++){
             var table_class = '';
             //row date = start_day + j days + i time quantums. 24*60*60*1000 = 1 day in ms
+            
             var element_date = new Date(start_day_date.getTime() + earliest_start + j*24*60*60*1000 + i*time_quantum*60*1000);
             var my_json = elements.mine.find(function(x){return element_date >= x.start_date && element_date <= x.end_date});
             var other_json = elements.others.find(function(x){return element_date >= x.start_date && element_date <= x.end_date});
@@ -121,6 +122,7 @@ var GenerateGrid = function(elements){
             //can't select a time on the weekend
             if(element_date.getDay() == 0 || element_date.getDay() == 6){
             	can_select = false;
+            	
             }
 
             html += '<td id = "schedule-' +
@@ -134,7 +136,9 @@ var GenerateGrid = function(elements){
                     '" can_select="' +
                     can_select +
                     '" onmousedown="GridMouseDown(this)" onmouseover="GridMouseOver(this)">';
-            if(element_date >= start_date) html += TimeBeautify(element_date); 
+            
+            if(element_date >= start_date && !(element_date.getDay() == 0 || element_date.getDay() == 6)) 
+            	html += TimeBeautify(element_date); 
             html += '</td>';
         }
         html += '</tr>';

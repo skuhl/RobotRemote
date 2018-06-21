@@ -84,7 +84,7 @@
 }
 
 .schedule_table_cell {
-    padding: 0 15px 0 15px;
+    width: 100px;
 }
 
 .schedule_table_row:nth-child(even) {
@@ -125,6 +125,7 @@
 }
 
 #req_submit{
+   float: none;
    display: block;
    width: 80px;
    height: 30px;
@@ -132,5 +133,11 @@
    border-radius: 30px;
    border: 1px solid #f1d573;
    cursor: pointer;
-   margin: 20px 50% 0 0;
+}
+
+.submit_btn {
+   color: black;
+    text-align: -webkit-center;
+    padding: 5px 16px;
+    text-decoration: none;
 }
