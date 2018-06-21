@@ -76,9 +76,14 @@ th {
 .admin_timeslot_col-4,
 .admin_login_col-3,
 .admin_login_col-4,
-.user_table_col-2,
-.user_table_col-0 {
+.user_table_col-3,
+.user_table_col-4 {
    width: 80px;
+}
+
+.user_table_col-0,
+.user_table_col-1 {
+   width: 50px;
 }
 
 /* The switch - the box around the slider */

@@ -9,16 +9,28 @@ function GenerateUserTable(users){
 	
 	table.appendChild(CreateTableRow([
 		"ID",
+		"Admin",
 		"Email",
-		" "
+		"",
+		""
 	], "user_table_", true));
 		
 	//generate table rows
 	for(var i = 0; i < users.length; i++){
+		//subject to review
+		if(users[i].admin)
+			admin = 1;
+		else if (!users[i].admin)
+			admin = 0;
+		else
+			admin = '?';
+		
 		var row = CreateTableRow([
 			users[i].id,
+			admin,
 			users[i].email,
-			'<button class="admin_button" onclick="RemoveUser(' + users[i].id + ')">Remove</button>'
+			'<button class="admin_button" onclick="RemoveUser(' + users[i].id + ')">Remove</button>',
+			'<button class="admin_button" onclick="Adminify(' + users[i].id + ')">Adminify</button>'
 		], "user_table_");
 		table.appendChild(row);
 		user_elements[users[i].id] = row;
@@ -29,14 +41,31 @@ function GenerateUserTable(users){
 function RemoveUser(user_id){
 	var xhr = new XMLHttpRequest();
 	xhr.onreadystatechange = function(){
-		if(this.readyState === 4 && this.status ===200){
+		if(this.readyState === 4 && this.status === 200){
 			RemoveUserFromTable(user_id);
-			alert("Successfully removed user!")
+			alert("Successfully removed user!");
 		}else if(this.readyState === 4){
 			alert("Could not remove user:" + this.responseText);
 		}
 	}
 	xhr.open("GET", location.protocol + '//' + window.location.host + "/admin/removeuser/" + user_id);
+	xhr.send();
+}
+
+function Adminify(user_id){
+	var xhr = new XMLHttpRequest();
+	xhr.onreadystatechange = function(){
+		if(this.readyState === 4 && this.status ===200){
+			alert("Admin status changed!");
+		}else if(this.readyState === 4){
+			alert("Could not change status:" + this.responseText);
+		}
+	}
+	if(!user_id.is_admin){
+		xhr.open("GET", location.protocol + '//' + window.location.host + "/admin/adminify/" + user_id);
+	}else{
+		xhr.open("GET", location.protocol + '//' + window.location.host + "/admin/deAdminify/" + user_id);
+	}
 	xhr.send();
 }
 
