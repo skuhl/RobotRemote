@@ -27,7 +27,6 @@ class SetupAction {
 }
 
 const setup_actions = [
-    //new SetupAction(installPythonPackages, 'Setting up python...'), 
     new SetupAction(setupDB, 'Setting up database...', true),
     new SetupAction(setupSMTP, 'Setting up SMTP information...', true),
     new SetupAction(setupDomainName, 'Setting up domain name information...', true),
@@ -170,31 +169,6 @@ function getAllNetworkInterfaces(){
 //Doesn't need to be fast, though, so this should be good enough.
 function deepCopy(obj){
     return JSON.parse(JSON.stringify(obj));
-}
-
-async function installPythonPackages(state){
-	 console.log('176\n');
-    let create_virtual_env = spawnSync('virtualenv', ['-p', 'python3', 'python'], {cwd: __dirname});
-    console.log('178\n');
-    if(create_virtual_env.status != 0){
-    	  console.log('180\n');
-        throw 'Failed to create virtual environment! Make sure python3 and virtualenv are installed!\n' +
-        'Failed output: \n' +
-        create_virtual_env.stdout ? create_virtual_env.stdout.toString('utf8') + '\n' : '' +
-        create_virtual_env.stderr ? create_virtual_env.stderr.toString('utf8') + '\n' : '';
-    }
-	 console.log('186\n');
-    let pip_install = spawnSync('. bin/activate && pip install -r requirements.txt && deactivate', [], {cwd: __dirname + '/python', shell: true});
-    console.log('188\n');
-    if(pip_install.status != 0){
-    console.log('190\n');
-        throw 'Failed to install pip packages! Make sure pip3 is installed!\n' + 
-        'Failed output: \n' +
-        pip_install.stdout ? pip_install.stdout.toString('utf8') + '\n' : '' +
-        pip_install.stderr ? pip_install.stderr.toString('utf8') + '\n' : '';
-    }
-    console.log('196\n');
-    return state;
 }
 
 async function setupDB(state){
