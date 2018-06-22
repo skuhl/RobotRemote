@@ -17,12 +17,13 @@ function GenerateUserTable(users){
 		
 	//generate table rows
 	for(var i = 0; i < users.length; i++){
+		
 		var row = CreateTableRow([
 			users[i].id,
 			users[i].admin,
 			users[i].email,
 			'<button class="admin_button" onclick="RemoveUser(' + users[i].id + ')">Remove</button>',
-			'<button class="admin_button" onclick="Adminify(' + users[i].id + ')">Adminify</button>'
+			'<button class="admin_button" onclick="Adminify(' + users[i].id +', '+ users[i].admin + ')">Adminify</button>'
 		], "user_table_");
 		table.appendChild(row);
 		user_elements[users[i].id] = row;
@@ -32,28 +33,36 @@ function GenerateUserTable(users){
 
 function RemoveUser(user_id){
 	var xhr = new XMLHttpRequest();
-	xhr.onreadystatechange = function(){
-		if(this.readyState === 4 && this.status === 200){
-			RemoveUserFromTable(user_id);
-			alert("Successfully removed user!");
-		}else if(this.readyState === 4){
-			alert("Could not remove user:" + this.responseText);
+	if (confirm("Are you sure you want to remove this user? You cannot undo this action.")) {
+		xhr.onreadystatechange = function(){
+			if(this.readyState === 4 && this.status === 200){
+				RemoveUserFromTable(user_id);
+				alert("Successfully removed user!");
+			}else if(this.readyState === 4){
+				alert("Could not remove user:" + this.responseText);
+			}
 		}
-	}
+	}else
+		return;
 	xhr.open("GET", location.protocol + '//' + window.location.host + "/admin/removeuser/" + user_id);
 	xhr.send();
 }
 
-function Adminify(user_id){
+function Adminify(user_id, is_admin){
 	var xhr = new XMLHttpRequest();
-	xhr.onreadystatechange = function(){
-		if(this.readyState === 4 && this.status === 200){
-			alert("Admin status changed!");
-		}else if(this.readyState === 4){
-			alert("Could not change admin status:" + this.responseText);
+	if (confirm("Are you sure you want to give or take admin privileges for this user?")) {
+		xhr.onreadystatechange = function(){
+			if(this.readyState === 4 && this.status === 200){
+				alert("Admin status changed!");
+			}else if(this.readyState === 4){
+				alert("Could not change admin status:" + this.responseText);
+			}
 		}
-	}
-	if(!user_id.admin){
+	}else
+		return;
+	
+	console.log(is_admin);
+	if(is_admin != 1){
 		xhr.open("GET", location.protocol + '//' + window.location.host + "/admin/adminify/" + user_id);
 	}else{
 		xhr.open("GET", location.protocol + '//' + window.location.host + "/admin/deAdminify/" + user_id);

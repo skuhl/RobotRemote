@@ -539,7 +539,7 @@ app.get('/admin/deAdminify/:id', function(req, res){
         return;
     }
 
-    db_fetch.deAdminify_by_id(req.params.id).then((user_id)=>{
+    db_fetch.deAdminify(req.params.id).then((user_id)=>{
         //Do we want a account terminated email??? my guess is nah
         //mail.mail_to_user(user_id, __dirname + '/Emails/reject_user.txt', {});
         res.status(200).send("Success");

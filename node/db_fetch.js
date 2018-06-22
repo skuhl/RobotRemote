@@ -40,9 +40,9 @@ module.exports = {
         connection = await pool.getConnection();   
         try{
             if(num_requests <= 0 ){
-                var [res, field] = await connection.query('SELECT users.email, users.id FROM users WHERE approved=1', []);    
+                var [res, field] = await connection.query('SELECT users.email, users.id, users.admin FROM users WHERE approved=1', []);    
             }else{
-                var [res, field] = await connection.query('SELECT users.email, users.id FROM users WHERE approved=1 LIMIT ? OFFSET ?', [num_requests, start_at]);
+                var [res, field] = await connection.query('SELECT users.email, users.id, users.admin FROM users WHERE approved=1 LIMIT ? OFFSET ?', [num_requests, start_at]);
             }
         }finally{
             connection.release();
@@ -50,7 +50,8 @@ module.exports = {
         for(let i = 0; i<res.length; i++){
             json.push({
             	 id: res[i].id,
-                email: res[i].email
+                email: res[i].email,
+                admin: res[i].admin
             });
         }
 
@@ -373,10 +374,8 @@ module.exports = {
     adminify: async function(req_id){
         let connection = await pool.getConnection();
         try{
-            console.log(req_id);
             let [res, fields] = await connection.query("UPDATE users SET admin=1 WHERE id=?", [req_id]);
             
-            console.log(res);
 
             if(res.affectedRows != 1){
                 throw {
