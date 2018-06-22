@@ -23,8 +23,8 @@ CREATE TABLE IF NOT EXISTS users (id INT UNSIGNED AUTO_INCREMENT KEY NOT NULL,
                                   email CHAR(191) NOT NULL UNIQUE, 
                                   passhash CHAR(64) NOT NULL,
                                   passsalt CHAR(64) NOT NULL,
-                                  approved BIT(1) NOT NULL DEFAULT 0,
-                                  admin BIT(1) NOT NULL DEFAULT 0,
+                                  approved BOOL NOT NULL DEFAULT 0,
+                                  admin BOOL NOT NULL DEFAULT 0,
                                   loginreq_id INT UNSIGNED NULL,
                                   FOREIGN KEY (loginreq_id) REFERENCES loginrequests(id) ON DELETE CASCADE) ENGINE INNODB;
 /*create timeslot request table*/

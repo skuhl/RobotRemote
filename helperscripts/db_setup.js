@@ -60,7 +60,8 @@ async function main(){
         port: mysql_port,
         user: mysql_user,
         password: mysql_admin_pass,
-        multipleStatements: true
+        multipleStatements: true,
+
     });
 
     await connection.query(sql, []);

@@ -17,17 +17,9 @@ function GenerateUserTable(users){
 		
 	//generate table rows
 	for(var i = 0; i < users.length; i++){
-		//subject to review
-		if(users[i].admin)
-			admin = 1;
-		else if (!users[i].admin)
-			admin = 0;
-		else
-			admin = '?';
-		
 		var row = CreateTableRow([
 			users[i].id,
-			admin,
+			users[i].admin,
 			users[i].email,
 			'<button class="admin_button" onclick="RemoveUser(' + users[i].id + ')">Remove</button>',
 			'<button class="admin_button" onclick="Adminify(' + users[i].id + ')">Adminify</button>'
@@ -61,7 +53,7 @@ function Adminify(user_id){
 			alert("Could not change admin status:" + this.responseText);
 		}
 	}
-	if(!user_id.is_admin){
+	if(!user_id.admin){
 		xhr.open("GET", location.protocol + '//' + window.location.host + "/admin/adminify/" + user_id);
 	}else{
 		xhr.open("GET", location.protocol + '//' + window.location.host + "/admin/deAdminify/" + user_id);
