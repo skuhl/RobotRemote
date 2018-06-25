@@ -24,7 +24,7 @@ function GenerateUserTable(users){
 			users[i].email,
 			'<button class="admin_button" onclick="RemoveUser(' + users[i].id + ')">Remove</button>',
 			'<button class="admin_button" onclick="Adminify(' + users[i].id +', '+ users[i].admin + ')">Adminify</button>'
-		], "user_table_");
+		], "user_table_", users[i].id);
 		table.appendChild(row);
 		user_elements[users[i].id] = row;
 	}

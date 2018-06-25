@@ -78,16 +78,21 @@ function CreateElementWithText(tagname, content){
 /*This function creates a table row, using an array of inner HTML strings
   Returns an element that contains all inner htmls in their own td or th elements.
   is_header controls weather to use th or not. This is an optional argument.
+  id is also an optional argument. If it's defined, it sets the ID's using it as a suffix.
+  ID of a row = class_prefix + id
 */
-function CreateTableRow(inner_htmls, class_prefix, is_header){
+function CreateTableRow(inner_htmls, class_prefix, is_header, id){
     
     if(is_header === undefined) is_header = false;
     if(class_prefix === undefined) class_prefix = 'table-'
+    if(id === undefined)
 
     var tag_type = is_header ? 'th' : 'td';
     var tr = document.createElement('tr');
     
     tr.classList.add(class_prefix + 'row');
+
+    if(id !== undefined) tr.id = class_prefix + id
 
     for(var i = 0; i < inner_htmls.length; i++){
         var td = document.createElement(tag_type);
