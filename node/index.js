@@ -128,10 +128,6 @@ class RobotRemoteServer {
         }
     }
 
-    get options(){
-        return this._options;
-    }
-
     initApp(){
         this._app = express();
         //middleware
@@ -871,6 +867,22 @@ class RobotRemoteServer {
             this._mysql_pool.end(closeCallback);
         }.bind(this));
     }
+    //Getters (and setters, if there ever are any)
+    get options(){
+        return this._options;
+    }
+
+    get client_cert(){
+        return this._client_cert;
+    }
+
+    get client_key(){
+        return this._client_key;
+    }
+
+    get ca_cert(){
+        return this._cacert;
+    }
 }
 
 if(process.argv[1] === __dirname + '/index.js'){
@@ -883,8 +895,8 @@ if(process.argv[1] === __dirname + '/index.js'){
     server.createServers();
     server.listen();
 
-    console.log('Server listening on http://localhost:' + this._options['http_port'] + 
-    ' and https://localhost:' + this._options['https_port']);
+    console.log('Server listening on http://localhost:' + options['http_port'] + 
+    ' and https://localhost:' + options['https_port']);
 }
 
 module.exports.RobotRemoteServer = RobotRemoteServer;
