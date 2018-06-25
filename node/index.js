@@ -854,6 +854,23 @@ class RobotRemoteServer {
     
     }
 
+    //Returns a promise, resolving when the server is succesfully closed down.
+    end(){
+        return new Promise(function(resolve, reject){
+            let num_closes = 3;
+            
+            function closeCallback(){
+                num_closes--;
+                if(num_closes == 0){
+                    resolve();
+                }
+            }
+
+            this._http_server.close(closeCallback);
+            this._https_server.close(closeCallback);
+            this._mysql_pool.end(closeCallback);
+        }.bind(this));
+    }
 }
 
 if(process.argv[1] === __dirname + '/index.js'){
