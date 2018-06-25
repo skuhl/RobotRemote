@@ -1,6 +1,5 @@
 const express = require("express");
 const request = require('request');
-const app = express();
 const http = require('http');
 const https = require('https');
 const tls = require('tls');
@@ -17,792 +16,858 @@ const session = require('express-session');
 const mysql = require('mysql2/promise');
 const MySQLStore = require('express-mysql-session')(session);
 
-const options = require('./settings.json');
 
-//Print warning for debug option being enabled.
-if(options['debug']){
-    console.log('WARNING: Server was started in debug mode. This is insecure, and meant only for testing purposes.');
+function getDefaultIfUndefined(curval, default_){
+    return curval === undefined ? default_ : curval; 
 }
 
-function get_file_relative_dirname(str){
-    if(str.startsWith('/')){
-        return str;
-    }
-    return __dirname + '/' + str;
-}
+class RobotRemoteServer {
+    constructor(options){
+        this._options = options;
+        this._options.http_port = getDefaultIfUndefined(this._options.http_port, 3000);
+        this._options.https_port = getDefaultIfUndefined(this._options.https_port, 3001);
+        this._options.mysql_host = getDefaultIfUndefined(this._options.mysql_host, 'localhost');
+        this._options.mysql_user = getDefaultIfUndefined(this._options.mysql_user, 'RobotRemote');
+        this._options.mysql_port = getDefaultIfUndefined(this._options.mysql_port, 3306);
+        this._options.mysql_db = getDefaultIfUndefined(this._options.mysql_db, 'RobotRemote');
+        this._options.actuator_servers = getDefaultIfUndefined(this._options.actuator_servers, []);
 
-//load ssl stuff into mem.
-let client_key = fs.readFileSync(get_file_relative_dirname(options['client_key_file']));
-let client_cert = fs.readFileSync(get_file_relative_dirname(options['client_cert_file']));
-let server_key = fs.readFileSync(get_file_relative_dirname(options['server_key_file']));
-let server_cert = fs.readFileSync(get_file_relative_dirname(options['server_cert_file']));
-let cacert = fs.readFileSync(get_file_relative_dirname(options['ca_file']));
-
-let secure_context = null;
-
-if(options['debug']){
-    secure_context = tls.createSecureContext({
-        rejectUnauthorized: false,
-        requestCert: false
-    });
-}else{
-    secure_context = tls.createSecureContext({
-        key: client_key,
-        cert: client_cert,
-        ca: cacert,
-        rejectUnauthorized: true,
-        requestCert: true
-    });
-}
-
-//initialize mysqljs stuff.
-let mysql_pool = mysql.createPool({
-    connectionLimit: 10,
-    host: options['mysql_host'],
-    user:  options['mysql_user'],
-    password: options['mysql_pass'],
-    database: options['mysql_db'],
-    /*This code snippet found from  https://www.bennadel.com/blog/3188-casting-bit-fields-to-booleans-using-the-node-js-mysql-driver.htm*/
-    typeCast: function( field, useDefaultTypeCasting ) {
-        if (field.type === "BIT" && field.length === 1) {
-            let bytes = field.buffer();
-            return bytes[0] === 1;
+        for(let act of this._options.actuator_servers){
+            act.ip = getDefaultIfUndefined(act.ip, '127.0.0.1');
+            act.socket_port = getDefaultIfUndefined(act.socket_port, 3002);
+            act.websock_port = getDefaultIfUndefined(act.websock_port, 3003);
+            act.web_cams = getDefaultIfUndefined(act.web_cams, []);
+            for(let web_cam of act.web_cams){
+                web_cam.ip = getDefaultIfUndefined(web_cam.ip, '127.0.0.1');
+                web_cam.websock_port = getDefaultIfUndefined(web_cam.websock_port, 3005);
+                web_cam.secure = getDefaultIfUndefined(web_cam.secure, true);
+                web_cam.comm_port = getDefaultIfUndefined(web_cam.comm_port, 3007);
+            }
         }
 
-        return useDefaultTypeCasting();
-    }
-});
-
-//mail
-if(options["smtp_auth"]){        
-    mail.init_mail(mysql_pool, options['mailer_email'], options['smtp_host'], options['smtp_port'],  options['smtp_tls'], {
-        user: options['smtp_username'],
-        pass: options['smtp_password']
-    });
-}else{
-    mail.init_mail(mysql_pool, options['mailer_email'], options['smtp_host'], options['smtp_port'],  options['smtp_tls']);
-}
-
-user_auth.init_mysql(mysql_pool);
-db_fetch.init_mysql(mysql_pool);
-
-let actuators = [];
-
-//initialize actuators
-for(let act of options['actuator_servers']){
-    let act_inst = new actuator_comm.Actuator(act.ip, act.socket_port, act.websock_port, client_key, client_cert, cacert);
+        this._options.client_cert_file = getDefaultIfUndefined(this._options.client_cert_file, 'cert/client_cert.pem');
+        this._options.client_key_file = getDefaultIfUndefined(this._options.client_key_file, 'cert/client_key.pem');
+        this._options.server_cert_file = getDefaultIfUndefined(this._options.server_cert_file, 'cert/server_cert.pem');
+        this._options.server_key_file = getDefaultIfUndefined(this._options.server_key_file, 'cert/server_key.pem');
+        this._options.ca_file = getDefaultIfUndefined(this._options.ca_file, 'cert/cacert.pem');
+        this._options.smtp_auth = getDefaultIfUndefined(this._options.smtp_auth, false);
+        this._options.smtp_username = getDefaultIfUndefined(this._options.smtp_username, '');
+        this._options.smtp_password = getDefaultIfUndefined(this._options.smtp_password, '');
+        this._options.smtp_host = getDefaultIfUndefined(this._options.smtp_host, 'smtp.gmail.com');
+        this._options.smtp_port = getDefaultIfUndefined(this._options.smtp_port, 587);
+        this._options.smtp_tls = getDefaultIfUndefined(this._options.smtp_tls, true);
+        this._options.mailer_email = getDefaultIfUndefined(this._options.mailer_email, 'RobotRemote@robotremote.com');
+        this._options.domain_name = getDefaultIfUndefined(this._options.domain_name, 'http://localhost');
+        this._options.domain_name_secure = getDefaultIfUndefined(this._options.domain_name_secure, 'https://' + this._options.domain_name.replace('http://'));
     
-    for(let cam of act.web_cams){
-        let web_cam = new webcam_comm.Webcam(act_inst, cam.ip, cam.comm_port, cam.websock_port, cam.secure, client_key, client_cert, cacert);
-        act_inst.addWebcam(web_cam);
+        function get_file_relative_dirname(str){
+            if(str.startsWith('/')){
+                return str;
+            }
+            return __dirname + '/' + str;
+        }
+    
+        //load ssl stuff into mem.
+        this._client_key = fs.readFileSync(get_file_relative_dirname(this._options['client_key_file']));
+        this._client_cert = fs.readFileSync(get_file_relative_dirname(this._options['client_cert_file']));
+        this._server_key = fs.readFileSync(get_file_relative_dirname(this._options['server_key_file']));
+        this._server_cert = fs.readFileSync(get_file_relative_dirname(this._options['server_cert_file']));
+        this._cacert = fs.readFileSync(get_file_relative_dirname(this._options['ca_file']));
+    
+        this._secure_context = tls.createSecureContext({
+            key: this._client_key,
+            cert: this._client_cert,
+            ca: this._cacert,
+            rejectUnauthorized: true,
+            requestCert: true
+        });
+    
+        //initialize mysqljs stuff.
+        this._mysql_pool = mysql.createPool({
+            connectionLimit: 10,
+            host: this._options['mysql_host'],
+            user:  this._options['mysql_user'],
+            password: this._options['mysql_pass'],
+            database: this._options['mysql_db'],
+            /*This code snippet found from  https://www.bennadel.com/blog/3188-casting-bit-fields-to-booleans-using-the-node-js-mysql-driver.htm*/
+            typeCast: function( field, useDefaultTypeCasting ) {
+                if (field.type === "BIT" && field.length === 1) {
+                    let bytes = field.buffer();
+                    return bytes[0] === 1;
+                }
+    
+                return useDefaultTypeCasting();
+            }
+        });
+    
+        //mail
+        if(options["smtp_auth"]){        
+            mail.init_mail(this._mysql_pool, this._options['mailer_email'], this._options['smtp_host'], this._options['smtp_port'],  this._options['smtp_tls'], {
+                user: this._options['smtp_username'],
+                pass: this._options['smtp_password']
+            });
+        }else{
+            mail.init_mail(this._mysql_pool, this._options['mailer_email'], this._options['smtp_host'], this._options['smtp_port'],  this._options['smtp_tls']);
+        }
+    
+        user_auth.init_mysql(this._mysql_pool);
+        db_fetch.init_mysql(this._mysql_pool);
+    
+        this._actuators = [];
+    
+        //initialize actuators
+        for(let act of this._options['actuator_servers']){
+            let act_inst = new actuator_comm.Actuator(act.ip, act.socket_port, act.websock_port, this._client_key, this._client_cert, this._cacert);
+            
+            for(let cam of act.web_cams){
+                let web_cam = new webcam_comm.Webcam(act_inst, cam.ip, cam.comm_port, cam.websock_port, cam.secure, this._client_key, this._client_cert, this._cacert);
+                act_inst.addWebcam(web_cam);
+            }
+    
+            this._actuators.push(act_inst);
+        }
     }
 
-    actuators.push(act_inst);
-}
-//middleware
-let session_store = new MySQLStore({
-    host: options['mysql_host'],
-    port: 3306,
-    user: options['mysql_user'],
-    password: options['mysql_pass'],
-    database: "sessions",
-    createDatabaseTable: true
-});
-
-app.use(bodyParser.urlencoded({extended: false}));
-app.use(bodyParser.json());
-
-app.use(session({
-    secret:'alkshflkasf',
-    store: session_store,
-    resave: false,
-    saveUninitialized: false,
-    unset: 'destroy',
-    cookie:{maxAge: 36000000}
-}));
-
-//Static routes (mirrors directory structure for these routes)
-app.use('/css', express.static(__dirname + '/www/css'));
-app.use('/js', express.static(__dirname +'/www/js'));
-app.use('/img', express.static(__dirname +'/www/img'));
-
-//Other routes
-app.get('/', function(req, res){
-    res.redirect(301, '/Home.html');
-});
-
-app.get('/ControlPanel.html', function(req, res){
-    res.append('Cache-Control', "no-cache, no-store, must-revalidate");
-    if(!req.session.loggedin){
-        res.redirect(303, '/Login.html')
-        return;
+    get options(){
+        return this._options;
     }
 
-    if(!req.secure){
-        res.redirect(301, options['domain_name_secure'] + req.originalUrl);
-        return;
+    initApp(){
+        this._app = express();
+        //middleware
+        let session_store = new MySQLStore({
+            host: this._options['mysql_host'],
+            port: 3306,
+            user: this._options['mysql_user'],
+            password: this._options['mysql_pass'],
+            database: "sessions",
+            createDatabaseTable: true
+        });
+    
+        this._app.use(bodyParser.urlencoded({extended: false}));
+        this._app.use(bodyParser.json());
+    
+        this._app.use(session({
+            secret:'alkshflkasf',
+            store: session_store,
+            resave: false,
+            saveUninitialized: false,
+            unset: 'destroy',
+            cookie:{maxAge: 36000000}
+        }));
     }
 
-    actuator_comm.getFreeActuator(actuators).then((act)=>{
-        console.log(act);
-        //send client details (secret).
-        act.sendClientDetails(5*60*1000).then((secret) => {
-            console.log('Sending secret ' + secret);
-            //send cookie containing client secret!
-            //TODO set up these options for cookie correctly
-            //(https only, age, when it expires, possibly session stuff)
-            res.cookie('act-url', act.ip + ":" + act.websock_port + "/")
-            res.cookie('act-secret', secret);
+    //These actually return pages
+    registerAppRoutes(){
+        
+        let self = this;
+        //Static routes (mirrors directory structure for these routes)
+        this._app.use('/css', express.static(__dirname + '/www/css'));
+        this._app.use('/js', express.static(__dirname +'/www/js'));
+        this._app.use('/img', express.static(__dirname +'/www/img'));
 
-            //TODO Spin up every webcam (probably in the actuator_comm code)
-            //This probably means having some small server listen for messages,
-            //meaning an extra parameter for each webcam.
-            let secret_promises = [];
-            for(let i = 0; i < act.webcams.length; i++){
-                // 30 second secret TODO change to duration of timeslot.
-                //Currently all webcams share a secret. Changing this should be easy, if needed.
-                secret_promises.push(
-                    act.webcams[i].setSecret(secret, 30*1000).then(()=>{
-                        res.cookie("webcam-" + (i+1), (act.webcams[i].secure ? 'wss' : 'ws')+'://' + act.webcams[i].ip + ':' +  act.webcams[i].sock_port);
-                        res.cookie("webcam"+ (i+1) + "-secret", secret);
-                    })
-                );
+        //Other routes
+        this._app.get('/', function(req, res){
+            res.redirect(301, '/Home.html');
+        });
+        
+        this._app.get('/ControlPanel.html', function(req, res){
+            res.append('Cache-Control', "no-cache, no-store, must-revalidate");
+            if(!req.session.loggedin){
+                res.redirect(303, '/Login.html')
+                return;
+            }
+        
+            if(!req.secure){
+                res.redirect(301, self._options['domain_name_secure'] + req.originalUrl);
+                return;
+            }
+        
+            actuator_comm.getFreeActuator(self._actuators).then((act)=>{
+                console.log(act);
+                //send client details (secret).
+                act.sendClientDetails(5*60*1000).then((secret) => {
+                    console.log('Sending secret ' + secret);
+                    //send cookie containing client secret!
+                    //TODO set up these options for cookie correctly
+                    //(https only, age, when it expires, possibly session stuff)
+                    res.cookie('act-url', act.ip + ":" + act.websock_port + "/")
+                    res.cookie('act-secret', secret);
+        
+                    //TODO Spin up every webcam (probably in the actuator_comm code)
+                    //This probably means having some small server listen for messages,
+                    //meaning an extra parameter for each webcam.
+                    let secret_promises = [];
+                    for(let i = 0; i < act.webcams.length; i++){
+                        // 30 second secret TODO change to duration of timeslot.
+                        //Currently all webcams share a secret. Changing this should be easy, if needed.
+                        secret_promises.push(
+                            act.webcams[i].setSecret(secret, 30*1000).then(()=>{
+                                res.cookie("webcam-" + (i+1), (act.webcams[i].secure ? 'wss' : 'ws')+'://' + act.webcams[i].ip + ':' +  act.webcams[i].sock_port);
+                                res.cookie("webcam"+ (i+1) + "-secret", secret);
+                            })
+                        );
+                    }
+        
+                    Promise.all(secret_promises).then( ()=>{
+                        res.status(200).send(html_fetcher(__dirname + '/www/ControlPanel.html', req, {beforeHeader: ()=>{return '<title>Robot Remote - Control Panel</title>'}})); 
+                    }).catch((err)=>{
+                        console.log("Failed to connect to a camera server, " + err)
+                        res.status(500).send('Unable to communicate with webcam!');    
+                    });
+                    
+                })
+                .catch((err) => {
+                    console.log("Failed to connect to actuator server, " + err)
+                    res.status(500).send(err);
+                });
+            })
+            .catch((err)=>{
+                console.log('Failed to get statuses???');
+                console.log(err);
+                res.status(500).send(err);
+            });
+        });
+        
+        this._app.get('/Home.html', function(req, res){
+            res.status(200).send(html_fetcher(__dirname + '/www/Home.html', req));
+        });
+        
+        this._app.get('/Login.html', function(req, res){
+            let opts = {};
+            
+            if(req.session.login_error){
+                let err_str = req.session.login_error;
+                opts.afterNavbar = ()=>('<input id="errmsg" type="hidden" value="' + err_str + '"/>');
+                req.session.login_error = undefined;
+            }
+        
+            res.status(200).send(html_fetcher(__dirname + '/www/Login.html', req, opts));
+        });
+        
+        this._app.post('/Login.html', function(req, res){
+            res.append('Cache-Control', "no-cache, no-store, must-revalidate");
+            if(req.session.email){
+                res.status(200).send('Already logged in, log out first.');
+                return;
+            }
+            
+            if(!req.body.username || !req.body.password){
+                res.status(200).send('Missing username or password');
+                return;
+            }
+        
+            user_auth.verify_credentials(req.body.username, req.body.password).then((info)=>{
+            var prev = req.body.prev;
+                
+            req.session.loggedin = true;
+            req.session.email = req.body.username;
+            req.session.is_admin = info.is_admin;
+            req.session.user_id = info.id;
+            console.log("Logged in :" );
+            console.log(req.session);
+            //check if page is in our domain
+                if(prev.startsWith('http://') || prev.startsWith('https://')){		//is it in our domain
+                    res.redirect(302, prev);
+                }else{																	//else take them to the schedule page
+                    res.redirect(302, '/Scheduler.html');
+                }
+            },(err)=>{
+                console.log(err);
+                req.session.login_error = err.client_reason !== undefined ? err.client_reason : "Internal server error.";
+                res.redirect(302, '/Login.html');
+            });
+        });
+
+        this._app.get('/Request.html', function(req, res){
+            res.status(200).send(html_fetcher(__dirname + '/www/Request.html', req));
+        });
+        
+        this._app.post('/Request.html', function(req, res){
+            /*Email regex, ripped off https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/email#Validation  */
+            const email_regex = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+            
+            res.append('Cache-Control', "no-cache, no-store, must-revalidate");
+            
+            if(!req.body.username || !req.body.password || !req.body.reason){
+                res.status(400).send('Missing email, password, or reason for request.');
+                return;
+            }
+        
+            if(!email_regex.test(req.body.username)){
+                res.satus(400).send('Invalid email.');
+                return;
+            }
+            //TODO password tests? (length, numbers, symbols maybe?)
+        
+            user_auth.login_request(req.body.username, req.body.password, req.body.reason)
+                .then((email_token)=>{
+                    res.status(200).send('success!');
+                    let link = self._options['domain_name_secure'] + "/verify?email=" + encodeURIComponent(req.body.username) + "&email_tok=" + encodeURIComponent(email_token);
+                    
+                    mail.mail(req.body.username, __dirname + '/Emails/confirm_email.txt', {link: link, name: req.body.username});
+        
+                }, (err)=>{
+                    console.log(err);
+                    res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
+                });
+        });
+        
+        this._app.get('/Scheduler.html', function(req, res){
+            res.append('Cache-Control', "no-cache, no-store, must-revalidate");
+            console.log("Called scheduler");
+            if(!req.session.loggedin){
+                res.redirect(303, '/Login.html');
+                return;
+            }
+            
+            res.send(html_fetcher(__dirname + '/www/Scheduler.html', req));
+        });
+
+        this._app.get('/admin/Admin.html', function(req, res){
+            res.append('Cache-Control', "no-cache, no-store, must-revalidate");
+            if(!req.session.loggedin){
+                res.redirect(302, '/Login.html');
+                return;
+            }
+            if(req.session.is_admin === undefined){
+                res.redirect(302, '/Login.html');
+                return;
+            }
+            if(!req.session.is_admin){
+                res.redirect(302, '/Home.html');
+                return;
+            }
+            //emit admin page
+            res.status(200).send(html_fetcher(__dirname + '/www/Admin.html', req));
+        });
+        
+
+    }
+
+    //These return data in some form or another.
+    registerAppAPIRoutes(){
+        let self = this;
+        /*Returns JSON encoded list of requests:
+            {
+                id:  <id for request>
+                email: <email>,
+                reason: <reason>
+                date_requested: <datetime>
+            }
+        */
+        this._app.get('/admin/loginrequests', function(req, res){
+            res.append('Cache-Control', "no-cache, no-store, must-revalidate");
+            if(!req.session.loggedin){
+                res.redirect(302, '/Login.html');
+                return;
+            }
+            if(req.session.is_admin === undefined){
+                res.redirect(302, '/Login.html');
+                return;
             }
 
-            Promise.all(secret_promises).then( ()=>{
-                res.status(200).send(html_fetcher(__dirname + '/www/ControlPanel.html', req, {beforeHeader: ()=>{return '<title>Robot Remote - Control Panel</title>'}})); 
-            }).catch((err)=>{
-                console.log("Failed to connect to a camera server, " + err)
-                res.status(500).send('Unable to communicate with webcam!');    
+            if(!req.session.is_admin){
+                res.redirect(302, '/Home.html');
+                return;
+            }
+
+            db_fetch.get_login_requests(0, -1).then((json)=>{
+                res.status(200).json({requests: json});
+            }, (err)=>{
+                console.log(err);
+                res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
             });
+        });
+
+        this._app.get('/admin/currentusers', function(req, res){
+            res.append('Cache-Control', "no-cache, no-store, must-revalidate");
+            if(!req.session.loggedin){
+                res.redirect(302, '/Login.html');
+                return;
+            }
+            if(req.session.is_admin === undefined){
+                res.redirect(302, '/Login.html');
+                return;
+            }
+
+            if(!req.session.is_admin){
+                res.redirect(302, '/Home.html');
+                return;
+            }
+
+            db_fetch.get_current_users(0, -1).then((json)=>{
+                res.status(200).json({requests: json});
+            }, (err)=>{
+                console.log(err);
+                res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
+            });
+        });
+
+        /*Returns JSON encoded list of requests:
+            {
+                id: <id for request>
+                email: <email>,
+                starttime: <datetime>,
+                duration: <duration in seconds>
+            }
+            partitioned into 2 lists, one with approved requests,
+            one with unapproved requests.
+        */
+        this._app.get('/admin/timeslotrequests', function(req, res){
+            res.append('Cache-Control', "no-cache, no-store, must-revalidate");
+            if(!req.session.loggedin){
+                res.redirect(302, '/Login.html');
+                return;
+            }
+            if(req.session.is_admin === undefined){
+                res.redirect(302, '/Login.html');
+                return;
+            }
+            if(!req.session.is_admin){
+                res.redirect(302, '/Home.html');
+                return;
+            }
             
-        })
-        .catch((err) => {
-            console.log("Failed to connect to actuator server, " + err)
-            res.status(500).send(err);
+            db_fetch.admin_get_timeslot_requests(new Date(Date.now()), new Date(Date.now() + 7*24*60*60*1000)).then((val)=>{
+                res.status(200).json(val);
+            }, (err) => {
+                console.log(err);
+                res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
+            });
+
         });
-    })
-    .catch((err)=>{
-        console.log('Failed to get statuses???');
-        console.log(err);
-        res.status(500).send(err);
-    });
-});
-
-app.get('/Home.html', function(req, res){
-    res.status(200).send(html_fetcher(__dirname + '/www/Home.html', req));
-});
-
-app.get('/Login.html', function(req, res){
-    let opts = {};
-    
-    if(req.session.login_error){
-        let err_str = req.session.login_error;
-        opts.afterNavbar = ()=>('<input id="errmsg" type="hidden" value="' + err_str + '"/>');
-        req.session.login_error = undefined;
-    }
-
-    res.status(200).send(html_fetcher(__dirname + '/www/Login.html', req, opts));
-});
-
-app.post('/Login.html', function(req, res){
-    res.append('Cache-Control', "no-cache, no-store, must-revalidate");
-    if(req.session.email){
-        res.status(200).send('Already logged in, log out first.');
-        return;
-    }
-    
-    if(!req.body.username || !req.body.password){
-        res.status(200).send('Missing username or password');
-    	return;
-	}
-
-	user_auth.verify_credentials(req.body.username, req.body.password).then((info)=>{
-	  var prev = req.body.prev;
-        
-      req.session.loggedin = true;
-      req.session.email = req.body.username;
-      req.session.is_admin = info.is_admin;
-      req.session.user_id = info.id;
-      console.log("Logged in :" );
-      console.log(req.session);
-      //check if page is in our domain
-    	if(prev.startsWith('http://') || prev.startsWith('https://')){		//is it in our domain
-			res.redirect(302, prev);
-		}else{																	//else take them to the schedule page
-            res.redirect(302, '/Scheduler.html');
-        }
-    },(err)=>{
-        console.log(err);
-        req.session.login_error = err.client_reason !== undefined ? err.client_reason : "Internal server error.";
-        res.redirect(302, '/Login.html');
-    });
-});
-
-app.get('/Logout', function(req, res){
-    res.append('Cache-Control', "no-cache, no-store, must-revalidate");
-    req.session.loggedin = false;
-    delete req.session;
-    res.redirect(303, '/Home.html');
-});
-
-app.get('/sessioninfo', function(req, res){
-    res.append('Cache-Control', "no-cache, no-store, must-revalidate");
-    res.status(200).send(req.session.email + ", admin: " + req.session.is_admin + ", user_id: " + req.session.user_id);
-});
-
-app.get('/Request.html', function(req, res){
-    res.status(200).send(html_fetcher(__dirname + '/www/Request.html', req));
-});
-
-app.post('/Request.html', function(req, res){
-    /*Email regex, ripped off https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/email#Validation  */
-    const email_regex = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
-    
-    res.append('Cache-Control', "no-cache, no-store, must-revalidate");
-    
-    if(!req.body.username || !req.body.password || !req.body.reason){
-        res.status(400).send('Missing email, password, or reason for request.');
-        return;
-    }
-
-    if(!email_regex.test(req.body.username)){
-        res.satus(400).send('Invalid email.');
-        return;
-    }
-    //TODO password tests? (length, numbers, symbols maybe?)
-
-    user_auth.login_request(req.body.username, req.body.password, req.body.reason)
-        .then((email_token)=>{
-            res.status(200).send('success!');
-            let link = options['domain_name_secure'] + "/verify?email=" + encodeURIComponent(req.body.username) + "&email_tok=" + encodeURIComponent(email_token);
+        /* 
+            Request to reject login request with given id
+        */
+        this._app.get('/admin/rejectloginrequest/:id', function(req, res){
+            res.append('Cache-Control', "no-cache, no-store, must-revalidate");
             
-            mail.mail(req.body.username, __dirname + '/Emails/confirm_email.txt', {link: link, name: req.body.username});
+            if(req.params.id === undefined || Number(req.params.id) == NaN){
+                res.status(400).send("Missing/malformed id");
+            }
 
-        }, (err)=>{
-            console.log(err);
-            res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
+            if(!req.session.loggedin){
+                res.status(403).send("Not logged in!");
+                return;
+            }
+            if(req.session.is_admin === undefined){
+                res.status(403).send("Not an admin!");
+                return;
+            }
+            if(!req.session.is_admin){
+                res.status(403).send("Not an admin!");
+                return;
+            }
+
+            db_fetch.delete_user_by_request(req.params.id).then((user_id)=>{
+                mail.mail_to_user(user_id, __dirname + '/Emails/reject_user.txt', {});
+                res.status(200).send("Success");
+            })
+            .catch((err)=>{
+                console.log(err);
+                res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
+            });
         });
-});
+        /* 
+            Request to reject login request with given id
+        */
+        this._app.get('/admin/removeuser/:id', function(req, res){
+            res.append('Cache-Control', "no-cache, no-store, must-revalidate");
+            
+            if(req.params.id === undefined || Number(req.params.id) == NaN){
+                res.status(400).send("Missing/malformed id");
+            }
 
-app.get('/Scheduler.html', function(req, res){
-    res.append('Cache-Control', "no-cache, no-store, must-revalidate");
-    console.log("Called scheduler");
-    if(!req.session.loggedin){
-        res.redirect(303, '/Login.html');
-        return;
-    }
-    
-    res.send(html_fetcher(__dirname + '/www/Scheduler.html', req));
-});
+            if(!req.session.loggedin){
+                res.status(403).send("Not logged in!");
+                return;
+            }
+            if(req.session.is_admin === undefined){
+                res.status(403).send("Not an admin!");
+                return;
+            }
+            if(!req.session.is_admin){
+                res.status(403).send("Not an admin!");
+                return;
+            }
 
-app.get('/verify', function(req,res){
-    res.append('Cache-Control', "no-cache, no-store, must-revalidate");
-    user_auth.email_verify(req.query.email, req.query.email_tok).then(function(){
-		let admin_link = options['domain_name_secure'] + "/admin/Admin.html"; 
-        
-        mail.mail_to_admins(__dirname + '/Emails/new_confirmation.txt', {});
-        
-        res.redirect(303, '/Login.html');
-	},function(err){
-        console.log(err);
-        res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
-	});
-});
-
-app.get('/admin/Admin.html', function(req, res){
-    res.append('Cache-Control', "no-cache, no-store, must-revalidate");
-    if(!req.session.loggedin){
-        res.redirect(302, '/Login.html');
-        return;
-    }
-    if(req.session.is_admin === undefined){
-        res.redirect(302, '/Login.html');
-        return;
-    }
-    if(!req.session.is_admin){
-        res.redirect(302, '/Home.html');
-        return;
-    }
-    //emit admin page
-    res.status(200).send(html_fetcher(__dirname + '/www/Admin.html', req));
-});
-/*Returns JSON encoded list of requests:
-    {
-        id:  <id for request>
-        email: <email>,
-        reason: <reason>
-        date_requested: <datetime>
-    }
-*/
-app.get('/admin/loginrequests', function(req, res){
-    res.append('Cache-Control', "no-cache, no-store, must-revalidate");
-    if(!req.session.loggedin){
-        res.redirect(302, '/Login.html');
-        return;
-    }
-    if(req.session.is_admin === undefined){
-        res.redirect(302, '/Login.html');
-        return;
-    }
-
-    if(!req.session.is_admin){
-        res.redirect(302, '/Home.html');
-        return;
-    }
-
-    db_fetch.get_login_requests(0, -1).then((json)=>{
-        res.status(200).json({requests: json});
-    }, (err)=>{
-        console.log(err);
-        res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
-    });
-});
-
-app.get('/admin/currentusers', function(req, res){
-    res.append('Cache-Control', "no-cache, no-store, must-revalidate");
-    if(!req.session.loggedin){
-        res.redirect(302, '/Login.html');
-        return;
-    }
-    if(req.session.is_admin === undefined){
-        res.redirect(302, '/Login.html');
-        return;
-    }
-
-    if(!req.session.is_admin){
-        res.redirect(302, '/Home.html');
-        return;
-    }
-
-    db_fetch.get_current_users(0, -1).then((json)=>{
-        res.status(200).json({requests: json});
-    }, (err)=>{
-        console.log(err);
-        res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
-    });
-});
-
-/*Returns JSON encoded list of requests:
-    {
-        id: <id for request>
-        email: <email>,
-        starttime: <datetime>,
-        duration: <duration in seconds>
-    }
-    partitioned into 2 lists, one with approved requests,
-    one with unapproved requests.
-*/
-app.get('/admin/timeslotrequests', function(req, res){
-    res.append('Cache-Control', "no-cache, no-store, must-revalidate");
-    if(!req.session.loggedin){
-        res.redirect(302, '/Login.html');
-        return;
-    }
-    if(req.session.is_admin === undefined){
-        res.redirect(302, '/Login.html');
-        return;
-    }
-    if(!req.session.is_admin){
-        res.redirect(302, '/Home.html');
-        return;
-    }
-    
-    db_fetch.admin_get_timeslot_requests(new Date(Date.now()), new Date(Date.now() + 7*24*60*60*1000)).then((val)=>{
-        res.status(200).json(val);
-    }, (err) => {
-        console.log(err);
-        res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
-    });
-
-});
-/* 
-    Request to reject login request with given id
-*/
-app.get('/admin/rejectloginrequest/:id', function(req, res){
-    res.append('Cache-Control', "no-cache, no-store, must-revalidate");
-    
-    if(req.params.id === undefined || Number(req.params.id) == NaN){
-        res.status(400).send("Missing/malformed id");
-    }
-
-    if(!req.session.loggedin){
-        res.status(403).send("Not logged in!");
-        return;
-    }
-    if(req.session.is_admin === undefined){
-        res.status(403).send("Not an admin!");
-        return;
-    }
-    if(!req.session.is_admin){
-        res.status(403).send("Not an admin!");
-        return;
-    }
-
-    db_fetch.delete_user_by_request(req.params.id).then((user_id)=>{
-        mail.mail_to_user(user_id, __dirname + '/Emails/reject_user.txt', {});
-        res.status(200).send("Success");
-    })
-    .catch((err)=>{
-        console.log(err);
-        res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
-    });
-});
-/* 
-    Request to reject login request with given id
-*/
-app.get('/admin/removeuser/:id', function(req, res){
-    res.append('Cache-Control', "no-cache, no-store, must-revalidate");
-    
-    if(req.params.id === undefined || Number(req.params.id) == NaN){
-        res.status(400).send("Missing/malformed id");
-    }
-
-    if(!req.session.loggedin){
-        res.status(403).send("Not logged in!");
-        return;
-    }
-    if(req.session.is_admin === undefined){
-        res.status(403).send("Not an admin!");
-        return;
-    }
-    if(!req.session.is_admin){
-        res.status(403).send("Not an admin!");
-        return;
-    }
-
-    db_fetch.delete_user_by_ID(req.params.id).then((user_id)=>{
-        //Do we want a account terminated email??? my guess is nah
-        //mail.mail_to_user(user_id, __dirname + '/Emails/reject_user.txt', {});
-        res.status(200).send("Success");
-    })
-    .catch((err)=>{
-        console.log(err);
-        res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
-    });
-});
-
-/* 
-    Power to give admin privilege 
-*/
-app.get('/admin/adminify/:id', function(req, res){
-    res.append('Cache-Control', "no-cache, no-store, must-revalidate");
-    
-    if(req.params.id === undefined || Number(req.params.id) == NaN){
-        res.status(400).send("Missing/malformed id");
-    }
-
-    if(!req.session.loggedin){
-        res.status(403).send("Not logged in!");
-        return;
-    }
-    if(req.session.is_admin === undefined){
-        res.status(403).send("Not an admin!");
-        return;
-    }
-    if(!req.session.is_admin){
-        res.status(403).send("Not an admin!");
-        return;
-    }
-
-    db_fetch.adminify(req.params.id).then((user_id)=>{
-        //Do we want a account terminated email??? my guess is nah
-        //mail.mail_to_user(user_id, __dirname + '/Emails/reject_user.txt', {});
-        res.status(200).send("Success");
-    })
-    .catch((err)=>{
-        console.log(err);
-        res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
-    });
-});
-
-/* 
-    Power to give admin privilege 
-*/
-app.get('/admin/deAdminify/:id', function(req, res){
-    res.append('Cache-Control', "no-cache, no-store, must-revalidate");
-    
-    if(req.params.id === undefined || Number(req.params.id) == NaN){
-        res.status(400).send("Missing/malformed id");
-    }
-
-    if(!req.session.loggedin){
-        res.status(403).send("Not logged in!");
-        return;
-    }
-    if(req.session.is_admin === undefined){
-        res.status(403).send("Not an admin!");
-        return;
-    }
-    if(!req.session.is_admin){
-        res.status(403).send("Not an admin!");
-        return;
-    }
-
-    db_fetch.deAdminify(req.params.id).then((user_id)=>{
-        //Do we want a account terminated email??? my guess is nah
-        //mail.mail_to_user(user_id, __dirname + '/Emails/reject_user.txt', {});
-        res.status(200).send("Success");
-    })
-    .catch((err)=>{
-        console.log(err);
-        res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
-    });
-});
-
-/* 
-    Request to accept login request with given id (for a loginrequest)
-*/
-app.get('/admin/acceptloginrequest/:id', function(req, res){
-    
-    res.append('Cache-Control', "no-cache, no-store, must-revalidate");
-    
-    if(req.params.id === undefined || Number(req.params.id) == NaN){
-        res.status(400).send("Missing/malformed id");
-    }
-
-    if(!req.session.loggedin){
-        res.status(403).send("Not logged in!");
-        return;
-    }
-    if(req.session.is_admin === undefined){
-        res.status(403).send("Not an admin!");
-        return;
-    }
-    if(!req.session.is_admin){
-        res.status(403).send("Not an admin!");
-        return;
-    }
-
-    db_fetch.accept_user(req.params.id)
-    .then((user_id) => {
-        mail.mail_to_user(user_id, __dirname + '/Emails/accepted_user.txt', {});
-        res.status(200).send('Success!');
-    })
-    .catch((err)=>{
-        console.log(err);
-        res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
-    });
-});
-/* 
-    Request to reject timeslot request with given id
-*/
-app.get('/admin/rejecttimeslotrequest/:id', function(req, res){
-    res.append('Cache-Control', "no-cache, no-store, must-revalidate");
-    
-    if(req.params.id === undefined || Number(req.params.id) == NaN){
-        res.status(400).send("Missing/malformed id");
-    }
-
-    if(!req.session.loggedin){
-        res.status(403).send("Not logged in!");
-        return;
-    }
-    
-    if(req.session.is_admin === undefined){
-        res.status(403).send("Not an admin!");
-        return;
-    }
-
-    if(!req.session.is_admin){
-        res.status(403).send("Not an admin!");
-        return;
-    }
-
-    db_fetch.delete_timeslotrequest_admin(req.params.id)
-    .then(function(user_id){
-            mail.mail_to_user(user_id, __dirname + '/Emails/reject_time.txt', {});
-            res.status(200).send("Success");
-    }).catch((err)=>{
-        console.log(err);
-        res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
-    });
-
-});
-/* 
-    Request to accept timeslot request with given id
-*/
-app.get('/admin/accepttimeslotrequest/:id', function(req, res){
-    res.append('Cache-Control', "no-cache, no-store, must-revalidate");
-    
-    if(req.params.id === undefined || Number(req.params.id) == NaN){
-        res.status(400).send("Missing/malformed id");
-    }
-
-    if(!req.session.loggedin){
-        res.status(403).send("Not logged in!");
-        return;
-    }
-    if(req.session.is_admin === undefined){
-        res.status(403).send("Not an admin!");
-        return;
-    }
-    if(!req.session.is_admin){
-        res.status(403).send("Not an admin!");
-        return;
-    }
-
-    db_fetch.accept_timeslot_request(req.params.id)
-    .then((user_id)=>{
-        mail.mail_to_user(user_id, __dirname + '/Emails/accept_time.txt', {});
-        res.status(200).send("Success");
-    }).catch((err)=>{
-        console.log(err);
-        res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
-    });
-});
-
-/*Returns JSON encoded list of requests:
-    {
-        starttime: <datetime>,
-        duration: <duration in seconds>
-        accepted: <bool>
-    }
-*/
-app.get('/timeslotrequests', function(req, res){
-    res.append('Cache-Control', "no-cache, no-store, must-revalidate");
-    if(!req.session.loggedin){
-        //not logged in
-        res.status(403).send('Not logged in!');
-        return;
-    }
-    
-    let now_ms = Date.now();
-    let week_later_ms = now_ms + (24*60*60*1000)*7;
-
-    db_fetch.user_get_timeslot_requests(new Date(now_ms), new Date(week_later_ms), req.session.user_id).then((json)=>{
-        res.status(200).json(json);
-    },(err)=>{
-        console.log(err);
-        res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
-    });
-
-});
-/*
-    Endpoint for timeslot request. Client needs to 
-    provide start time in milliseconds since the unix epoch, and duration in milliseconds.
-*/
-//These should match the ones in scheduler.js
-const time_quantum = 30;
-const max_quantums = 4;
-const num_days = 7;
-
-app.post('/requesttimeslot', function(req, res){
-    
-    res.append('Cache-Control', "no-cache, no-store, must-revalidate"); 
-    
-    if(!req.session.loggedin){
-        res.status(403).send('Not logged in!');
-        return;
-    }
-
-    if(req.body.start_time === undefined || req.body.duration === undefined){
-        res.status(400).send('Missing request paramaters.');
-        return;
-    }
-
-    if(typeof req.body.start_time !== 'number' || typeof req.body.duration !== 'number'){
-        res.status(400).send('Invalid request paramaters.');
-        return;
-    }
-
-    if(req.body.start_time < Date.now()){
-        res.status(400).send('Start time before current time.');
-        return;
-    }
-
-    if(req.body.start_time > Date.now() + num_days*24*60*60*1000){
-        res.status(400).send('Requested date too far in the future.');
-        return;
-    }
-
-    let date = new Date(req.body.start_time);
-    //TODO make this check more robust
-    //This should check that it starts on a time quantum
-    if((date.getMinutes() % time_quantum) != 0){
-        res.status(400).send('Requested time not a multiple of the time quantum');
-        return;
-    }
-
-    if((req.body.duration / (1000 * 60)) % time_quantum != 0){
-        res.status(400).send('Bad duration (not a multiple of the time quantum)');
-        return;
-    }
-
-    if(req.body.duration > max_quantums*time_quantum*60*1000){
-        res.status(400).send('Bad duration (duration too large)');
-        return;
-    }
-
-    db_fetch.add_request(date, (req.body.duration / 1000) - 1, req.session.user_id).then((val) => {
-        res.status(200).send("Success");
-
-        let admin_link = options['domain_name_secure'] + "/admin/Admin.html"; 
-        
-        smtpTransport.sendMail({
-            to: options['admin_email'],
-            from: options['mailer_email'],
-            subject: "User " + req.query.email + " Requested a timeslot.",
-            html: "User " + req.query.email + " has requeste a timeslot. Please visit <a href='" + admin_link + "'> the admin control panel </a> to accept or reject."
-        }).then((res)=>{
-            console.log("Sent mail to admin.");    
-        }, (err)=>{
-            console.log('Failed to send mail to admin!');
-            console.log(err);
+            db_fetch.delete_user_by_ID(req.params.id).then((user_id)=>{
+                //Do we want a account terminated email??? my guess is nah
+                //mail.mail_to_user(user_id, __dirname + '/Emails/reject_user.txt', {});
+                res.status(200).send("Success");
+            })
+            .catch((err)=>{
+                console.log(err);
+                res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
+            });
         });
 
-    }, (err)=>{
-        console.log(err);
-        res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
-    });
+        /* 
+            Power to give admin privilege 
+        */
+        this._app.get('/admin/adminify/:id', function(req, res){
+            res.append('Cache-Control', "no-cache, no-store, must-revalidate");
+            
+            if(req.params.id === undefined || Number(req.params.id) == NaN){
+                res.status(400).send("Missing/malformed id");
+            }
 
-});
+            if(!req.session.loggedin){
+                res.status(403).send("Not logged in!");
+                return;
+            }
+            if(req.session.is_admin === undefined){
+                res.status(403).send("Not an admin!");
+                return;
+            }
+            if(!req.session.is_admin){
+                res.status(403).send("Not an admin!");
+                return;
+            }
 
-//This endpoint deletes the request with id,
-//only if the logged in user made it.
-app.get('/deletetimeslot/:id', function(req, res){
-    
-    res.append('Cache-Control', "no-cache, no-store, must-revalidate");
+            db_fetch.adminify(req.params.id).then((user_id)=>{
+                //Do we want a account terminated email??? my guess is nah
+                //mail.mail_to_user(user_id, __dirname + '/Emails/reject_user.txt', {});
+                res.status(200).send("Success");
+            })
+            .catch((err)=>{
+                console.log(err);
+                res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
+            });
+        });
 
-    if(!req.session.loggedin){
-        res.status(403).send("Not logged in!");
-        return;
+        /* 
+            Power to give admin privilege 
+        */
+        this._app.get('/admin/deAdminify/:id', function(req, res){
+            res.append('Cache-Control', "no-cache, no-store, must-revalidate");
+            
+            if(req.params.id === undefined || Number(req.params.id) == NaN){
+                res.status(400).send("Missing/malformed id");
+            }
+
+            if(!req.session.loggedin){
+                res.status(403).send("Not logged in!");
+                return;
+            }
+            if(req.session.is_admin === undefined){
+                res.status(403).send("Not an admin!");
+                return;
+            }
+            if(!req.session.is_admin){
+                res.status(403).send("Not an admin!");
+                return;
+            }
+
+            db_fetch.deAdminify(req.params.id).then((user_id)=>{
+                //Do we want a account terminated email??? my guess is nah
+                //mail.mail_to_user(user_id, __dirname + '/Emails/reject_user.txt', {});
+                res.status(200).send("Success");
+            })
+            .catch((err)=>{
+                console.log(err);
+                res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
+            });
+        });
+
+        /* 
+            Request to accept login request with given id (for a loginrequest)
+        */
+        this._app.get('/admin/acceptloginrequest/:id', function(req, res){
+            
+            res.append('Cache-Control', "no-cache, no-store, must-revalidate");
+            
+            if(req.params.id === undefined || Number(req.params.id) == NaN){
+                res.status(400).send("Missing/malformed id");
+            }
+
+            if(!req.session.loggedin){
+                res.status(403).send("Not logged in!");
+                return;
+            }
+            if(req.session.is_admin === undefined){
+                res.status(403).send("Not an admin!");
+                return;
+            }
+            if(!req.session.is_admin){
+                res.status(403).send("Not an admin!");
+                return;
+            }
+
+            db_fetch.accept_user(req.params.id)
+            .then((user_id) => {
+                mail.mail_to_user(user_id, __dirname + '/Emails/accepted_user.txt', {});
+                res.status(200).send('Success!');
+            })
+            .catch((err)=>{
+                console.log(err);
+                res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
+            });
+        });
+        /* 
+            Request to reject timeslot request with given id
+        */
+        this._app.get('/admin/rejecttimeslotrequest/:id', function(req, res){
+            res.append('Cache-Control', "no-cache, no-store, must-revalidate");
+            
+            if(req.params.id === undefined || Number(req.params.id) == NaN){
+                res.status(400).send("Missing/malformed id");
+            }
+
+            if(!req.session.loggedin){
+                res.status(403).send("Not logged in!");
+                return;
+            }
+            
+            if(req.session.is_admin === undefined){
+                res.status(403).send("Not an admin!");
+                return;
+            }
+
+            if(!req.session.is_admin){
+                res.status(403).send("Not an admin!");
+                return;
+            }
+
+            db_fetch.delete_timeslotrequest_admin(req.params.id)
+            .then(function(user_id){
+                    mail.mail_to_user(user_id, __dirname + '/Emails/reject_time.txt', {});
+                    res.status(200).send("Success");
+            }).catch((err)=>{
+                console.log(err);
+                res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
+            });
+
+        });
+        /* 
+            Request to accept timeslot request with given id
+        */
+        this._app.get('/admin/accepttimeslotrequest/:id', function(req, res){
+            res.append('Cache-Control', "no-cache, no-store, must-revalidate");
+            
+            if(req.params.id === undefined || Number(req.params.id) == NaN){
+                res.status(400).send("Missing/malformed id");
+            }
+
+            if(!req.session.loggedin){
+                res.status(403).send("Not logged in!");
+                return;
+            }
+            if(req.session.is_admin === undefined){
+                res.status(403).send("Not an admin!");
+                return;
+            }
+            if(!req.session.is_admin){
+                res.status(403).send("Not an admin!");
+                return;
+            }
+
+            db_fetch.accept_timeslot_request(req.params.id)
+            .then((user_id)=>{
+                mail.mail_to_user(user_id, __dirname + '/Emails/accept_time.txt', {});
+                res.status(200).send("Success");
+            }).catch((err)=>{
+                console.log(err);
+                res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
+            });
+        });
+
+        /*Returns JSON encoded list of requests:
+            {
+                starttime: <datetime>,
+                duration: <duration in seconds>
+                accepted: <bool>
+            }
+        */
+        this._app.get('/timeslotrequests', function(req, res){
+            res.append('Cache-Control', "no-cache, no-store, must-revalidate");
+            if(!req.session.loggedin){
+                //not logged in
+                res.status(403).send('Not logged in!');
+                return;
+            }
+            
+            let now_ms = Date.now();
+            let week_later_ms = now_ms + (24*60*60*1000)*7;
+
+            db_fetch.user_get_timeslot_requests(new Date(now_ms), new Date(week_later_ms), req.session.user_id).then((json)=>{
+                res.status(200).json(json);
+            },(err)=>{
+                console.log(err);
+                res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
+            });
+
+        });
+        /*
+            Endpoint for timeslot request. Client needs to 
+            provide start time in milliseconds since the unix epoch, and duration in milliseconds.
+        */
+        //These should match the ones in scheduler.js
+        const time_quantum = 30;
+        const max_quantums = 4;
+        const num_days = 7;
+
+        this._app.post('/requesttimeslot', function(req, res){
+            
+            res.append('Cache-Control', "no-cache, no-store, must-revalidate"); 
+            
+            if(!req.session.loggedin){
+                res.status(403).send('Not logged in!');
+                return;
+            }
+
+            if(req.body.start_time === undefined || req.body.duration === undefined){
+                res.status(400).send('Missing request paramaters.');
+                return;
+            }
+
+            if(typeof req.body.start_time !== 'number' || typeof req.body.duration !== 'number'){
+                res.status(400).send('Invalid request paramaters.');
+                return;
+            }
+
+            if(req.body.start_time < Date.now()){
+                res.status(400).send('Start time before current time.');
+                return;
+            }
+
+            if(req.body.start_time > Date.now() + num_days*24*60*60*1000){
+                res.status(400).send('Requested date too far in the future.');
+                return;
+            }
+
+            let date = new Date(req.body.start_time);
+            //TODO make this check more robust
+            //This should check that it starts on a time quantum
+            if((date.getMinutes() % time_quantum) != 0){
+                res.status(400).send('Requested time not a multiple of the time quantum');
+                return;
+            }
+
+            if((req.body.duration / (1000 * 60)) % time_quantum != 0){
+                res.status(400).send('Bad duration (not a multiple of the time quantum)');
+                return;
+            }
+
+            if(req.body.duration > max_quantums*time_quantum*60*1000){
+                res.status(400).send('Bad duration (duration too large)');
+                return;
+            }
+
+            db_fetch.add_request(date, (req.body.duration / 1000) - 1, req.session.user_id).then((val) => {
+                res.status(200).send("Success");
+
+                let admin_link = self._options['domain_name_secure'] + "/admin/Admin.html"; 
+                
+                smtpTransport.sendMail({
+                    to: self._options['admin_email'],
+                    from: self._options['mailer_email'],
+                    subject: "User " + req.query.email + " Requested a timeslot.",
+                    html: "User " + req.query.email + " has requeste a timeslot. Please visit <a href='" + admin_link + "'> the admin control panel </a> to accept or reject."
+                }).then((res)=>{
+                    console.log("Sent mail to admin.");    
+                }, (err)=>{
+                    console.log('Failed to send mail to admin!');
+                    console.log(err);
+                });
+
+            }, (err)=>{
+                console.log(err);
+                res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
+            });
+
+        });
+
+        //This endpoint deletes the request with id,
+        //only if the logged in user made it.
+        this._app.get('/deletetimeslot/:id', function(req, res){
+            
+            res.append('Cache-Control', "no-cache, no-store, must-revalidate");
+
+            if(!req.session.loggedin){
+                res.status(403).send("Not logged in!");
+                return;
+            }
+
+            db_fetch.delete_request(req.params.id, req.session.user_id).then(()=>{
+                res.status(200).send('Success');
+            },(err)=>{
+                console.log(err);
+                res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
+            });
+        });
+
+        this._app.get('/Logout', function(req, res){
+            res.append('Cache-Control', "no-cache, no-store, must-revalidate");
+            req.session.loggedin = false;
+            delete req.session;
+            res.redirect(303, '/Home.html');
+        });
+        
+        this._app.get('/verify', function(req,res){
+            res.append('Cache-Control', "no-cache, no-store, must-revalidate");
+            user_auth.email_verify(req.query.email, req.query.email_tok).then(function(){
+                let admin_link = this._options['domain_name_secure'] + "/admin/Admin.html"; 
+                
+                mail.mail_to_admins(__dirname + '/Emails/new_confirmation.txt', {});
+                
+                res.redirect(303, '/Login.html');
+            },function(err){
+                console.log(err);
+                res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
+            });
+        });
     }
 
-    db_fetch.delete_request(req.params.id, req.session.user_id).then(()=>{
-        res.status(200).send('Success');
-    },(err)=>{
-        console.log(err);
-        res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
-    });
-});
-/* 404 page. Can support other errors, technically, but currently is not used for anything else.*/
-app.all('*', function(req, res){
-	let opts = { };
-    
-    if(req.session.error_status === undefined){
-      req.session.error_status = 404;
+    registerApp404Route(){
+        /* 404 page. Can support other errors, technically, but currently is not used for anything else.*/
+        this._app.all('*', function(req, res){
+            let opts = { };
+            
+            if(req.session.error_status === undefined){
+                req.session.error_status = 404;
+            }
+            
+            let err_str = req.session.error_str ? req.session.error_str : 'Page Not Found';
+            
+            opts.afterNavbar = ()=>('<input id="errmsg" type="hidden" value="' + err_str + '"/>');
+        
+            res.status(req.session.error_status).send(html_fetcher(__dirname + '/www/Error.html', req, opts));
+            req.session.error_status = undefined;
+        });
     }
+
+    createServers(){
+        let credentials = {
+            key: this._server_key,
+            cert: this._server_cert
+        };
+
+        this._http_server = http.createServer(this._app);
+        this._https_server = https.createServer(credentials, this._app);
+    }
+
+    listen(){
+        this._http_server.listen(this._options['http_port']);
+        this._https_server.listen(this._options['https_port']);
     
-	let err_str = req.session.error_str ? req.session.error_str : 'Page Not Found';
-    
-    opts.afterNavbar = ()=>('<input id="errmsg" type="hidden" value="' + err_str + '"/>');
-   
-	res.status(req.session.error_status).send(html_fetcher(__dirname + '/www/Error.html', req, opts));
-	req.session.error_status = undefined;
-});
+    }
 
-let credentials = {
-    key: server_key,
-    cert: server_cert
-};
+}
 
-let http_server = http.createServer(app);
-let https_server = https.createServer(credentials, app);
+if(process.argv[1] === __dirname + '/index.js'){
+    const options = require('./settings.json');
+    let server = new RobotRemoteServer(options);
+    server.initApp();
+    server.registerAppRoutes();
+    server.registerAppAPIRoutes();
+    server.registerApp404Route();
+    server.createServers();
+    server.listen();
 
+    console.log('Server listening on http://localhost:' + this._options['http_port'] + 
+    ' and https://localhost:' + this._options['https_port']);
+}
 
-http_server.listen(options['http_port']);
-https_server.listen(options['https_port']);
-
-console.log('Server listening on http://localhost:' + options['http_port'] + 
-            ' and https://localhost:' + options['https_port']);
+module.exports.RobotRemoteServer = RobotRemoteServer;
