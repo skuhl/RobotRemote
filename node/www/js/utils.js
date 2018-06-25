@@ -87,12 +87,21 @@ function CreateTableRow(inner_htmls, class_prefix, is_header, id){
     if(class_prefix === undefined) class_prefix = 'table-'
     if(id === undefined)
 
-    var tag_type = is_header ? 'th' : 'td';
+
+    var tag_type = 'td';
+    console.log(tag_type);
+
+    if(is_header){
+        tag_type = 'th';
+    }
+    
+    console.log(tag_type);
+
     var tr = document.createElement('tr');
     
     tr.classList.add(class_prefix + 'row');
 
-    if(id !== undefined) tr.id = class_prefix + id
+    if(id !== undefined) tr.id = (class_prefix + id);
 
     for(var i = 0; i < inner_htmls.length; i++){
         var td = document.createElement(tag_type);
