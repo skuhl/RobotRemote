@@ -85,17 +85,8 @@ function CreateTableRow(inner_htmls, class_prefix, is_header, id){
     
     if(is_header === undefined) is_header = false;
     if(class_prefix === undefined) class_prefix = 'table-'
-    if(id === undefined)
 
-
-    var tag_type = 'td';
-    console.log(tag_type);
-
-    if(is_header){
-        tag_type = 'th';
-    }
-    
-    console.log(tag_type);
+    var tag_type = is_header ? 'th' : 'td';
 
     var tr = document.createElement('tr');
     
