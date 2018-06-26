@@ -13,7 +13,7 @@
 }
 
 .admin_login_req_table,
-.admin_timeslot_req_table, 
+.admin_timeslot_req_table,
 .user_table{
    border-collapse: separate;
    margin: 20px auto 20px auto;
@@ -38,8 +38,8 @@
 
 .admin_timeslot_row,
 .admin_login_row,
-.user_table_row {
-    background-color: #d2d2d2;  
+.user_table_row: nth-child(even){
+    background-color: #d2d2d2;
 }
 
 th {

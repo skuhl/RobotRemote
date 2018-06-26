@@ -27,6 +27,7 @@
     -ms-user-select: none;
     user-select: none;
 }
+
 .delete_button {
     width: 60px;
     height: 20px;
