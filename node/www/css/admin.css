@@ -49,7 +49,6 @@ th {
 .admin_timeslot_element,
 .admin_login_element,
 .user_table_element {
-   padding: 0 15px 0 15px;
    text-align: center;
    vertical-align: center;
    -webkit-user-select: none;
@@ -83,7 +82,7 @@ th {
 
 .user_table_col-0,
 .user_table_col-1 {
-   width: 50px;
+   width: 80px;
 }
 
 /* The switch - the box around the slider */

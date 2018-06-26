@@ -277,7 +277,7 @@ var SubmitSelected = function(){
             //reload the page becuase the table is updated
             location.reload();
         }else if(this.readyState === 4){
-            alert("Error submitting time slot request! " + this.responseText);
+            alert("Error submitting time slot request! \n" + this.responseText);
         }
 			//re enables the button(disabled somewhere else)
         if(this.readyState === 4){
