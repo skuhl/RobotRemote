@@ -137,7 +137,7 @@ var GenerateGrid = function(elements){
                     can_select +
                     '" onmousedown="GridMouseDown(this)" onmouseover="GridMouseOver(this)">';
             
-            if(element_date >= start_date && !(element_date.getDay() == 0 || element_date.getDay() == 6)) 
+            if(!(element_date.getDay() == 0 || element_date.getDay() == 6)) 
             	html += TimeBeautify(element_date); 
             html += '</td>';
         }

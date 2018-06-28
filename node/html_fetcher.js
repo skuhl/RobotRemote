@@ -13,14 +13,14 @@ function get_navbar(session){
 	            <span class="Sub">Robot Remote</span>
 	            <img id="logo-print" src="/img/black.png" alt="Michigan Technological University print logo">
 	        </h1>
-	        <ul>
-	            <li><a href="/Home.html">Information</a></li>
-	            <li><a href="/Scheduler.html">Scheduler</a></li>
-	            <li><a href="/ControlPanel.html">Control Panel</a></li>
-	            ${session.is_admin ? '<li style="float:right"><a href="/admin/Admin.html">Admin</a></li>' : ''}
-	            <li style="float:right"><a href="/Logout">Logout</a></li>
-	        </ul>
         </div>
+        <ul>
+            <li><a href="/Home.html">Information</a></li>
+            <li><a href="/Scheduler.html">Scheduler</a></li>
+            <li><a href="/ControlPanel.html">Control Panel</a></li>
+            ${session.is_admin ? '<li style="float:right"><a href="/admin/Admin.html">Admin</a></li>' : ''}
+            <li style="float:right"><a href="/Logout">Logout</a></li>
+        </ul>
         `;
     }else{
         return `
@@ -30,12 +30,12 @@ function get_navbar(session){
 	            <span class="Sub">Robot Remote</span>
 	            <img id="logo-print" src="/img/black.png" alt="Michigan Technological University print logo">
 	        </h1>
-	        <ul>
-	            <li><a href="/Home.html">Information</a></li>
-	            <li style="float:right"><a href="/Request.html">Sign Up</a></li>
-	            <li style="float:right"><a href="/Login.html">Login</a></li>
-	        </ul>
         </div>
+        <ul>
+            <li><a href="/Home.html">Information</a></li>
+            <li style="float:right"><a href="/Request.html">Sign Up</a></li>
+            <li style="float:right"><a href="/Login.html">Login</a></li>
+        </ul>
         `;
     }
 }

@@ -54,12 +54,12 @@
    box-sizing: border-box;
    margin: 52px 0 0 35px;
    vertical-align: top;
-   display: inline-block;
+   position: fixed;
    width: auto;
 }
 
 #table_div {
-    display: inline-block;
+    display: contents;
     box-sizing: border-box;
     width: 80%;
     margin: 0;
