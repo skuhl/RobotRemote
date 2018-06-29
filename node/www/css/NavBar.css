@@ -10,6 +10,7 @@ html, body {
 
 #Navbar {
    z-index: 4;
+   
 }
 
 .Title{
@@ -45,6 +46,7 @@ ul {
    position: -webkit-sticky; /* Safari */
    position: sticky;
    top: 0;
+   z-index: 5;
 }
 li {
     float: left;

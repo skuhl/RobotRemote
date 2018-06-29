@@ -137,7 +137,7 @@ var GenerateGrid = function(elements){
                     can_select +
                     '" onmousedown="GridMouseDown(this)" onmouseover="GridMouseOver(this)">';
             
-            if(element_date >= start_date && !(element_date.getDay() == 0 || element_date.getDay() == 6)) 
+            if(!(element_date.getDay() == 0 || element_date.getDay() == 6)) 
             	html += TimeBeautify(element_date); 
             html += '</td>';
         }
@@ -277,7 +277,7 @@ var SubmitSelected = function(){
             //reload the page becuase the table is updated
             location.reload();
         }else if(this.readyState === 4){
-            alert("Error submitting time slot request! " + this.responseText);
+            alert("Error submitting time slot request! \n" + this.responseText);
         }
 			//re enables the button(disabled somewhere else)
         if(this.readyState === 4){

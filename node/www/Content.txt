@@ -1,0 +1,40 @@
+Background:
+RobotRun is a NSF grant funded project that was started in the summer of 2015 
+and grew in to the software available today. Its goal was to create a free, open-
+source software package for educational purposes. Robotic systems are expensive 
+and often unavailable to High school and community college students. While 
+simulations are a reasonable alternative, they can be very expensive. RobotRun is 
+a completely free and open source simulator designed to let students learn to 
+operate a robotic arm with out needing to own the arm itself. It is available for 
+download here [http://pages.mtu.edu/~kuhl/robotics/] or the source may be 
+downloaded and viewed here [https://github.com/skuhl/RobotRun/releases]
+RobotRemote is an extension of RobotRun started in the summer of 2018. It is a 
+web-based system designed to allow people who have used the RobotRun 
+software to test out what they have learned on a real robot. It allows users to 
+remotely control the real robotic arm that the software was based on.
+
+How it works:
+RobotRemote works by allowing the user to remotely view one of the robotic 
+arms on the Michigan Tech campus, and control it using the interface on the 
+RobotRun website. Two cameras are aimed at the robot itself allowing it to be 
+viewed at multiple angles, while a third is a focused on the screen of the Teach 
+Pendant used to control the robot. A set of buttons on the control panel screen 
+made to replicate the Teach Pendant allows the user to input commands for the 
+arm. Each of the buttons on the website when pressed sends a signal, a triggers 
+an actuator to press the actual button on the Teach Pendant in the MTU robotics 
+lab.
+
+The RobotRun Team: (IDK where we want to include these dudes)
+James Walker(Computer Science department)
+Ruimin Zhang(?)
+Vincent Druschke(?)
+Joshua Hooker(?)
+The RobotRemote Team:
+Prince Mehandi Ratta (Mechanical Engineering Department?)
+Corey Blankenship(?)
+Brandon Johnson (Computer Science Department)
+Mads Howard (Computer Science Department)
+Faculty Support:
+Aleksandr Sergeyev (Electrical Engineering Department?)
+Scott Kuhl (Computer Science Department)
+

@@ -53,6 +53,7 @@ function Adminify(user_id, is_admin){
 	if (confirm("Are you sure you want to give or take admin privileges for this user?")) {
 		xhr.onreadystatechange = function(){
 			if(this.readyState === 4 && this.status === 200){
+				ToggleAdminStatus(user_id);
 				alert("Admin status changed!");
 			}else if(this.readyState === 4){
 				alert("Could not change admin status:" + this.responseText);
@@ -68,6 +69,13 @@ function Adminify(user_id, is_admin){
 		xhr.open("GET", location.protocol + '//' + window.location.host + "/admin/deAdminify/" + user_id);
 	}
 	xhr.send();
+}
+
+function ToggleAdminStatus(user_id){
+	var row = document.getElementById('user_table_' + user_id);
+	var cell = row.children[1];
+	console.log(cell);
+	cell.innerHTML = (Number(cell.innerHTML) == 1 ? '0' : '1');
 }
 
 function RemoveUserFromTable(user_id){
@@ -92,7 +100,7 @@ user_xhr.onreadystatechange = function(){
    
    }else if(this.readyState === 4){
    		//failed
-   		alert('Could not get current users! <br/>' + this.responseText);
+			alert('Could not get current users! \n' + this.responseText);
    }
 }
 

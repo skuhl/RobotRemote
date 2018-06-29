@@ -17,8 +17,6 @@ function loadTable(table) {
     if (table.querySelector('th'))
         startIndex = 1;
 
-	console.log(startIndex);
-
     var start = (parseInt(table.dataset.currentpage) * table.dataset.pagecount) + startIndex;
     var end = start + parseInt(table.dataset.pagecount);
     var rows = table.rows;

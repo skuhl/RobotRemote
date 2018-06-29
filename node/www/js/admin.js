@@ -80,7 +80,7 @@ function RejectLogin(login_id){
             RemoveLoginFromTable(login_id);
             alert("Succesfully rejected login!");
         }else if(this.readyState === 4){
-            alert("Couldn't reject login; " + this.responseText);
+            alert("Couldn't reject login: \n " + this.responseText);
         }
     }
 
@@ -95,7 +95,7 @@ function AcceptLogin(login_id){
             RemoveLoginFromTable(login_id);
             alert("Successfully accepted login!");
         }else if(this.readyState === 4){
-            alert("Could not accept login: " + this.responseText);
+            alert("Could not accept login: \n" + this.responseText);
         }
     }
 
@@ -108,9 +108,9 @@ function RejectTimeslot(timeslot_id){
     xhr.onreadystatechange = function(){
         if(this.readyState === 4 && this.status === 200){
             RemoveTimeslotFromTable(timeslot_id);
-            alert("Succesfully rejected timeslot!");
+            alert("Successfully rejected time slot!");
         }else if(this.readyState === 4){
-            alert("Couldn't reject timeslot; " + this.responseText);
+            alert("Couldn't reject time slot: \n " + this.responseText);
         }
     }
 
@@ -123,9 +123,9 @@ function AcceptTimeslot(timeslot_id){
     xhr.onreadystatechange = function(){
         if(this.readyState === 4 && this.status === 200){
             RemoveTimeslotFromTable(timeslot_id);
-            alert("Succesfully accepted timeslot!");
+            alert("Successfully accepted time slot!");
         }else if(this.readyState === 4){
-            alert("Couldn't accept timeslot; " + this.responseText);
+            alert("Couldn't accept time slot \n" + this.responseText);
         }
     }
 
@@ -177,7 +177,7 @@ timeslot_xhr.onreadystatechange = function(){
     
     }else if(this.readyState === 4){
         //failed
-        alert('Couldn\'t get timeslots! <br/> ' + this.responseText);
+        alert('Couldn\'t get timeslots! \n ' + this.responseText);
     }
 };
 
@@ -195,7 +195,7 @@ login_xhr.onreadystatechange = function(){
     
     }else if(this.readyState === 4){
         //failed
-        alert('Couldn\'t get pending login requests! <br/> ' + this.responseText);
+        alert('Couldn\'t get pending login requests! \n ' + this.responseText);
     }
 }
 
