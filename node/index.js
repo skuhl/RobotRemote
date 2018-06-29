@@ -382,16 +382,16 @@ class RobotRemoteServer {
         this._app.get('/admin/currentusers', function(req, res){
             res.append('Cache-Control', "no-cache, no-store, must-revalidate");
             if(!req.session.loggedin){
-                res.redirect(302, '/Login.html');
+                res.status(400).send('Not logged in.');
                 return;
             }
             if(req.session.is_admin === undefined){
-                res.redirect(302, '/Login.html');
+                res.status(403).send('Not an admin.');
                 return;
             }
 
             if(!req.session.is_admin){
-                res.redirect(302, '/Home.html');
+                res.status(403).send('Not an admin.');
                 return;
             }
 
@@ -416,15 +416,15 @@ class RobotRemoteServer {
         this._app.get('/admin/timeslotrequests', function(req, res){
             res.append('Cache-Control', "no-cache, no-store, must-revalidate");
             if(!req.session.loggedin){
-                res.redirect(302, '/Login.html');
+                res.status(400).send('Not logged in.');
                 return;
             }
             if(req.session.is_admin === undefined){
-                res.redirect(302, '/Login.html');
+                res.status(403).send('Not an admin.');
                 return;
             }
             if(!req.session.is_admin){
-                res.redirect(302, '/Home.html');
+                res.status(403).send('Not an admin.');
                 return;
             }
             
