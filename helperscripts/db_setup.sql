@@ -3,15 +3,14 @@
   Run this through db_setup.js using
   npm run db_setup -- <mysql_host> <current_host> <admin_user>
 */
-CREATE DATABASE IF NOT EXISTS RobotRemote;
+CREATE DATABASE IF NOT EXISTS {db_name};
 CREATE DATABASE IF NOT EXISTS sessions;
 
 CREATE USER IF NOT EXISTS 'RobotRemote'@'{host}' IDENTIFIED BY '{password}';
 
-GRANT EXECUTE, INSERT, SELECT, DELETE, UPDATE ON RobotRemote.* TO 'RobotRemote'@'{host}';
+GRANT EXECUTE, INSERT, SELECT, DELETE, UPDATE ON {db_name}.* TO 'RobotRemote'@'{host}';
 GRANT EXECUTE, INSERT, ALTER, CREATE, SELECT, DELETE, UPDATE ON sessions.* TO 'RobotRemote'@'{host}';
-
-USE RobotRemote;
+USE {db_name};
 /*Create user login request table*/
 CREATE TABLE IF NOT EXISTS loginrequests (id INT UNSIGNED AUTO_INCREMENT KEY NOT NULL,
                                           email_token CHAR(32) NOT NULL,

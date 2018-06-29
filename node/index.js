@@ -87,6 +87,7 @@ class RobotRemoteServer {
             connectionLimit: 10,
             host: this._options['mysql_host'],
             user:  this._options['mysql_user'],
+            port: this._options['mysql_port'],
             password: this._options['mysql_pass'],
             database: this._options['mysql_db'],
             /*This code snippet found from  https://www.bennadel.com/blog/3188-casting-bit-fields-to-booleans-using-the-node-js-mysql-driver.htm*/
@@ -131,7 +132,7 @@ class RobotRemoteServer {
     initApp(){
         this._app = express();
         //middleware
-        let session_store = new MySQLStore({
+        this._session_store = new MySQLStore({
             host: this._options['mysql_host'],
             port: 3306,
             user: this._options['mysql_user'],
@@ -145,7 +146,7 @@ class RobotRemoteServer {
     
         this._app.use(session({
             secret:'alkshflkasf',
-            store: session_store,
+            store: this._session_store,
             resave: false,
             saveUninitialized: false,
             unset: 'destroy',
@@ -247,31 +248,33 @@ class RobotRemoteServer {
                 res.status(200).send('Already logged in, log out first.');
                 return;
             }
-            
+
             if(!req.body.username || !req.body.password){
                 res.status(200).send('Missing username or password');
                 return;
             }
-        
+            
             user_auth.verify_credentials(req.body.username, req.body.password).then((info)=>{
-            var prev = req.body.prev;
+                var prev = req.body.prev;
+                    
+                req.session.loggedin = true;
+                req.session.email = req.body.username;
+                req.session.is_admin = info.is_admin;
+                req.session.user_id = info.id;
                 
-            req.session.loggedin = true;
-            req.session.email = req.body.username;
-            req.session.is_admin = info.is_admin;
-            req.session.user_id = info.id;
-            console.log("Logged in :" );
-            console.log(req.session);
-            //check if page is in our domain
-                if(prev.startsWith('http://') || prev.startsWith('https://')){		//is it in our domain
-                    res.redirect(302, prev);
+                //check if page is in our domain
+                if(prev !== undefined && (prev.startsWith('http://') || prev.startsWith('https://'))){		//is it in our domain
+                    res.location(prev);
                 }else{																	//else take them to the schedule page
-                    res.redirect(302, '/Scheduler.html');
+                    res.location('/Scheduler.html');
                 }
+                
+                res.status(302).send('Success');
             },(err)=>{
                 console.log(err);
                 req.session.login_error = err.client_reason !== undefined ? err.client_reason : "Internal server error.";
-                res.redirect(302, '/Login.html');
+                res.location('/Login.html');
+                res.status(302).send('Failed to log in; ' + req.session.login_error);
             });
         });
 
@@ -355,16 +358,22 @@ class RobotRemoteServer {
         this._app.get('/admin/loginrequests', function(req, res){
             res.append('Cache-Control', "no-cache, no-store, must-revalidate");
             if(!req.session.loggedin){
-                res.redirect(302, '/Login.html');
+                //res.redirect(302, '/Login.html');
+                res.location('/Login.html');
+                res.status(400).send('Not logged in.');
                 return;
             }
             if(req.session.is_admin === undefined){
-                res.redirect(302, '/Login.html');
+                //res.redirect(302, '/Login.html');
+                res.location('/Login.html');
+                res.status(403).send('Not an admin.');
                 return;
             }
 
             if(!req.session.is_admin){
-                res.redirect(302, '/Home.html');
+                //res.redirect(302, '/Login.html');
+                res.location('/Home.html');
+                res.status(403).send('Not an admin');
                 return;
             }
 
@@ -847,13 +856,12 @@ class RobotRemoteServer {
     listen(){
         this._http_server.listen(this._options['http_port']);
         this._https_server.listen(this._options['https_port']);
-    
     }
 
     //Returns a promise, resolving when the server is succesfully closed down.
     end(){
         return new Promise(function(resolve, reject){
-            let num_closes = 3;
+            let num_closes = 2;
             
             function closeCallback(){
                 num_closes--;
@@ -864,7 +872,9 @@ class RobotRemoteServer {
 
             this._http_server.close(closeCallback);
             this._https_server.close(closeCallback);
-            this._mysql_pool.end(closeCallback);
+            db_fetch.deinit_mysql();
+            this._mysql_pool.end();
+            this._session_store.close();
         }.bind(this));
     }
     //Getters (and setters, if there ever are any)

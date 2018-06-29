@@ -3,7 +3,6 @@ const https = require('https');
 
 module.exports = {
     //Class for an actuator server.
-    //Holds a socket open until it breaks down, essentially.
     Actuator: class {
 
         constructor(ip, port, websock_port, client_key, client_cert, server_ca){

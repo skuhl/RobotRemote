@@ -10,6 +10,12 @@ module.exports = {
         //Clean the DB every X minutes
         db_interval = setInterval(clean_db, minutes*60*1000);
     },
+
+    deinit_mysql: function(){
+        clearInterval(db_interval);
+        pool = null;
+    },
+
     /* if num_requests <= 0, we get all requests. */
     get_login_requests: async function(start_at, num_requests){
         let json = [];
