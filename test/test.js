@@ -124,11 +124,10 @@ describe('Tests', function(){
             it('rejects non-admin requests', async function(){
                 let sid = await test_utils.login(seed.SEED_USERS.find( x => x.approved == 1 && x.admin == 0), server._cacert);
                 
-                await assert.rejects(test_utils.attemptRequest('/admin/loginrequests', 'GET', 3001, {cookie: `connect.sid=${encodeURIComponent(sid)}`}, undefined, undefined,
+                let ret = await assert.rejects(test_utils.attemptRequest('/admin/loginrequests', 'GET', 3001, {cookie: `connect.sid=${encodeURIComponent(sid)}`}, undefined, undefined,
                 undefined, server._cacert),
                 Error,
                 new Error('Accepted a non-admin request!'));
-
             });
 
             it('rejects a request when not logged in.', async function(){
@@ -136,7 +135,7 @@ describe('Tests', function(){
                 await assert.rejects(test_utils.attemptRequest('/admin/loginrequests', 'GET', 3001, undefined, undefined, undefined,
                 undefined, server._cacert),
                 Error,
-                new Error('Accepted a non-admin request!'));
+                new Error('Accepted a request when not logged in!'));
             });
 
             it('Accepts an admin request', async function(){
@@ -146,7 +145,7 @@ describe('Tests', function(){
                 undefined, server._cacert);
             });
 
-            it('Returns acceptable, correct json-encoded data', async function(){
+            it('Returns acceptable and correct json-encoded data', async function(){
                 let sid = await test_utils.login(seed.SEED_USERS.find( x => x.approved == 1 && x.admin == 1), server._cacert);
                 
                 let res = await test_utils.attemptRequest('/admin/loginrequests', 'GET', 3001, {cookie: `connect.sid=${encodeURIComponent(sid)}`}, undefined, undefined,
@@ -159,7 +158,6 @@ describe('Tests', function(){
                 //Assure that the requests are actually in the seed db.
                 let seed_db = seed.SEED_LOGINREQUESTS.slice().filter(x => x.email_validated == 1);
                 for(let req of requests){
-                    console.log(req);
                     //Remove the one in this iteration from the array
                     let new_db = seed_db.filter(
                         x => x.id != req.id &&
@@ -176,6 +174,56 @@ describe('Tests', function(){
         });
 
         describe('/admin/currentusers', function(){
+            it('Rejects non-admin requests', async function(){
+                let sid = await test_utils.login(seed.SEED_USERS.find( x => x.approved == 1 && x.admin == 0), server._cacert);
+                
+                await assert.rejects(test_utils.attemptRequest('/admin/currentusers', 'GET', 3001, {cookie: `connect.sid=${encodeURIComponent(sid)}`}, undefined, undefined,
+                undefined, server._cacert),
+                Error,
+                new Error('Accepted a non-admin request!'));
+
+            });
+
+            it('Rejects a request when not logged in', async function(){
+                //No cookie given; as if there is no session.
+                await assert.rejects(test_utils.attemptRequest('/admin/currentusers', 'GET', 3001, undefined, undefined, undefined,
+                undefined, server._cacert),
+                Error,
+                new Error('Accepted a request when not logged in!'));
+            });
+
+            it('Accepts an admin request', async function(){
+                let sid = await test_utils.login(seed.SEED_USERS.find( x => x.approved == 1 && x.admin == 1), server._cacert);
+                
+                let res = await test_utils.attemptRequest('/admin/currentusers', 'GET', 3001, {cookie: `connect.sid=${encodeURIComponent(sid)}`}, undefined, undefined,
+                undefined, server._cacert);
+            });
+
+            it('Returns acceptable and correct json-encoded data', async function(){
+                let sid = await test_utils.login(seed.SEED_USERS.find( x => x.approved == 1 && x.admin == 1), server._cacert);
+                
+                let res = await test_utils.attemptRequest('/admin/currentusers', 'GET', 3001, {cookie: `connect.sid=${encodeURIComponent(sid)}`}, undefined, undefined,
+                undefined, server._cacert);
+
+                let users = JSON.parse(res.data).requests;
+
+                assert(typeof users === 'object' && users instanceof Array);
+
+                //Assure that the requests are actually in the seed db.
+                let seed_db = seed.SEED_USERS.slice().filter(x => x.approved);
+                for(let user of users){
+                    let new_db = seed_db.filter(
+                        x => x.id != user.id &&
+                        x.admin != user.admin &&
+                        x.email != user.email);
+                    //Assert that one and only one element was removed/filtered out.
+                    assert(new_db.length === seed_db.length - 1, new Error(`Could not find request with id ${user.id}`));
+                    seed_db = new_db;
+                }
+
+                assert(seed_db.length === 0, new Error('Did not get all users in DB!'));
+
+            });
         });
 
         describe('/admin/timeslotrequests', function(){
