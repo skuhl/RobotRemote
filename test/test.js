@@ -155,7 +155,7 @@ describe('Tests', function(){
                 let requests = JSON.parse(res.data).requests;
 
                 assert(typeof requests === 'object' && requests instanceof Array);
-                
+
                 //Assure that the requests are actually in the seed db.
                 let seed_db = seed.SEED_LOGINREQUESTS.slice().filter(x => x.email_validated == 1);
                 for(let req of requests){
@@ -172,7 +172,7 @@ describe('Tests', function(){
 
                 assert(seed_db.length === 0, new Error('Did not get all requests in DB!'));
 
-            })
+            });
         });
 
         describe('/admin/currentusers', function(){

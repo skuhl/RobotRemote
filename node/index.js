@@ -358,21 +358,15 @@ class RobotRemoteServer {
         this._app.get('/admin/loginrequests', function(req, res){
             res.append('Cache-Control', "no-cache, no-store, must-revalidate");
             if(!req.session.loggedin){
-                //res.redirect(302, '/Login.html');
-                res.location('/Login.html');
                 res.status(400).send('Not logged in.');
                 return;
             }
             if(req.session.is_admin === undefined){
-                //res.redirect(302, '/Login.html');
-                res.location('/Login.html');
                 res.status(403).send('Not an admin.');
                 return;
             }
 
             if(!req.session.is_admin){
-                //res.redirect(302, '/Login.html');
-                res.location('/Home.html');
                 res.status(403).send('Not an admin');
                 return;
             }
