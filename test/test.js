@@ -14,6 +14,11 @@ let pool;
 let server;
 
 describe('Tests', function(){
+    //Most tests take ~100 ms, that's just the price of an http request.
+    //Some take up to 200 ms.
+    //More than 300 ms is what we'll consider 'slow'.
+    this.slow(300);
+
     before(function(){
         pool = mysql.createPool({
             connectionLimit: 10,
@@ -67,27 +72,26 @@ describe('Tests', function(){
         });
 
         after(async function(){
-            console.log('Ending server');
             await server.end();
             server = null;
         });
         
         describe('login', function(){
-            it('fails to login a non-existant user', async function(){
+            it('Fails to login a non-existant user', async function(){
                 await assert.rejects(test_utils.login({email: 'notarealuser@mtu.edu', password:'notarealpassword'}, 
                 server._cacert), 
                 Error, 
                 new Error('Logging in with an invalid username failed to reject'));
             });
 
-            it('fails to login a user with an incorrect password', async function(){
+            it('Fails to login a user with an incorrect password', async function(){
                 await assert.rejects(test_utils.login({email: seed.SEED_USERS.find(x => x.approved == 1).email, password:'notarealpassword'}, 
                 server._cacert), 
                 Error, 
                 new Error('Logging in with an invalid password failed to reject'));
             });
             
-            it('fails to login a user who is not approved yet', async function(){
+            it('Fails to login a user who is not approved yet', async function(){
                 await assert.rejects(test_utils.login(seed.SEED_USERS.find(x => x.approved == 0), 
                 server._cacert), 
                 Error, 
@@ -104,14 +108,14 @@ describe('Tests', function(){
                 assert(typeof sid === 'string');
             });
 
-            it('fails to login without a proper email provided', async function(){
+            it('Fails to login without a proper email provided', async function(){
                 await assert.rejects(test_utils.login({password: 'password1'}, 
                 server._cacert), 
                 Error, 
                 new Error('Logging in with an invalid username failed to reject'));
             });
 
-            it('fails to login without a proper password provided', async function(){
+            it('Fails to login without a proper password provided', async function(){
                 await assert.rejects(test_utils.login({email: seed.SEED_USERS.find(x => x.approved == 1).email}, 
                 server._cacert), 
                 Error, 
@@ -121,7 +125,7 @@ describe('Tests', function(){
         });
 
         describe('/admin/loginrequests', function(){
-            it('rejects non-admin requests', async function(){
+            it('Rejects non-admin requests', async function(){
                 let sid = await test_utils.login(seed.SEED_USERS.find( x => x.approved == 1 && x.admin == 0), server._cacert);
                 
                 let ret = await assert.rejects(test_utils.attemptRequest('/admin/loginrequests', 'GET', 3001, {cookie: `connect.sid=${encodeURIComponent(sid)}`}, undefined, undefined,
@@ -130,7 +134,7 @@ describe('Tests', function(){
                 new Error('Accepted a non-admin request!'));
             });
 
-            it('rejects a request when not logged in.', async function(){
+            it('Rejects a request when not logged in.', async function(){
                 //No cookie given; as if there is no session.
                 await assert.rejects(test_utils.attemptRequest('/admin/loginrequests', 'GET', 3001, undefined, undefined, undefined,
                 undefined, server._cacert),
@@ -160,9 +164,9 @@ describe('Tests', function(){
                 for(let req of requests){
                     //Remove the one in this iteration from the array
                     let new_db = seed_db.filter(
-                        x => x.id != req.id &&
-                        x.comment != req.reason &&
-                        x.date_requested != req.date_requested);
+                        x => !(x.id == req.id &&
+                        x.comment == req.reason &&
+                        x.date_requested.getTime() == new Date(req.date_requested).getTime()));
                     //Assert that one and only one element was removed/filtered out.
                     assert(new_db.length === seed_db.length - 1, new Error(`Could not find request with id ${req.id}`));
                     seed_db = new_db;
@@ -213,9 +217,9 @@ describe('Tests', function(){
                 let seed_db = seed.SEED_USERS.slice().filter(x => x.approved);
                 for(let user of users){
                     let new_db = seed_db.filter(
-                        x => x.id != user.id &&
-                        x.admin != user.admin &&
-                        x.email != user.email);
+                        x => !(x.id == user.id &&
+                        x.admin == user.admin &&
+                        x.email == user.email));
                     //Assert that one and only one element was removed/filtered out.
                     assert(new_db.length === seed_db.length - 1, new Error(`Could not find request with id ${user.id}`));
                     seed_db = new_db;
@@ -227,7 +231,59 @@ describe('Tests', function(){
         });
 
         describe('/admin/timeslotrequests', function(){
-            
+            it('Rejects non-admin requests', async function(){
+                let sid = await test_utils.login(seed.SEED_USERS.find( x => x.approved == 1 && x.admin == 0), server._cacert);
+                
+                await assert.rejects(test_utils.attemptRequest('/admin/timeslotrequests', 'GET', 3001, {cookie: `connect.sid=${encodeURIComponent(sid)}`}, undefined, undefined,
+                undefined, server._cacert),
+                Error,
+                new Error('Accepted a non-admin request!'));
+
+            });
+
+            it('Rejects a request when not logged in', async function(){
+                //No cookie given; as if there is no session.
+                await assert.rejects(test_utils.attemptRequest('/admin/timeslotrequests', 'GET', 3001, undefined, undefined, undefined,
+                undefined, server._cacert),
+                Error,
+                new Error('Accepted a request when not logged in!'));
+            });
+
+            it('Accepts an admin request', async function(){
+                let sid = await test_utils.login(seed.SEED_USERS.find( x => x.approved == 1 && x.admin == 1), server._cacert);
+                
+                let res = await test_utils.attemptRequest('/admin/timeslotrequests', 'GET', 3001, {cookie: `connect.sid=${encodeURIComponent(sid)}`}, undefined, undefined,
+                undefined, server._cacert);
+            });
+
+            it('Returns acceptable and correct json-encoded data', async function(){
+                let sid = await test_utils.login(seed.SEED_USERS.find( x => x.approved == 1 && x.admin == 1), server._cacert);
+                
+                let res = await test_utils.attemptRequest('/admin/timeslotrequests', 'GET', 3001, {cookie: `connect.sid=${encodeURIComponent(sid)}`}, undefined, undefined,
+                undefined, server._cacert);
+
+                let json = JSON.parse(res.data);
+                let requests = json.approved.concat(json.unapproved);
+
+                assert(typeof requests === 'object' && requests instanceof Array);
+
+                //Assure that the requests are actually in the seed db.
+                let seed_db = seed.SEED_TIMESLOTS.slice();
+
+                for(let req of requests){
+                    let new_db = seed_db.filter(
+                        x => !(x.id == req.id &&
+                        x.duration  == req.duration &&
+                        x.start_time.getTime() == new Date(req.starttime).getTime() &&
+                        x.user.email == req.email));
+                        //Assert that one and only one element was removed/filtered out.
+                    assert(new_db.length === seed_db.length - 1, new Error(`Could not find request with id ${req.id}`));
+                    seed_db = new_db;
+                }
+
+                assert(seed_db.length === 0, new Error('Did not get all requests in DB!'));
+
+            });
         });
 
         describe('/admin/rejectloginrequest/:id', function(){

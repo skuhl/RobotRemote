@@ -6,7 +6,7 @@ class SeedLoginRequest {
         this.email_token = email_token;
         this.email_validated = email_validated;
         this.comment = comment;
-        this.date_requested = date_requested;
+        this.date_requested = new Date(Math.round(date_requested/1000)*1000);
     }
 
     async insert(pool){
@@ -71,7 +71,7 @@ class SeedUser {
 class SeedTimeslot {
     constructor(user, start, duration, approved, act_num){
         this.user = user;
-        this.start_time = start;
+        this.start_time = new Date(Math.round(start.getTime()/1000)*1000);
         this.duration = duration;
         this.approved = approved;
         this.act_num = act_num;
