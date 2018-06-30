@@ -6,6 +6,15 @@ const ARM_PORTS_START = 3002;
 const MAX_ARMS = 1;
 const CAMERA_PORTS_START = ARM_PORTS_START + 2*MAX_ARMS + 1;
 
+//Logger for standard out no time stamp
+const log4js = require('log4js');
+log4js.configure({
+  appenders: { 'out': { type: 'stdout', layout: { type: 'messagePassThrough' } } },
+  categories: { default: { appenders: ['out'], level: 'info' } }
+});
+
+const logger = log4js.getLogger('out');
+
 class SetupAction {
     constructor(action, message, prompts){
         this.action = action;
@@ -14,7 +23,7 @@ class SetupAction {
     }
 
     displayMessage(){
-        console.log(this.message);
+        logger.info(this.message);
     }
 
     async doAction(state){
@@ -53,7 +62,7 @@ function saveState(state){
     try{
         fs.writeFileSync(__dirname + '/setup.state.json', JSON.stringify(state), {flags: 'w'});
     }catch(err){
-        console.log('Couldn\'t write last known good state!');
+        logger.info('Couldn\'t write last known good state!');
     }
 }
 
@@ -81,9 +90,9 @@ async function main(){
         
         if(use_old){
             state = require('./setup.state');
-            console.log('Starting from last known good state...');
+            logger.info('Starting from last known good state...');
         }else{
-            console.log('Restarting from the beginning.');
+            logger.info('Restarting from the beginning.');
             fs.unlinkSync(__dirname + '/setup.state.json');
         }
     }catch(err){
@@ -99,7 +108,7 @@ async function main(){
             //If the step is the first with prompts, explain them.
             if(setup_actions[state.step].prompts && first_prompt){
                 first_prompt = false;
-                console.log(prompt_dialogue);
+                logger.info(prompt_dialogue);
             }
 
             state = await setup_actions[state.step].doAction(state_copy); 
@@ -352,7 +361,7 @@ async function setupClientCertificate(state){
         fs.accessSync(__dirname + '/helperscripts/cacert/cacert.pem');
         fs.accessSync(__dirname + '/helperscripts/cacert/cakey.pem');
     }catch(err){
-        console.log('Either the CA file or key file does not exist, attempting to create...');
+        logger.info('Either the CA file or key file does not exist, attempting to create...');
 
         try{
             fs.mkdirSync(__dirname + '/helperscripts/cacert');
@@ -575,7 +584,7 @@ ${(()=>{
 
 //Terminate all when this process gets SIGTERM
 function terminate_all(){
-    console.log('Killing all processes...');
+    logger.info('Killing all processes...');
     webserver_proc.kill('SIGTERM');
 ${(()=>{
     let kill_arms = '';
@@ -612,7 +621,7 @@ process.on('SIGHUP', terminate_all);
 
 process.stdin.resume();
 
-console.log('All processes started, use CTRL+C to kill.');
+logger.info('All processes started, use CTRL+C to kill.');
 `;
         
     fs.writeFileSync(__dirname + '/run.js', script, {flags: 'w'});
@@ -642,11 +651,11 @@ async function redirectPorts(state){
         redirect_proc.stdout.toString('utf8') + '\n' +
         redirect_proc.stderr.toString('utf8');
         */
-       console.log('Failed to redirect port 80 to 3000, and failed to redirect port 443 to 3001, please do this manually.');
+       logger.info('Failed to redirect port 80 to 3000, and failed to redirect port 443 to 3001, please do this manually.');
        return state;
     }
 
-    console.log('Attempting to add to rc.local...');
+    logger.info('Attempting to add to rc.local...');
     //Create file if it doesn't exist
     fs.closeSync(fs.openSync('/etc/rc.local', 'a'));
     //Check if the generated string already exists
@@ -703,16 +712,16 @@ async function finalizeOptions(state){
 }
 
 process.on('uncaughtException', function (exception) {
-    console.log(exception);
+    logger.info(exception);
 });
 
 process.on('unhandledRejection', (reason, p) => {
-    console.log("Unhandled Rejection at: Promise ", p, " reason: ", reason);
+    logger.info("Unhandled Rejection at: Promise ", p, " reason: ", reason);
 });
 
 main().then(()=>{
-    console.log('Succesfully set up!');
+    logger.info('Succesfully set up!');
 }).catch((err)=>{
-    console.log('An error occured!');
-    console.log(err);
+    logger.info('An error occured!');
+    logger.info(err);
 });
