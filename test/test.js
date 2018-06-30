@@ -9,6 +9,7 @@ const mysql = require('mysql2/promise');
 const webserver_test_options = require('../node/settings.json');
 
 const TEST_DB_NAME = 'RobotRemoteTest';
+const SLOW_HTTP_MS = 300;
 
 let pool;
 let server;
@@ -17,7 +18,7 @@ describe('Tests', function(){
     //Most tests take ~100 ms, that's just the price of an http request.
     //Some take up to 200 ms.
     //More than 300 ms is what we'll consider 'slow'.
-    this.slow(300);
+    this.slow(SLOW_HTTP_MS);
 
     before(function(){
         pool = mysql.createPool({
@@ -287,7 +288,106 @@ describe('Tests', function(){
         });
 
         describe('/admin/rejectloginrequest/:id', function(){
+            afterEach(async function(){
+                //We reseed the DB. This is done
+                //because this endpoint effects the database.
+                await seed.deleteAllRecords(pool);
+                await seed.seedDB(pool);
+            });
+
+            it('Rejects non-admin requests', async function(){
+                let sid = await test_utils.login(seed.SEED_USERS.find( x => x.approved == 1 && x.admin == 0), server._cacert);
+                
+                await assert.rejects(test_utils.attemptRequest(`/admin/rejectloginrequest/${seed.SEED_USERS.find( x => x.approved == 0).loginreq_id}`, 'GET', 3001, {cookie: `connect.sid=${encodeURIComponent(sid)}`}, undefined, undefined,
+                undefined, server._cacert),
+                Error,
+                new Error('Accepted a non-admin request!'));
+
+            });
+
+            it('Rejects a request when not logged in', async function(){
+                //No cookie given; as if there is no session.
+                await assert.rejects(test_utils.attemptRequest(`/admin/rejectloginrequest/${seed.SEED_USERS.find( x => x.approved == 0).loginreq_id}`, 'GET', 3001, undefined, undefined, undefined,
+                undefined, server._cacert),
+                Error,
+                new Error('Accepted a request when not logged in!'));
+            });
+
+            it('Rejects a request with a negative id', async function(){
+                let sid = await test_utils.login(seed.SEED_USERS.find( x => x.approved == 1 && x.admin == 1), server._cacert);
+                
+                await assert.rejects(test_utils.attemptRequest(`/admin/rejectloginrequest/-1`, 'GET', 3001, {cookie: `connect.sid=${encodeURIComponent(sid)}`}, undefined, undefined,
+                undefined, server._cacert),
+                Error,
+                new Error('Accepted a request with a negative id!'));
+            });
+
+            it('Rejects a request with a non-numeric id', async function(){
+                let sid = await test_utils.login(seed.SEED_USERS.find( x => x.approved == 1 && x.admin == 1), server._cacert);
+                
+                await assert.rejects(test_utils.attemptRequest(`/admin/rejectloginrequest/notanumber`, 'GET', 3001, {cookie: `connect.sid=${encodeURIComponent(sid)}`}, undefined, undefined,
+                undefined, server._cacert),
+                Error,
+                new Error('Accepted a request with a non-numeric id!'));
+            });
+
+            it('Rejects a request with an incorrect id', async function(){
+                let sid = await test_utils.login(seed.SEED_USERS.find( x => x.approved == 1 && x.admin == 1), server._cacert);
+                //we choose an ID which is the sum of all seeded ids. This is guarenteed to not be a current user it.
+                await assert.rejects(test_utils.attemptRequest(`/admin/rejectloginrequest/${seed.SEED_USERS.reduce((acc, x) => typeof acc != 'number' ? acc.id + x.id : acc + x.id)}`, 'GET', 3001, {cookie: `connect.sid=${encodeURIComponent(sid)}`}, undefined, undefined,
+                undefined, server._cacert),
+                Error,
+                new Error('Accepted a request with an invalid id!'));
+            });
+
+            it('Accepts an admin request', async function(){
+                this.timeout(5000);
+                this.slow(2500);
+                let sid = await test_utils.login(seed.SEED_USERS.find( x => x.approved == 1 && x.admin == 1), server._cacert);
+                
+                let res = await test_utils.attemptRequest(`/admin/rejectloginrequest/${seed.SEED_USERS.find( x => x.approved == 0).loginreq_id}`, 'GET', 3001, {cookie: `connect.sid=${encodeURIComponent(sid)}`}, undefined, undefined,
+                undefined, server._cacert);
+            });
+
+            it('Successfully removes request when called', async function(){
+                this.timeout(5000);
+                //Request needs to send an email, so it takes a while
+                this.slow(3000);
+                let sid = await test_utils.login(seed.SEED_USERS.find( x => x.approved == 1 && x.admin == 1), server._cacert);
+                
+                let removed_user = seed.SEED_USERS.find( x => x.approved == 0);
+
+                await test_utils.attemptRequest(`/admin/rejectloginrequest/${removed_user.loginreq_id}`, 'GET', 3001, {cookie: `connect.sid=${encodeURIComponent(sid)}`}, undefined, undefined,
+                undefined, server._cacert);
+
+                let res = await test_utils.attemptRequest('/admin/loginrequests', 'GET', 3001, {cookie: `connect.sid=${encodeURIComponent(sid)}`}, undefined, undefined,
+                undefined, server._cacert);
+
+                let requests_remaining = JSON.parse(res.data).requests;
+
+                assert(requests_remaining.find(x => x.id == removed_user.loginreq_id) === undefined);
+            });
             
+            it('Successfully removes user when called', async function(){
+                this.timeout(5000);
+                //Request needs to send an email, so it takes a while
+                this.slow(3000);
+                
+                let sid = await test_utils.login(seed.SEED_USERS.find( x => x.approved == 1 && x.admin == 1), server._cacert);
+                
+                let removed_user = seed.SEED_USERS.find( x => x.approved == 0);
+
+                await test_utils.attemptRequest(`/admin/rejectloginrequest/${removed_user.loginreq_id}`, 'GET', 3001, {cookie: `connect.sid=${encodeURIComponent(sid)}`}, undefined, undefined,
+                undefined, server._cacert);
+
+                let res = await test_utils.attemptRequest('/admin/currentusers', 'GET', 3001, {cookie: `connect.sid=${encodeURIComponent(sid)}`}, undefined, undefined,
+                undefined, server._cacert);
+
+                let users_remaining = JSON.parse(res.data).requests;
+
+                assert(users_remaining.find(x => x.id == removed_user.id) === undefined);
+            });
+
         });
 
         describe('/admin/removeuser/:id', function(){

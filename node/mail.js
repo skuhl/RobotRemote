@@ -35,10 +35,19 @@ module.exports = {
             connection.release();
         }
     },
-    mail_to_user: async function(user_id, file, variables){
-        let db_promise = db_fetch.get_user_by_id(user_id);
+    //user may be a numeric id corresponding to the it.
+    //Otherwise, it can be an object; Currently, this object
+    //should be like the one returned from get_user_by_id
+    mail_to_user: async function(user, file, variables){
+        let user_info_promise;
+        if(typeof user_id == 'number'){
+            user_info_promise = db_fetch.get_user_by_id(user_id);
+        }else{
+            user_info_promise = Promise.resolve(user);
+        }
+        
         let message = await get_mail_message(file, variables);
-        let user = await db_promise;
+        user = await user_info_promise;
 
         message.to = user.email;
 

@@ -31,8 +31,8 @@
     "smtp_username":"",
     "smtp_password":"",
     "smtp_host":"smtp.gmail.com",
-    "smtp_port":587,
-    "smtp_tls":true,
+    "smtp_port":465,
+    "smtp_secure":true,
     "mailer_email":"",
     "domain_name":"http://localhost",
     "domain_name_secure": "https://localhost"

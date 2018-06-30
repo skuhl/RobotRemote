@@ -108,7 +108,7 @@ class RobotRemoteServer {
                 pass: this._options['smtp_password']
             });
         }else{
-            mail.init_mail(this._mysql_pool, this._options['mailer_email'], this._options['smtp_host'], this._options['smtp_port'],  this._options['smtp_tls']);
+            mail.init_mail(this._mysql_pool, this._options['mailer_email'], this._options['smtp_host'], this._options['smtp_port'],  this._options['smtp_secure']);
         }
     
         user_auth.init_mysql(this._mysql_pool);
@@ -442,8 +442,9 @@ class RobotRemoteServer {
         this._app.get('/admin/rejectloginrequest/:id', function(req, res){
             res.append('Cache-Control', "no-cache, no-store, must-revalidate");
             
-            if(req.params.id === undefined || Number(req.params.id) == NaN){
+            if(req.params.id === undefined || Number(req.params.id) == NaN || Number(req.params.id) < 0 || Number(req.params.id) != Math.floor(Number(req.params.id))){
                 res.status(400).send("Missing/malformed id");
+                return;
             }
 
             if(!req.session.loggedin){
@@ -459,8 +460,8 @@ class RobotRemoteServer {
                 return;
             }
 
-            db_fetch.delete_user_by_request(req.params.id).then((user_id)=>{
-                mail.mail_to_user(user_id, __dirname + '/Emails/reject_user.txt', {});
+            db_fetch.delete_user_by_request(req.params.id).then(async (user_info)=>{
+                await mail.mail_to_user(user_info, __dirname + '/Emails/reject_user.txt', {});
                 res.status(200).send("Success");
             })
             .catch((err)=>{

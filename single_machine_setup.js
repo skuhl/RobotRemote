@@ -300,11 +300,11 @@ async function setupSMTP(state){
             type: 'number',
             conform: (val) => Number(val) != NaN && Number(val) > 0 && Number(val) <= 65535,
             message: 'Port must be a number between 0 and 65535',
-            default: 587,
+            default: 465,
             required: false
         },
-        smtp_tls: {
-            description: 'Does this server use TLS?',
+        smtp_secure: {
+            description: 'Does this server use SSL?',
             type: 'string',
             pattern: /^y$|^yes$|^n$|^no$/i,
             message: 'Must enter yes or no.',
@@ -323,7 +323,7 @@ async function setupSMTP(state){
     let smtp_results = await prompt_promise(schema);
     state.node_options.smtp_host = smtp_results.smtp_host;
     state.node_options.smtp_port = smtp_results.smtp_port;
-    state.node_options.smtp_tls = /^y$|^yes$/.test(smtp_results.smtp_tls);
+    state.node_options.smtp_secure = /^y$|^yes$/.test(smtp_results.smtp_secure);
     state.node_options.mailer_email = smtp_results.smtp_mailer;
 
     return state;
