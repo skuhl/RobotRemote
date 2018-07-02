@@ -46,9 +46,9 @@ module.exports = {
         connection = await pool.getConnection();   
         try{
             if(num_requests <= 0 ){
-                var [res, field] = await connection.query('SELECT users.email, users.id, users.admin FROM users WHERE approved=1', []);    
+                var [res, field] = await connection.query('SELECT users.email, users.id, users.admin FROM users WHERE approved=1 ORDER BY email', []);    
             }else{
-                var [res, field] = await connection.query('SELECT users.email, users.id, users.admin FROM users WHERE approved=1 LIMIT ? OFFSET ?', [num_requests, start_at]);
+                var [res, field] = await connection.query('SELECT users.email, users.id, users.admin FROM users WHERE approved=1 LIMIT ? OFFSET ? ORDER BY email', [num_requests, start_at]);
             }
         }finally{
             connection.release();
@@ -64,13 +64,13 @@ module.exports = {
         return json;
     
     },
-    /*Gets info about user with given id. Will use given connection if provided, otherwise uses an independant conneciton */
+    /*Gets info about user with given id. Will use given connection if provided, otherwise uses an independent connection */
     get_user_by_id: async function(id, connection){
         if(connection){
-            var [res, fields] = await connection.query("SELECT * FROM users WHERE id=? ORDER BY email", [id]);
+            var [res, fields] = await connection.query("SELECT * FROM users WHERE id=?", [id]);
 
         }else{
-            var [res, fields] = await pool.query("SELECT * FROM users WHERE id=? ORDER BY email", [id]);
+            var [res, fields] = await pool.query("SELECT * FROM users WHERE id=?", [id]);
         }
 
         if(res.length < 1){
@@ -81,6 +81,50 @@ module.exports = {
         }
         return {id: res[0].id, email: res[0].email};
     },
+        /*Gets info about user with given id. Will use given connection if provided, otherwise uses an independent connection */
+    get_user_by_email: async function(email, connection){
+        if(connection){
+            var [res, fields] = await connection.query("SELECT * FROM users WHERE email=?", [email]);
+
+        }else{
+            var [res, fields] = await pool.query("SELECT * FROM users WHERE email=?", [email]);
+        }
+
+        if(res.length < 1){
+            throw {
+                reason: "Couldn't find user in the database!",
+                client_reason: ""
+            };
+        }
+        return {id: res[0].id};
+    },
+    check_user_access(id, connection){
+        let json = [];
+        if(connection){
+            var [res, fields] = await connection.query('SELECT timeslots.id, timeslots.start_time, timeslots.duration, timeslots.approved' +
+            														  'FROM timeslots INNER JOIN users ON timeslots.user_id=users.id WHERE users.id=?', [id]);
+
+        }else{
+            var [res, fields] = await pool.query('SELECT timeslots.id, timeslots.start_time, timeslots.duration, timeslots.approved' +
+            												 'FROM timeslots INNER JOIN users ON timeslots.user_id=users.id WHERE users.id=?', [id]);
+        }
+        if(res.length > 0){
+        		for(let i = 0; i<res.length; i++){
+	            json.push({
+	            	 id: res[i].id,
+	                start: res[i].start_time,
+	                end: res[i].duration
+	            });
+        		return json;
+        }
+        else{
+        		throw {
+                reason: "No time slots for this user!",
+                client_reason: ""
+            };
+        }
+    	
+    }
     /*Timeframe is between beginDate and endDate.*/
     user_get_timeslot_requests: async function(beginDate, endDate, user_id){
     
