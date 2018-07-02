@@ -527,8 +527,8 @@ const fs = require('fs');
 let webserver_proc = spawn('npm', ['run', 'start_webserver'], 
     {stdio: [
         0, 
-        fs.openSync(__dirname + '/node/webserver.log', 'a'), 
-        fs.openSync(__dirname + '/node/err.log', 'a')]
+        process.stdout, 
+        process.stderr]
     }
 );
 //Start up arm servers
@@ -538,8 +538,8 @@ ${(()=>{
         exec_arms += `let arm_${i}_proc = spawn('npm', ['run', 'start_arm', '--', 'arm-${i}.json'],
     {stdio: [
         0, 
-        fs.openSync(__dirname + '/arm_server/arm-${i}.log', 'a'), 
-        fs.openSync(__dirname + '/arm_server/arm-${i}-err.log', 'a')]
+        process.stdout, 
+        process.stderr]
     }       
 );\n`;
     }
@@ -553,8 +553,8 @@ ${(()=>{
             exec_cameras += `let camera_${i}_${j}_proc = spawn('npm', ['run', 'start_camera', '--', 'webcam-${i}-${j}.json'],
     {stdio: [
         0, 
-        fs.openSync(__dirname + '/webcam_stuff/webcam-${i}-${j}.log', 'a'), 
-        fs.openSync(__dirname + '/webcam_stuff/webcam-${i}-${j}err.log', 'a')]
+        process.stdout, 
+        process.stderr]
     }
 );\n`
         }
@@ -571,11 +571,11 @@ ${(()=>{
             exec_ffmpeg += `let ffmpeg_${i}_${j}_proc = spawn('ffmpeg', ['-nostdin', '-loglevel', 'fatal', '-nostats', '-f', 'v4l2', 
     '-framerate', '24', '-video_size', '640x480', '-i', '/dev/video${i*state.num_cameras + j}', '-f', 'mpegts',
     '-codec:v', 'mpeg1video', '-s', '640x480', '-b:v', '1000k', '-bf', '0', 'http://localhost:${CAMERA_PORTS_START + i*state.num_cameras + j*3 + 1}'],
-        {stdio: [
+        {stdio:[
             0, 
-            fs.openSync(__dirname + '/ffmpeg-cam-${i}-${j}.log', 'a'), 
-            fs.openSync(__dirname + '/ffmpeg-cam-${i}-${j}-err.log', 'a')
-        ]}   
+            process.stdout, 
+            process.stderr]
+        }   
 );\n`;
         }
     }
