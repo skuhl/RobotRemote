@@ -5,18 +5,17 @@ const PLCConnection = require('./modbus').PLCConnection;
 
 const log4js = require('log4js');
 log4js.configure({
-  appenders: {
-    info_log: { type: 'file', filename: 'info.log' },
-    err_log: { type: 'file', filename: 'err.log' }
-  },
-  categories: {
-    info: { appenders: [ 'info' ], level: 'info' },
-    err:  { appenders: ['err_log'], level: 'error'}
-  }
+    appenders: {
+        info_log: { type: 'file', filename: 'info.log' },
+        err_log: { type: 'file', filename: 'err.log' }
+      },
+      categories: {
+        default: {appenders: [ 'info_log' ], level: 'info'}
+      }
 });
 
-const info_logger = log4js.getLogger('info');
-const err_logger = log4js.getLogger('err');
+const info_logger = log4js.getLogger('default');
+const err_logger = log4js.getLogger('default');
 
 if(process.argv.length != 3){
     info_logger.info('SERVER: Usage: node server.js <options_file>');
@@ -77,7 +76,7 @@ socketServer.on('connection', function(socket, upgradeReq){
     socket.isAlive = true;
 
 	//Q: does this need special handeling?
-    console.log(
+    info_logger.info(
 		'New WebSocket Connection: ', 
 		(upgradeReq || socket.upgradeReq).socket.remoteAddress,
 		(upgradeReq || socket.upgradeReq).headers['user-agent'],

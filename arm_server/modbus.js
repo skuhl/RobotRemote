@@ -4,18 +4,17 @@ const Reconnect = require('node-net-reconnect');
 
 const log4js = require('log4js');
 log4js.configure({
-  appenders: {
-    info_log: { type: 'file', filename: 'info.log' },
-    err_log: { type: 'file', filename: 'err.log' }
-  },
-  categories: {
-    info: { appenders: [ 'info' ], level: 'info' },
-    err:  { appenders: ['err_log'], level: 'error'}
-  }
+    appenders: {
+        info_log: { type: 'file', filename: 'info.log' },
+        err_log: { type: 'file', filename: 'err.log' }
+      },
+      categories: {
+        default: {appenders: [ 'info_log' ], level: 'info'}
+      }
 });
 
-const info_logger = log4js.getLogger('info');
-const err_logger = log4js.getLogger('err');
+const info_logger = log4js.getLogger('default');
+const err_logger = log4js.getLogger('default');
 
 class Run {
     constructor(run_start, run_length){
