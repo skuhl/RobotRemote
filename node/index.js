@@ -23,13 +23,12 @@ log4js.configure({
     err_log: { type: 'file', filename: 'err.log' }
   },
   categories: {
-    info: { appenders: [ 'info' ], level: 'info' },
-    err:  { appenders: ['err_log'], level: 'error'}
+    default: {appenders: [ 'info_log' ], level: 'info'}
   }
 });
 
-const info_logger = log4js.getLogger('info');
-const err_logger = log4js.getLogger('err');
+const info_logger = log4js.getLogger('default');
+const err_logger = log4js.getLogger('default');
 
 function getDefaultIfUndefined(curval, default_){
     return curval === undefined ? default_ : curval; 
@@ -157,7 +156,9 @@ class RobotRemoteServer {
     
         this._app.use(bodyParser.urlencoded({extended: false}));
         this._app.use(bodyParser.json());
-    
+        
+        this._app.use(log4js.connectLogger(info_logger, {level: 'auto'}));
+
         this._app.use(session({
             secret:'alkshflkasf',
             store: this._session_store,
