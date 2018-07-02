@@ -1,3 +1,18 @@
+const log4js = require('log4js');
+log4js.configure({
+  appenders: {
+    info_log: { type: 'file', filename: 'info.log' },
+    err_log: { type: 'file', filename: 'err.log' }
+  },
+  categories: {
+    info: { appenders: [ 'info' ], level: 'info' },
+    err:  { appenders: ['err_log'], level: 'error'}
+  }
+});
+
+const info_logger = log4js.getLogger('info');
+const err_logger = log4js.getLogger('err');
+
 var SubmitRequest = function(){
 	var xms = new XMLHttpRequest();
 	var form = document.forms.signup;
@@ -14,7 +29,7 @@ var SubmitRequest = function(){
 		if(this.readyState === 4 && this.status === 200){
 			alert('Successfully signed up, verify your email and wait for approval!');
 			//Hey did that just work? maybe
-			console.log('Registered user');
+			info_logger.info('SUBMIT_REQUESTS: Registered user');
 			//redirect to home or login???
 			location.replace('http://'+ window.location.host + '/Home.html');
 		}else if(this.readyState === 4){

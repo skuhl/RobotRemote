@@ -3,8 +3,23 @@ const WebSocket = require('ws');
 const fs = require('fs');
 const PLCConnection = require('./modbus').PLCConnection;
 
+const log4js = require('log4js');
+log4js.configure({
+  appenders: {
+    info_log: { type: 'file', filename: 'info.log' },
+    err_log: { type: 'file', filename: 'err.log' }
+  },
+  categories: {
+    info: { appenders: [ 'info' ], level: 'info' },
+    err:  { appenders: ['err_log'], level: 'error'}
+  }
+});
+
+const info_logger = log4js.getLogger('info');
+const err_logger = log4js.getLogger('err');
+
 if(process.argv.length != 3){
-    console.log('Usage: node server.js <options_file>');
+    info_logger.info('Usage: node server.js <options_file>');
     process.exit(1);
 }
 
@@ -61,6 +76,7 @@ socketServer.connectionCount = 0;
 socketServer.on('connection', function(socket, upgradeReq){
     socket.isAlive = true;
 
+	//Q: does this need special handeling?
     console.log(
 		'New WebSocket Connection: ', 
 		(upgradeReq || socket.upgradeReq).socket.remoteAddress,
@@ -71,7 +87,7 @@ socketServer.on('connection', function(socket, upgradeReq){
     socket.on('pong', heartbeat);
 
     socket.on('message', function(message){
-        console.log('Received message: ' + message);
+        info_logger.info('Received message: ' + message);
         plc.setPressed(JSON.parse(message).pressed);
     });
 
@@ -131,8 +147,7 @@ let webserver_comm = https.createServer(https_options, function(req, res){
                 clearTimeout(secret_timer);
                 secret_timer = null;
             }
-            console.log('Got payload: ')
-            console.log(payload);
+            info_logger.info('Got payload: ' + payload);
             //TODO kill current socket connection on timeout;
             secret = payload.secret;
             setTimeout(function(){
@@ -144,8 +159,7 @@ let webserver_comm = https.createServer(https_options, function(req, res){
             res.end('Success');
         
         }).catch((err)=>{
-            console.error('Error setting secret:');
-            console.error(err);
+            err_logger.error('Error setting secret:' + err);
             
             res.writeHead(err.err_code !== undefined ? err.err_code : 500);
             res.end(err.message);
@@ -169,18 +183,19 @@ https_options.rejectUnauthorized = undefined;
 let wsServer = https.createServer(https_options);
 
 wsServer.on('upgrade', function(request, socket, head){
-    console.log('Attempting to upgrade to websocket...');
+    info_loggger.info('Attempting to upgrade to websocket...');
 
+	 //Q:not sure if we want this in the error log or not it seems like error checking tho
     if(secret == null ||  request.url.substring(1).split('/')[0] != encodeURIComponent(secret)){
-		console.log('Invalid incoming secret, refuse to connect.');
-        console.log('Sent ' + request.url.substring(1).split('/')[0]);
-        console.log('Secret should be ' + secret);
+	     err_logger.error('Invalid incoming secret, refuse to connect.');
+        err_logger.error('Sent ' + request.url.substring(1).split('/')[0]);
+        err_logger.error('Secret should be ' + secret);
         socket.destroy();
         return;
     }
 
     if(socketServer.connectionCount > 0){
-        console.log('Already a connection.')
+        err_logger.error('Already a connection.')
         socket.destroy();
         return;
     }
@@ -189,7 +204,7 @@ wsServer.on('upgrade', function(request, socket, head){
     
     socket.on('close', function(code, message){
         socketServer.connectionCount--;
-		console.log(
+		info_logger.info(
 			'Disconnected WebSocket ('+socketServer.connectionCount+' total)'
 		);
     });

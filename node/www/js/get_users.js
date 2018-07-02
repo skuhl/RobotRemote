@@ -1,5 +1,20 @@
 let user_elements= {};
 
+const log4js = require('log4js');
+log4js.configure({
+  appenders: {
+    info_log: { type: 'file', filename: 'info.log' },
+    err_log: { type: 'file', filename: 'err.log' }
+  },
+  categories: {
+    info: { appenders: [ 'info' ], level: 'info' },
+    err:  { appenders: ['err_log'], level: 'error'}
+  }
+});
+
+const info_logger = log4js.getLogger('info');
+const err_logger = log4js.getLogger('err');
+
 function GenerateUserTable(users){
 	if(users.length <= 0) return null;
 	
@@ -62,7 +77,6 @@ function Adminify(user_id, is_admin){
 	}else
 		return;
 	
-	console.log(is_admin);
 	if(is_admin != 1){
 		xhr.open("GET", location.protocol + '//' + window.location.host + "/admin/adminify/" + user_id);
 	}else{
@@ -74,7 +88,6 @@ function Adminify(user_id, is_admin){
 function ToggleAdminStatus(user_id){
 	var row = document.getElementById('user_table_' + user_id);
 	var cell = row.children[1];
-	console.log(cell);
 	cell.innerHTML = (Number(cell.innerHTML) == 1 ? '0' : '1');
 }
 
@@ -93,7 +106,7 @@ var user_xhr = new XMLHttpRequest();
 user_xhr.onreadystatechange = function(){
 	if(this.readyState === 4 && this.status === 200){
         let json = JSON.parse(this.responseText);
-        console.log(json);
+        info_logger.info(json);
         
         var user_table = GenerateUserTable(json.requests);
         if(user_table != null) document.getElementById('current_users').appendChild(user_table);

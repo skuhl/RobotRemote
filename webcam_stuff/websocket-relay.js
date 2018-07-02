@@ -6,6 +6,20 @@
 
 // Written by Dominic Szablewski for jsmpeg, modified for Robot Remote.
 
+const log4js = require('log4js');
+log4js.configure({
+  appenders: {
+    info_log: { type: 'file', filename: 'info.log' },
+    err_log: { type: 'file', filename: 'err.log' }
+  },
+  categories: {
+    info: { appenders: [ 'info' ], level: 'info' },
+    err:  { appenders: ['err_log'], level: 'error'}
+  }
+});
+
+const info_logger = log4js.getLogger('info');
+const err_logger = log4js.getLogger('err');
 
 var fs = require('fs'),
 	http = require('http'),
@@ -13,7 +27,7 @@ var fs = require('fs'),
 	https = require('https');
 
 if(process.argv.length != 3){
-	console.log(`Usage: node websocket-relay <settings_file>`);
+	info_logger.info(`Usage: node websocket-relay <settings_file>`);
 	process.exit(1);
 }
 
@@ -37,7 +51,7 @@ var socketServer = new WebSocket.Server({
 
 socketServer.connectionCount = 0;
 socketServer.on('connection', function(socket, upgradeReq) {
-	console.log(
+	info_logger.info(
 		'New WebSocket Connection: ', 
 		(upgradeReq || socket.upgradeReq).socket.remoteAddress,
 		(upgradeReq || socket.upgradeReq).headers['user-agent'],
@@ -78,7 +92,7 @@ function read_all_data(readable, encoding, byte_cap){
 
 function webserver_comm(req, res){
 	if(req.url === '/' && req.method === 'POST'){
-		console.log('Attempting to set secret...')
+		info_logger.info('Attempting to set secret...')
 		read_all_data(req, 'utf8')
 		.then((data) => {
 			let json = JSON.parse(data);
@@ -108,12 +122,12 @@ function webserver_comm(req, res){
 				});
 			}, json.expires_in);
 			
-			console.log('Secret set.');
+			info_logger.info('Secret set.');
 			
 			res.writeHead(200);
 			res.write('Successfully received and executed request.');
 		}).catch((err) => {
-			console.log('Error: ' + err);
+			err_logger.error('Error: ' + err);
 			res.writeHead(500);
 			res.write('Error occured while processing your request.');
 		}).finally(()=>{
@@ -148,16 +162,16 @@ if(options['ssl']){
 }
 
 wsServer.on('upgrade', function(request, socket, head){
-	console.log('Connection attempted, trying to upgrade...');
+	info_logger.info('Connection attempted, trying to upgrade...');
 
 	if(STREAM_SECRET == null ||  request.url.substring(1).split('/')[0] != encodeURIComponent(STREAM_SECRET)){
-		console.log('Invalid incoming secret, refuse to connect.');
+		err_logger.error('Invalid incoming secret, refuse to connect.');
 		socket.destroy();
 		return;
 	}
 
 	if(socketServer.connectionCount > 0){
-		console.log('More than one connection already!');
+		err_logger.error('More than one connection already!');
 		socket.destory();
 		return;
 	}
@@ -166,7 +180,7 @@ wsServer.on('upgrade', function(request, socket, head){
 
 	socket.on('close', function(code, message){
 		socketServer.connectionCount--;
-		console.log(
+		info_logger.info(
 			'Disconnected WebSocket ('+socketServer.connectionCount+' total)'
 		);
 	});
@@ -184,7 +198,7 @@ var streamServer = http.createServer( function(request, response) {
 	var params = request.url.substr(1).split('/');
 	//Only allow local connections.
 	if (request.socket.remoteAddress !== '127.0.0.1' && request.socket.remoteAddress !== '::1') {
-		console.log(
+		err_logger.error(
 			'Failed Stream Connection: '+ request.socket.remoteAddress + ':' +
 			request.socket.remotePort + ' - not local.'
 		);
@@ -193,7 +207,7 @@ var streamServer = http.createServer( function(request, response) {
 
 	response.connection.setTimeout(0);
 	
-	console.log(
+	info_logger.info(
 		'Stream Connected: ' + 
 		request.socket.remoteAddress + ':' +
 		request.socket.remotePort
@@ -204,10 +218,10 @@ var streamServer = http.createServer( function(request, response) {
 	});
 
 	request.on('end',function(){
-		console.log('close');
+		info_logger.info('close');
 	});
 
 }).listen(STREAM_PORT);
 
-console.log('Listening for incomming MPEG-TS Stream on http://127.0.0.1:'+STREAM_PORT+'/');
-console.log('Awaiting WebSocket connections on ws://127.0.0.1:'+WEBSOCKET_PORT+'/<secret>');
+info_logger.info('Listening for incomming MPEG-TS Stream on http://127.0.0.1:'+STREAM_PORT+'/');
+info_logger.info('Awaiting WebSocket connections on ws://127.0.0.1:'+WEBSOCKET_PORT+'/<secret>');

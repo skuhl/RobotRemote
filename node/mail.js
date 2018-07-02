@@ -72,7 +72,7 @@ async function get_mail_message(file, variables){
     let res = html_regex.exec(text);
 
     if(res == null){
-        throw "Bad file, check to make sure '" + file + "' is properly fromatted!";
+        throw "Bad file, check to make sure '" + file + "' is properly formatted!";
     }
 
     let html = res[0];
