@@ -194,49 +194,68 @@ class RobotRemoteServer {
                 res.redirect(301, self._options['domain_name_secure'] + req.originalUrl);
                 return;
             }
-        
-            actuator_comm.getFreeActuator(self._actuators).then((act)=>{
-                info_logger.info('INDEX:' + act);
-                //send client details (secret).
-                act.sendClientDetails(5*60*1000).then((secret) => {
-                    info_logger.info('INDEX: Sending secret ' + secret);
-                    //send cookie containing client secret!
-                    //TODO set up these options for cookie correctly
-                    //(https only, age, when it expires, possibly session stuff)
-                    res.cookie('act-url', act.ip + ":" + act.websock_port + "/")
-                    res.cookie('act-secret', secret);
-        
-                    //TODO Spin up every webcam (probably in the actuator_comm code)
-                    //This probably means having some small server listen for messages,
-                    //meaning an extra parameter for each webcam.
-                    let secret_promises = [];
-                    for(let i = 0; i < act.webcams.length; i++){
-                        // 30 second secret TODO change to duration of timeslot.
-                        //Currently all webcams share a secret. Changing this should be easy, if needed.
-                        secret_promises.push(
-                            act.webcams[i].setSecret(secret, 30*1000).then(()=>{
-                                res.cookie("webcam-" + (i+1), (act.webcams[i].secure ? 'wss' : 'ws')+'://' + act.webcams[i].ip + ':' +  act.webcams[i].sock_port);
-                                res.cookie("webcam"+ (i+1) + "-secret", secret);
-                            })
-                        );
-                    }
-        
-                    Promise.all(secret_promises).then( ()=>{
-                        res.status(200).send(html_fetcher(__dirname + '/www/ControlPanel.html', req, {beforeHeader: ()=>{return '<title>Robot Remote - Control Panel</title>'}})); 
-                    }).catch((err)=>{
-                        err_logger.error("INDEX: Failed to connect to a camera server, " + err)
-                        res.status(500).send('Unable to communicate with webcam!');    
-                    });
-                    
-                })
-                .catch((err) => {
-                    err_logger.error("INDEX: Failed to connect to actuator server, " + err)
-                    res.status(500).send(err);
-                });
-            })
-            .catch((err)=>{
-                err_logger.error('INDEX: Failed to get statuses???' + err);
-                res.status(500).send(err);
+            
+            db_fetch.get_user_by_email(req.session.email).then((id)=>{
+                res.status(200).send("Success");
+                db_fetch.check_user_access(id).then((json)=>{
+	                res.status(200).send("Success");
+	                for(var i =0; i < json.length; i++){
+	                		if(json[i].start_time >= Date.now() && (json[i].start_time + json[i].duration) < Date.now()){
+	                			 actuator_comm.getFreeActuator(self._actuators).then((act)=>{
+				                info_logger.info('INDEX:' + act);
+				                //send client details (secret).
+				                act.sendClientDetails(5*60*1000).then((secret) => {
+				                    info_logger.info('INDEX: Sending secret ' + secret);
+				                    //send cookie containing client secret!
+				                    //TODO set up these options for cookie correctly
+				                    //(https only, age, when it expires, possibly session stuff)
+				                    res.cookie('act-url', act.ip + ":" + act.websock_port + "/")
+				                    res.cookie('act-secret', secret);
+				        
+				                    //TODO Spin up every webcam (probably in the actuator_comm code)
+				                    //This probably means having some small server listen for messages,
+				                    //meaning an extra parameter for each webcam.
+				                    let secret_promises = [];
+				                    for(let i = 0; i < act.webcams.length; i++){
+				                        // 30 second secret TODO change to duration of timeslot.
+				                        //Currently all webcams share a secret. Changing this should be easy, if needed.
+				                        secret_promises.push(
+				                            act.webcams[i].setSecret(secret, 30*1000).then(()=>{
+				                                res.cookie("webcam-" + (i+1), (act.webcams[i].secure ? 'wss' : 'ws')+'://' + act.webcams[i].ip + ':' +  act.webcams[i].sock_port);
+				                                res.cookie("webcam"+ (i+1) + "-secret", secret);
+				                            })
+				                        );
+				                    }
+				        
+				                    Promise.all(secret_promises).then( ()=>{
+				                        res.status(200).send(html_fetcher(__dirname + '/www/ControlPanel.html', req, {beforeHeader: ()=>{return '<title>Robot Remote - Control Panel</title>'}})); 
+				                    }).catch((err)=>{
+				                        err_logger.error("INDEX: Failed to connect to a camera server, " + err)
+				                        res.status(500).send('Unable to communicate with webcam!');    
+				                    });
+				                    
+				                })
+				                .catch((err) => {
+				                    err_logger.error("INDEX: Failed to connect to actuator server, " + err)
+				                    res.status(500).send(err);
+				                });
+				            })
+				            .catch((err)=>{
+				                err_logger.error('INDEX: Failed to get statuses???' + err);
+				                res.status(500).send(err);
+				            });
+	                		}
+	                		else{
+	                			res.redirect(303, '/Scheduler.html')
+	                		}
+	                }
+	            }, (err)=>{
+	                err_logger.error('INDEX: ' + err);
+	                res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
+	            });
+            }, (err)=>{
+                err_logger.error('INDEX: ' + err);
+                res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
             });
         });
         
