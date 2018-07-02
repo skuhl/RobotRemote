@@ -106,7 +106,7 @@ var user_xhr = new XMLHttpRequest();
 user_xhr.onreadystatechange = function(){
 	if(this.readyState === 4 && this.status === 200){
         let json = JSON.parse(this.responseText);
-        info_logger.info(json);
+        info_logger.info('GET_USERS: ' + json);
         
         var user_table = GenerateUserTable(json.requests);
         if(user_table != null) document.getElementById('current_users').appendChild(user_table);

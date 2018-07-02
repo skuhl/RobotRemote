@@ -175,7 +175,7 @@ timeslot_xhr.onreadystatechange = function(){
     if(this.readyState === 4 && this.status === 200){
         //success
         var i;
-        info_logger.info(this.responseText);
+        info_logger.info('ADMIN: ' + this.responseText);
         let json = JSON.parse(this.responseText);
         //Convert relevent sent data to dates
         for(i = 0; i < json.approved.length; i++){
@@ -202,7 +202,7 @@ timeslot_xhr.send();
 login_xhr.onreadystatechange = function(){
     if(this.readyState === 4 && this.status === 200){
         let json = JSON.parse(this.responseText);
-        info_logger.info(json);
+        info_logger.info('ADMIN: ' + json);
 
         var login_table = GenerateLoginTable(json.requests);
 

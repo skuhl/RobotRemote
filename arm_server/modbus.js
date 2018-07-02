@@ -71,7 +71,7 @@ module.exports = {
         }
         
         setPressed(button_array){
-            info_logger.info('Pressed: ' + button_array);
+            info_logger.info('MODBUS: Pressed: ' + button_array);
             this._runs = this._getRuns(button_array);
         }
         

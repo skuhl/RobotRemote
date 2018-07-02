@@ -12,21 +12,6 @@ const mysql = require('mysql2/promise');
 
 const DB_DEFAULT_NAME = 'RobotRemote';
 
-const log4js = require('log4js');
-log4js.configure({
-  appenders: {
-    info_log: { type: 'file', filename: 'info.log' },
-    err_log: { type: 'file', filename: 'err.log' }
-  },
-  categories: {
-    info: { appenders: [ 'info' ], level: 'info' },
-    err:  { appenders: ['err_log'], level: 'error'}
-  }
-});
-
-const info_logger = log4js.getLogger('info');
-const err_logger = log4js.getLogger('err');
-
 /* 
 Puts the given variables into the text, replacing areas with {variable} 
 syntax.

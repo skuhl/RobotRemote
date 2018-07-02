@@ -69,10 +69,10 @@ var DeleteTimeslot = function(id){
             var parent = elem.parentElement;
             parent.removeChild(elem);
             //TODO remove table if no more elements in it.
-            info_logger.info("Deleted " + id);
+            info_logger.info("SCHEDULER: Deleted " + id);
             location.reload();
         }else if(this.readyState === 4){
-            err_logger.error('Error, couldn\'t delete! \n' + this.responseText);
+            err_logger.error('SCHEDUKER: Error, couldn\'t delete! \n' + this.responseText);
         }
     }
 
@@ -286,7 +286,7 @@ var SubmitSelected = function(){
         if(this.readyState === 4 && this.status === 200){
             alert("Successfully requested time slot!");
             //Update table (or remake it, or something)
-            info_logger.info('Success!');
+            info_logger.info('SCHEDUKER: Success!');
             //reload the page becuase the table is updated
             location.reload();
         }else if(this.readyState === 4){
@@ -319,19 +319,19 @@ req.onreadystatechange = function(){
             res.mine[i].start_date = new Date(res.mine[i].starttime);
             res.mine[i].end_date = new Date((new Date(res.mine[i].starttime)).getTime() +
                 res.mine[i].duration*1000);
-            info_logger.info("Starts: " + res.mine[i].start_date + ", Ends: " + res.mine[i].end_date);
+            info_logger.info("SCHEDULER: Starts: " + res.mine[i].start_date + ", Ends: " + res.mine[i].end_date);
         }
 
         for(i = 0; i < res.others.length; i++){
             res.others[i].start_date = new Date(res.others[i].starttime);
             res.others[i].end_date = new Date((new Date(res.others[i].starttime)).getTime() +
                 res.others[i].duration*1000);
-            info_logger.info("Starts: " + res.others[i].start_date + ", Ends: " + res.others[i].end_date);
+            info_logger.info("SCHEDULER: Starts: " + res.others[i].start_date + ", Ends: " + res.others[i].end_date);
         }
         GenerateTable(res.mine);
         GenerateGrid(res);
     }else if(this.readyState === 4){
-        err_logger.error('Error getting timeslot requests.\n' + this.responseText);
+        err_logger.error('SCHEDULER: Error getting timeslot requests.\n' + this.responseText);
     }
 }
 

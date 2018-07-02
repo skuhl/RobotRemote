@@ -195,10 +195,10 @@ class RobotRemoteServer {
             }
         
             actuator_comm.getFreeActuator(self._actuators).then((act)=>{
-                info_logger.info(act);
+                info_logger.info('INDEX:' + act);
                 //send client details (secret).
                 act.sendClientDetails(5*60*1000).then((secret) => {
-                    info_logger.info('Sending secret ' + secret);
+                    info_logger.info('INDEX: Sending secret ' + secret);
                     //send cookie containing client secret!
                     //TODO set up these options for cookie correctly
                     //(https only, age, when it expires, possibly session stuff)
@@ -223,18 +223,18 @@ class RobotRemoteServer {
                     Promise.all(secret_promises).then( ()=>{
                         res.status(200).send(html_fetcher(__dirname + '/www/ControlPanel.html', req, {beforeHeader: ()=>{return '<title>Robot Remote - Control Panel</title>'}})); 
                     }).catch((err)=>{
-                        err_logger.error("Failed to connect to a camera server, " + err)
+                        err_logger.error("INDEX: Failed to connect to a camera server, " + err)
                         res.status(500).send('Unable to communicate with webcam!');    
                     });
                     
                 })
                 .catch((err) => {
-                    err_logger.error("Failed to connect to actuator server, " + err)
+                    err_logger.error("INDEX: Failed to connect to actuator server, " + err)
                     res.status(500).send(err);
                 });
             })
             .catch((err)=>{
-                err_logger.error('Failed to get statuses???' + err);
+                err_logger.error('INDEX: Failed to get statuses???' + err);
                 res.status(500).send(err);
             });
         });
@@ -284,7 +284,7 @@ class RobotRemoteServer {
                 
                 res.status(302).send('Success');
             },(err)=>{
-                err_logger.error(err);
+                err_logger.error('INDEX: ' + err);
                 req.session.login_error = err.client_reason !== undefined ? err.client_reason : "Internal server error.";
                 res.location('/Login.html');
                 res.status(302).send('Failed to log in; ' + req.session.login_error);
@@ -320,14 +320,14 @@ class RobotRemoteServer {
                     mail.mail(req.body.username, __dirname + '/Emails/confirm_email.txt', {link: link, name: req.body.username});
         
                 }, (err)=>{
-                    err_logger.err(err);
+                    err_logger.err('INDEX: ' + err);
                     res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
                 });
         });
         
         this._app.get('/Scheduler.html', function(req, res){
             res.append('Cache-Control', "no-cache, no-store, must-revalidate");
-            info_logger.info("Called scheduler");
+            info_logger.info("INDEX: Called scheduler");
             if(!req.session.loggedin){
                 res.redirect(303, '/Login.html');
                 return;
@@ -387,7 +387,7 @@ class RobotRemoteServer {
             db_fetch.get_login_requests(0, -1).then((json)=>{
                 res.status(200).json({requests: json});
             }, (err)=>{
-                err_logger.error(err);
+                err_logger.error('INDEX: ' + err);
                 res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
             });
         });
@@ -411,7 +411,7 @@ class RobotRemoteServer {
             db_fetch.get_current_users(0, -1).then((json)=>{
                 res.status(200).json({requests: json});
             }, (err)=>{
-                err_logger.error(err);
+                err_logger.error('INDEX: ' + err);
                 res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
             });
         });
@@ -444,7 +444,7 @@ class RobotRemoteServer {
             db_fetch.admin_get_timeslot_requests(new Date(Date.now()), new Date(Date.now() + 7*24*60*60*1000)).then((val)=>{
                 res.status(200).json(val);
             }, (err) => {
-                err_logger.error(err);
+                err_logger.error('INDEX:' + err);
                 res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
             });
 
@@ -478,7 +478,7 @@ class RobotRemoteServer {
                 res.status(200).send("Success");
             })
             .catch((err)=>{
-                err_logger.error(err);
+                err_logger.error('INDEX:' + err);
                 res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
             });
         });
@@ -511,7 +511,7 @@ class RobotRemoteServer {
                 res.status(200).send("Success");
             })
             .catch((err)=>{
-                err_logger.error(err);
+                err_logger.error('INDEX:' + err);
                 res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
             });
         });
@@ -545,7 +545,7 @@ class RobotRemoteServer {
                 res.status(200).send("Success");
             })
             .catch((err)=>{
-                err_logger.error(err);
+                err_logger.error('INDEX: ' + err);
                 res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
             });
         });
@@ -579,7 +579,7 @@ class RobotRemoteServer {
                 res.status(200).send("Success");
             })
             .catch((err)=>{
-                err_logger.error(err);
+                err_logger.error('INDEX: ' + err);
                 res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
             });
         });
@@ -614,7 +614,7 @@ class RobotRemoteServer {
                 res.status(200).send('Success!');
             })
             .catch((err)=>{
-                err_logger.error(err);
+                err_logger.error('INDEX:' + err);
                 res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
             });
         });
@@ -648,7 +648,7 @@ class RobotRemoteServer {
                     mail.mail_to_user(user_id, __dirname + '/Emails/reject_time.txt', {});
                     res.status(200).send("Success");
             }).catch((err)=>{
-                err_logger.error(err);
+                err_logger.error('INDEX: ' + err);
                 res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
             });
 
@@ -681,7 +681,7 @@ class RobotRemoteServer {
                 mail.mail_to_user(user_id, __dirname + '/Emails/accept_time.txt', {});
                 res.status(200).send("Success");
             }).catch((err)=>{
-                err_logger.error(err);
+                err_logger.error('INDEX: ' + err);
                 res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
             });
         });
@@ -707,7 +707,7 @@ class RobotRemoteServer {
             db_fetch.user_get_timeslot_requests(new Date(now_ms), new Date(week_later_ms), req.session.user_id).then((json)=>{
                 res.status(200).json(json);
             },(err)=>{
-                cerr_logger.error(err);
+                cerr_logger.error('INDEX: ' + err);
                 res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
             });
 
@@ -779,13 +779,13 @@ class RobotRemoteServer {
                     subject: "User " + req.query.email + " Requested a timeslot.",
                     html: "User " + req.query.email + " has requeste a timeslot. Please visit <a href='" + admin_link + "'> the admin control panel </a> to accept or reject."
                 }).then((res)=>{
-                    info_logger.info("Sent mail to admin.");    
+                    info_logger.info("INDEX: Sent mail to admin.");    
                 }, (err)=>{
-                    err_logger.error('Failed to send mail to admin!' + err);
+                    err_logger.error('INDEX: Failed to send mail to admin!' + err);
                 });
 
             }, (err)=>{
-                err_logger.error(err);
+                err_logger.error('INDEX: ' + err);
                 res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
             });
 
@@ -805,7 +805,7 @@ class RobotRemoteServer {
             db_fetch.delete_request(req.params.id, req.session.user_id).then(()=>{
                 res.status(200).send('Success');
             },(err)=>{
-                err_logger.error(err);
+                err_logger.error('INDEX: ' + err);
                 res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
             });
         });
@@ -826,7 +826,7 @@ class RobotRemoteServer {
                 
                 res.redirect(303, '/Login.html');
             },function(err){
-                err_logger.error(err);
+                err_logger.error('INDEX: ' + err);
                 res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
             });
         });
@@ -912,7 +912,7 @@ if(process.argv[1] === __dirname + '/index.js'){
     server.createServers();
     server.listen();
 
-    info_logger.info('Server listening on http://localhost:' + options['http_port'] + 
+    info_logger.info('INDEX: Server listening on http://localhost:' + options['http_port'] + 
     ' and https://localhost:' + options['https_port']);
 }
 

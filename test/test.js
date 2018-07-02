@@ -58,7 +58,7 @@ describe('Tests', function(){
     after(function(){
         pool.end();
         //Q: err?
-        err_logger.log('Dumping possible open connections: (diagnose these if mocha stays open)');
+        err_logger.log('TEST: Dumping possible open connections: (diagnose these if mocha stays open)');
         wtf.dump();
     });
 

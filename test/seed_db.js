@@ -144,7 +144,7 @@ async function seedDB(pool){
     promise = Promise.all(promises);
     await promise;
 
-    info_logger.info('finished login requests');
+    info_logger.info('SEED_DB: finished login requests');
     promises = [];
 
     for(let user of SEED_USERS){
