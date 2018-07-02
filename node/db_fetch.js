@@ -116,6 +116,7 @@ module.exports = {
 	                end: res[i].duration
 	            });
         		return json;
+        	 }
         }
         else{
         		throw {
