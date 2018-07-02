@@ -26,7 +26,6 @@
     "server_cert_file": "cert/server_cert.pem",
     "server_key_file": "cert/server_key.pem",
     "ca_file":"cert/cacert.pem",
-    "debug":false,
     "smtp_auth": true,
     "smtp_username":"",
     "smtp_password":"",
