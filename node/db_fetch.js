@@ -98,7 +98,7 @@ module.exports = {
         }
         return {id: res[0].id};
     },
-    check_user_access(id, connection){
+    check_user_access: async function(id, connection){
         let json = [];
         if(connection){
             var [res, fields] = await connection.query('SELECT timeslots.id, timeslots.start_time, timeslots.duration, timeslots.approved' +
