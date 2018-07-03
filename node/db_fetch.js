@@ -112,9 +112,9 @@ module.exports = {
         		for(let i = 0; i<res.length; i++){
 	            json.push({
 	            	 id: res[i].id,
-	                start: res[i].start_time,
-	                end: res[i].duration
-	            });
+	                start: res[i].start_time.toISOString(),
+	                end: res[i].duration }
+	            );
         		return json;
         	 }
         }

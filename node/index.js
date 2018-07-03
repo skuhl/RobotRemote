@@ -243,18 +243,20 @@ class RobotRemoteServer {
 				                err_logger.error('INDEX: Failed to get statuses???' + err);
 				                res.status(500).send(err);
 				            });
-	                		}
-	                		else{
-	                			res.redirect(303, '/Scheduler.html')
-	                		}
+	                	}
 	                }
 	            }, (err)=>{
+	            	 /* This may want to be classified as just 'info' as it's not really an error if the user
+	                 * has no time slots.
+	                 */
 	                err_logger.error('INDEX: ' + err);
-	                res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
+                	 err_logger.error('INDEX: Unable to find any time slots for user:' + req.session.email);
+						 res.redirect(303, '/Scheduler.html')
 	            });
             }, (err)=>{
                 err_logger.error('INDEX: ' + err);
-                res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
+                err_logger.error('INDEX: Unable to find user with email:' + req.session.email);
+	             res.redirect(303, '/Scheduler.html')
             });
         });
         
