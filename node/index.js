@@ -197,9 +197,8 @@ class RobotRemoteServer {
             
             db_fetch.get_user_by_email(req.session.email).then((id)=>{
                 db_fetch.check_user_access(id).then((json)=>{
-
 	                for(var i =0; i < json.length; i++){
-	                		if(json[i].start_time >= Date.now() && (json[i].start_time + json[i].duration) < Date.now()){
+	                		if(json[i].start_time <= Date.now() && (json[i].start_time + json[i].duration) > Date.now()){
 	                			 actuator_comm.getFreeActuator(self._actuators).then((act)=>{
 				                info_logger.info('INDEX:' + act);
 				                //send client details (secret).
