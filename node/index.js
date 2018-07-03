@@ -196,9 +196,8 @@ class RobotRemoteServer {
             }
             
             db_fetch.get_user_by_email(req.session.email).then((id)=>{
-                res.status(200).send("Success");
                 db_fetch.check_user_access(id).then((json)=>{
-	                res.status(200).send("Success");
+
 	                for(var i =0; i < json.length; i++){
 	                		if(json[i].start_time >= Date.now() && (json[i].start_time + json[i].duration) < Date.now()){
 	                			 actuator_comm.getFreeActuator(self._actuators).then((act)=>{

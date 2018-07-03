@@ -41,7 +41,7 @@ This setup is meant for Linux, specifically Ubuntu. If you would like to run on 
 |`smtp_password`|Allows app access to send emails from specified account |Password for the email used in `smtp_username`|
 |`domain_name`|Specify the domain of the site|Any valid domain that you are hosting|
 
-### Python actuator server (python/settings.json)
+### Arm Server(arm_server/settings.json)
 | Option         | Purpose | Possible Values |
 | -------------- | ------- | --------------- |
 |`verbose`| Allows you to control the amount of output from this server | `true` will print more information, while `false` will print only the essentials (server errors)
