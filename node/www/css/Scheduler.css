@@ -1,6 +1,10 @@
-#content {
-    overflow-x: scroll;
+.sch {
+    position: fixed !important;
+    bottom: 0 !important;
+    top: 0 !important;
+    margin-top: 130px !important;
 }
+
 #my_req_table {
     display: none;
     border-collapse: collapse;
@@ -66,13 +70,17 @@
     vertical-align: middle;
 }
 
+#schedule_area {
+   padding-top: inherit;
+}
+
 #schedule_table {
    border-collapse: collapse;
    position: relative;
    left: 50%;
    top: 30%;
    margin-top: 20px;
-   margin-left: -387.1px;
+   margin-left: -360px;
 }
 
 .schedule_table_element {

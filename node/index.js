@@ -206,11 +206,9 @@ class RobotRemoteServer {
             }
             
             db_fetch.get_user_by_email(req.session.email).then((id)=>{
-                res.status(200).send("Success");
                 db_fetch.check_user_access(id).then((json)=>{
-	                res.status(200).send("Success");
 	                for(var i =0; i < json.length; i++){
-	                		if(json[i].start_time >= Date.now() && (json[i].start_time + json[i].duration) < Date.now()){
+	                		if(json[i].start_time <= Date.now() && (json[i].start_time + json[i].duration) > Date.now()){
 	                			 actuator_comm.getFreeActuator(self._actuators).then((act)=>{
                                 this.info_logger.info(act);
 				                //send client details (secret).
@@ -254,18 +252,22 @@ class RobotRemoteServer {
 				                this.err_logger.error('Failed to get statuses???' + err);
 				                res.status(500).send(err);
 				            });
-	                		}
-	                		else{
-	                			res.redirect(303, '/Scheduler.html')
-	                		}
+	                	}
 	                }
 	            }, (err)=>{
-	                this.err_logger.error(err);
-	                res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
+	            	 /* This may want to be classified as just 'info' as it's not really an error if the user
+	                 * has no time slots.
+                     * 
+                     * Try warn instead? Not quite an error, but could be?
+	                 */
+	                this.err_logger.warn(err);
+                	this.err_logger.warn('Unable to find any time slots for user:' + req.session.email);
+						res.redirect(303, '/Scheduler.html')
 	            });
             }, (err)=>{
                 this.err_logger.error(err);
-                res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
+                this.err_logger.error('Unable to find user with email:' + req.session.email);
+                res.redirect(303, '/Scheduler.html')
             });
         });
         

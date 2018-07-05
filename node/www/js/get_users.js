@@ -1,20 +1,5 @@
 let user_elements= {};
 
-const log4js = require('log4js');
-log4js.configure({
-  appenders: {
-    info_log: { type: 'file', filename: 'info.log' },
-    err_log: { type: 'file', filename: 'err.log' }
-  },
-  categories: {
-    info: { appenders: [ 'info' ], level: 'info' },
-    err:  { appenders: ['err_log'], level: 'error'}
-  }
-});
-
-const info_logger = log4js.getLogger('info');
-const err_logger = log4js.getLogger('err');
-
 function GenerateUserTable(users){
 	if(users.length <= 0) return null;
 	
@@ -106,7 +91,7 @@ var user_xhr = new XMLHttpRequest();
 user_xhr.onreadystatechange = function(){
 	if(this.readyState === 4 && this.status === 200){
         let json = JSON.parse(this.responseText);
-        info_logger.info('GET_USERS: ' + json);
+        console.log('GET_USERS: ' + json);
         
         var user_table = GenerateUserTable(json.requests);
         if(user_table != null) document.getElementById('current_users').appendChild(user_table);

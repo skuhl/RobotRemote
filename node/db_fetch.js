@@ -98,23 +98,23 @@ module.exports = {
         }
         return {id: res[0].id};
     },
-    check_user_access: async function(id, connection){
+    //id in this instance should be the user id
+    check_user_access: async function(id){
+        let connection = await pool.getConnection();
         let json = [];
-        if(connection){
-            var [res, fields] = await connection.query('SELECT timeslots.id, timeslots.start_time, timeslots.duration, timeslots.approved' +
-            														  'FROM timeslots INNER JOIN users ON timeslots.user_id=users.id WHERE users.id=?', [id]);
-
-        }else{
-            var [res, fields] = await pool.query('SELECT timeslots.id, timeslots.start_time, timeslots.duration, timeslots.approved' +
-            												 'FROM timeslots INNER JOIN users ON timeslots.user_id=users.id WHERE users.id=?', [id]);
+        try{
+            var [res, fields] = await connection.query('SELECT id, start_time, duration, approved FROM timeslots' +
+            														  'WHERE user_id=?', [id]);
+        }finally{
+        connection.release();
         }
         if(res.length > 0){
         		for(let i = 0; i<res.length; i++){
 	            json.push({
 	            	 id: res[i].id,
-	                start: res[i].start_time,
-	                end: res[i].duration
-	            });
+	                start: res[i].start_time.toISOString(),
+	                end: res[i].duration }
+	            );
         		return json;
         	 }
         }
@@ -123,8 +123,8 @@ module.exports = {
                 reason: "No time slots for this user!",
                 client_reason: ""
             };
+            return null;
         }
-    	
     },
     /*Timeframe is between beginDate and endDate.*/
     user_get_timeslot_requests: async function(beginDate, endDate, user_id){
