@@ -1,9 +1,10 @@
 .sch {
-    position: fixed;
-    bottom: 0;
-    top: 0;
-    margin-top: 93px;
+    position: fixed !important;
+    bottom: 0 !important;
+    top: 0 !important;
+    margin-top: 130px !important;
 }
+
 #my_req_table {
     display: none;
     border-collapse: collapse;
