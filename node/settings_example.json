@@ -34,5 +34,8 @@
     "smtp_secure":true,
     "mailer_email":"",
     "domain_name":"http://localhost",
-    "domain_name_secure": "https://localhost"
+    "domain_name_secure": "https://localhost",
+    "log_level":"info",
+    "multiprocess_logging":"true",
+    "multiprocess_logging_port":10000
 }
