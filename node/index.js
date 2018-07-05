@@ -205,8 +205,8 @@ class RobotRemoteServer {
                 return;
             }
             
-            db_fetch.get_user_by_email(req.session.email).then((id)=>{
-                db_fetch.check_user_access(id).then((json)=>{
+            db_fetch.get_user_by_email(req.session.email).then(function(id){
+                db_fetch.check_user_access(id).then(function(json){
 	                for(var i =0; i < json.length; i++){
 	                		if(json[i].start_time <= Date.now() && (json[i].start_time + json[i].duration) > Date.now()){
 	                			 actuator_comm.getFreeActuator(self._actuators).then((act)=>{
@@ -237,39 +237,39 @@ class RobotRemoteServer {
 				        
 				                    Promise.all(secret_promises).then( ()=>{
 				                        res.status(200).send(html_fetcher(__dirname + '/www/ControlPanel.html', req, {beforeHeader: ()=>{return '<title>Robot Remote - Control Panel</title>'}})); 
-				                    }).catch((err)=>{
+				                    }).catch(function(err){
 				                        this.err_logger.error("Failed to connect to a camera server, " + err)
 				                        res.status(500).send('Unable to communicate with webcam!');    
-				                    });
+				                    }.bind(this));
 				                    
 				                })
-				                .catch((err) => {
+				                .catch(function(err){
 				                    this.err_logger.error("Failed to connect to actuator server, " + err)
 				                    res.status(500).send(err);
-				                });
+				                }.bind(this));
 				            })
-				            .catch((err)=>{
+				            .catch(function(err){
 				                this.err_logger.error('Failed to get statuses???' + err);
 				                res.status(500).send(err);
-				            });
+				            }.bind(this));
 	                	}
 	                }
-	            }, (err)=>{
+	            }.bind(this), function(err){
 	            	 /* This may want to be classified as just 'info' as it's not really an error if the user
 	                 * has no time slots.
                      * 
                      * Try warn instead? Not quite an error, but could be?
 	                 */
-	                this.err_logger.warn(err);
-                	this.err_logger.warn('Unable to find any time slots for user:' + req.session.email);
+	                this.err_logger.error(err);
+                	this.err_logger.error('Unable to find any time slots for user:' + req.session.email);
 						res.redirect(303, '/Scheduler.html')
-	            });
-            }, (err)=>{
+	            }.bind(this));
+            }.bind(this), function(err){
                 this.err_logger.error(err);
                 this.err_logger.error('Unable to find user with email:' + req.session.email);
                 res.redirect(303, '/Scheduler.html')
-            });
-        });
+            }.bind(this));
+        }.bind(this));
         
         this._app.get('/Home.html', function(req, res){
             res.status(200).send(html_fetcher(__dirname + '/www/Home.html', req));
@@ -366,7 +366,7 @@ class RobotRemoteServer {
             }
             
             res.send(html_fetcher(__dirname + '/www/Scheduler.html', req));
-        });
+        }.bind(this));
 
         this._app.get('/admin/Admin.html', function(req, res){
             res.append('Cache-Control', "no-cache, no-store, must-revalidate");

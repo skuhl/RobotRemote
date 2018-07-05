@@ -15,8 +15,6 @@ function getStack(){
 //Functions for getting tokens. This might need some tweaking (12 stack frames deep might not be consistent)
 function getLogFileName(logEvent){
     let file_path = getStack()[11].getFileName();
-    console.log(base_dir_name);
-    console.log(file_path);
     return file_path.slice(base_dir_name.length);
 }
 
