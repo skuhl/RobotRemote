@@ -84,10 +84,10 @@ module.exports = {
         /*Gets info about user with given id. Will use given connection if provided, otherwise uses an independent connection */
     get_user_by_email: async function(email, connection){
         if(connection){
-            var [res, fields] = await connection.query("SELECT * FROM users WHERE email=?", [email]);
+            var [res, fields] = await connection.query("SELECT id FROM users WHERE email=?", [email]);
 
         }else{
-            var [res, fields] = await pool.query("SELECT * FROM users WHERE email=?", [email]);
+            var [res, fields] = await pool.query("SELECT id FROM users WHERE email=?", [email]);
         }
 
         if(res.length < 1){
@@ -96,7 +96,7 @@ module.exports = {
                 client_reason: ""
             };
         }
-        return {id: res[0].id};
+        return { id: res[0].id };
     },
     //id in this instance should be the user id
     check_user_access: async function(id){
@@ -110,7 +110,7 @@ module.exports = {
         }
         if(res.length > 0){
         		for(let i = 0; i<res.length; i++){
-	            json.push({
+	            mine.push({
 	            	 id: res[i].id,
 	                start: res[i].start_time.toISOString(),
 	                end: res[i].duration }
