@@ -62,7 +62,8 @@ class RobotRemoteServer {
         this._options.domain_name = getDefaultIfUndefined(this._options.domain_name, 'http://localhost');
         this._options.domain_name_secure = getDefaultIfUndefined(this._options.domain_name_secure, 'https://' + this._options.domain_name.replace('http://'));
         this._options.log_level = getDefaultIfUndefined(this._options.log_level, 'info');
-        this._options.same_machine = getDefaultIfUndefined(this._options.same_machine, true);
+        this._options.multiprocess_logging = getDefaultIfUndefined(this._options.multiprocess_logging, true);
+        this._options.multiprocess_logging_port = getDefaultIfUndefined(this._options.multiprocess_logging_port, 10000);
 
         function get_file_relative_dirname(str){
             if(str.startsWith('/')){
@@ -205,12 +206,12 @@ class RobotRemoteServer {
                 return;
             }
             
-            db_fetch.get_user_by_email(req.session.email).then(function(id){
-                db_fetch.check_user_access(id).then(function(json){
+            db_fetch.get_user_by_email(req.session.email).then(function(user){
+                db_fetch.check_user_access(user.id).then(function(json){
                 	 var res = JSON.parse(json);
 	                for(var i =0; i < res.mine.start_time.length; i++){
 	                		if(res.mine[i].start_time <= Date.now() && (res.mine[i].start_time + res.mine[i].duration) > Date.now()){
-	                			 actuator_comm.getFreeActuator(self._actuators).then((act)=>{
+	                			actuator_comm.getFreeActuator(self._actuators).then((act)=>{
                                 this.info_logger.info(act);
 				                //send client details (secret).
 				                act.sendClientDetails(5*60*1000).then((secret) => {

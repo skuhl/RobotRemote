@@ -103,7 +103,7 @@ module.exports = {
         let connection = await pool.getConnection();
         let json = [];
         try{
-            var [res, fields] = await connection.query('SELECT id, start_time, duration, approved FROM timeslots' +
+            var [res, fields] = await connection.query('SELECT id, start_time, duration, approved FROM timeslots ' +
             														  'WHERE user_id=?', [id]);
         }finally{
         connection.release();
