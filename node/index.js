@@ -274,7 +274,7 @@ class RobotRemoteServer {
         
         this._app.get('/Home.html', function(req, res){
             res.status(200).send(html_fetcher(__dirname + '/www/Home.html', req));
-        });
+        }.bind(this));
         
         this._app.get('/Login.html', function(req, res){
             let opts = {};
@@ -286,7 +286,7 @@ class RobotRemoteServer {
             }
         
             res.status(200).send(html_fetcher(__dirname + '/www/Login.html', req, opts));
-        });
+        }.bind(this));
         
         this._app.post('/Login.html', function(req, res){
             res.append('Cache-Control', "no-cache, no-store, must-revalidate");
@@ -300,7 +300,7 @@ class RobotRemoteServer {
                 return;
             }
             
-            user_auth.verify_credentials(req.body.username, req.body.password).then((info)=>{
+            user_auth.verify_credentials(req.body.username, req.body.password).then(function(info){
                 var prev = req.body.prev;
                     
                 req.session.loggedin = true;
@@ -316,17 +316,17 @@ class RobotRemoteServer {
                 }
                 
                 res.status(302).send('Success');
-            },(err)=>{
+            }.bind(this),function(err){
                 this.err_logger.error(err);
                 req.session.login_error = err.client_reason !== undefined ? err.client_reason : "Internal server error.";
                 res.location('/Login.html');
                 res.status(302).send('Failed to log in; ' + req.session.login_error);
-            });
-        });
+            }.bind(this));
+        }.bind(this));
 
         this._app.get('/Request.html', function(req, res){
             res.status(200).send(html_fetcher(__dirname + '/www/Request.html', req));
-        });
+        }.bind(this));
         
         this._app.post('/Request.html', function(req, res){
             /*Email regex, ripped off https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/email#Validation  */
@@ -346,17 +346,17 @@ class RobotRemoteServer {
             //TODO password tests? (length, numbers, symbols maybe?)
         
             user_auth.login_request(req.body.username, req.body.password, req.body.reason)
-                .then((email_token)=>{
+                .then(function(email_token){
                     res.status(200).send('success!');
                     let link = self._options['domain_name_secure'] + "/verify?email=" + encodeURIComponent(req.body.username) + "&email_tok=" + encodeURIComponent(email_token);
                     
                     mail.mail(req.body.username, __dirname + '/Emails/confirm_email.txt', {link: link, name: req.body.username});
         
-                }, (err)=>{
+                }.bind(this), function(err){
                     this.err_logger.err(err);
                     res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
-                });
-        });
+                }.bind(this));
+        }.bind(this));
         
         this._app.get('/Scheduler.html', function(req, res){
             res.append('Cache-Control', "no-cache, no-store, must-revalidate");
@@ -385,7 +385,7 @@ class RobotRemoteServer {
             }
             //emit admin page
             res.status(200).send(html_fetcher(__dirname + '/www/Admin.html', req));
-        });
+        }.bind(this));
         
 
     }
@@ -417,13 +417,13 @@ class RobotRemoteServer {
                 return;
             }
 
-            db_fetch.get_login_requests(0, -1).then((json)=>{
+            db_fetch.get_login_requests(0, -1).then(function(json){
                 res.status(200).json({requests: json});
-            }, (err)=>{
+            }.bind(this), function(err){
                 this.err_logger.error(err);
                 res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
-            });
-        });
+            }.bind(this));
+        }.bind(this));
 
         this._app.get('/admin/currentusers', function(req, res){
             res.append('Cache-Control', "no-cache, no-store, must-revalidate");
@@ -441,13 +441,13 @@ class RobotRemoteServer {
                 return;
             }
 
-            db_fetch.get_current_users(0, -1).then((json)=>{
+            db_fetch.get_current_users(0, -1).then(function(json){
                 res.status(200).json({requests: json});
-            }, (err)=>{
+            }.bind(this), function(err){
                 this.err_logger.error(err);
                 res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
-            });
-        });
+            }.bind(this));
+        }.bind(this));
 
         /*Returns JSON encoded list of requests:
             {
@@ -474,14 +474,14 @@ class RobotRemoteServer {
                 return;
             }
             
-            db_fetch.admin_get_timeslot_requests(new Date(Date.now()), new Date(Date.now() + 7*24*60*60*1000)).then((val)=>{
+            db_fetch.admin_get_timeslot_requests(new Date(Date.now()), new Date(Date.now() + 7*24*60*60*1000)).then(function(val){
                 res.status(200).json(val);
-            }, (err) => {
+            }.bind(this), function(err){
                 this.err_logger.error('INDEX:' + err);
                 res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
-            });
+            }.bind(this));
 
-        });
+        }.bind(this));
         /* 
             Request to reject login request with given id
         */
@@ -506,15 +506,15 @@ class RobotRemoteServer {
                 return;
             }
 
-            db_fetch.delete_user_by_request(req.params.id).then(async (user_info)=>{
+            db_fetch.delete_user_by_request(req.params.id).then(async function(user_info){
                 await mail.mail_to_user(user_info, __dirname + '/Emails/reject_user.txt', {});
                 res.status(200).send("Success");
-            })
-            .catch((err)=>{
+            }.bind(this))
+            .catch(function(err){
                 this.err_logger.error('INDEX:' + err);
                 res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
-            });
-        });
+            }.bind(this));
+        }.bind(this));
         /* 
             Request to reject login request with given id
         */
@@ -538,16 +538,16 @@ class RobotRemoteServer {
                 return;
             }
 
-            db_fetch.delete_user_by_ID(req.params.id).then((user_id)=>{
+            db_fetch.delete_user_by_ID(req.params.id).then(function(user_id){
                 //Do we want a account terminated email??? my guess is nah
                 //mail.mail_to_user(user_id, __dirname + '/Emails/reject_user.txt', {});
                 res.status(200).send("Success");
-            })
-            .catch((err)=>{
+            }.bind(this))
+            .catch(function(err){
                 this.err_logger.error('INDEX:' + err);
                 res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
-            });
-        });
+            }.bind(this));
+        }.bind(this));
 
         /* 
             Power to give admin privilege 
@@ -572,16 +572,16 @@ class RobotRemoteServer {
                 return;
             }
 
-            db_fetch.adminify(req.params.id).then((user_id)=>{
+            db_fetch.adminify(req.params.id).then(function(user_id){
                 //Do we want a account terminated email??? my guess is nah
                 //mail.mail_to_user(user_id, __dirname + '/Emails/reject_user.txt', {});
                 res.status(200).send("Success");
-            })
-            .catch((err)=>{
+            }.bind(this))
+            .catch(function(err){
                 this.err_logger.error(err);
                 res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
-            });
-        });
+            }.bind(this));
+        }.bind(this));
 
         /* 
             Power to give admin privilege 
@@ -606,16 +606,16 @@ class RobotRemoteServer {
                 return;
             }
 
-            db_fetch.deAdminify(req.params.id).then((user_id)=>{
+            db_fetch.deAdminify(req.params.id).then(function(user_id){
                 //Do we want a account terminated email??? my guess is nah
                 //mail.mail_to_user(user_id, __dirname + '/Emails/reject_user.txt', {});
                 res.status(200).send("Success");
-            })
-            .catch((err)=>{
+            }.bind(this))
+            .catch(function(err){
                 this.err_logger.error(err);
                 res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
-            });
-        });
+            }.bind(this));
+        }.bind(this));
 
         /* 
             Request to accept login request with given id (for a loginrequest)
@@ -642,15 +642,15 @@ class RobotRemoteServer {
             }
 
             db_fetch.accept_user(req.params.id)
-            .then((user_id) => {
+            .then(function(user_id){
                 mail.mail_to_user(user_id, __dirname + '/Emails/accepted_user.txt', {});
                 res.status(200).send('Success!');
-            })
-            .catch((err)=>{
+            }.bind(this))
+            .catch(function(err){
                 this.err_logger.error('INDEX:' + err);
                 res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
-            });
-        });
+            }.bind(this));
+        }.bind(this));
         /* 
             Request to reject timeslot request with given id
         */
@@ -680,12 +680,13 @@ class RobotRemoteServer {
             .then(function(user_id){
                     mail.mail_to_user(user_id, __dirname + '/Emails/reject_time.txt', {});
                     res.status(200).send("Success");
-            }).catch((err)=>{
+            }.bind(this))
+            .catch(function(err){
                 this.err_logger.error(err);
                 res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
-            });
+            }.bind(this));
 
-        });
+        }.bind(this));
         /* 
             Request to accept timeslot request with given id
         */
@@ -710,14 +711,14 @@ class RobotRemoteServer {
             }
 
             db_fetch.accept_timeslot_request(req.params.id)
-            .then((user_id)=>{
+            .then(function(user_id){
                 mail.mail_to_user(user_id, __dirname + '/Emails/accept_time.txt', {});
                 res.status(200).send("Success");
-            }).catch((err)=>{
+            }.bind(this)).catch(function(err){
                 this.err_logger.error(err);
                 res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
-            });
-        });
+            }.bind(this));
+        }.bind(this));
 
         /*Returns JSON encoded list of requests:
             {
@@ -737,14 +738,14 @@ class RobotRemoteServer {
             let now_ms = Date.now();
             let week_later_ms = now_ms + (24*60*60*1000)*7;
 
-            db_fetch.user_get_timeslot_requests(new Date(now_ms), new Date(week_later_ms), req.session.user_id).then((json)=>{
+            db_fetch.user_get_timeslot_requests(new Date(now_ms), new Date(week_later_ms), req.session.user_id).then(function(json){
                 res.status(200).json(json);
-            },(err)=>{
+            }.bind(this),function(err){
                 this.err_logger.error(err);
                 res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
-            });
+            }.bind(this));
 
-        });
+        }.bind(this));
         /*
             Endpoint for timeslot request. Client needs to 
             provide start time in milliseconds since the unix epoch, and duration in milliseconds.
@@ -801,7 +802,7 @@ class RobotRemoteServer {
                 return;
             }
 
-            db_fetch.add_request(date, (req.body.duration / 1000) - 1, req.session.user_id).then((val) => {
+            db_fetch.add_request(date, (req.body.duration / 1000) - 1, req.session.user_id).then(function(val) {
                 res.status(200).send("Success");
 
                 let admin_link = self._options['domain_name_secure'] + "/admin/Admin.html"; 
@@ -811,18 +812,18 @@ class RobotRemoteServer {
                     from: self._options['mailer_email'],
                     subject: "User " + req.query.email + " Requested a timeslot.",
                     html: "User " + req.query.email + " has requeste a timeslot. Please visit <a href='" + admin_link + "'> the admin control panel </a> to accept or reject."
-                }).then((res)=>{
+                }).then(function(res){
                     this.info_logger.info("Sent mail to admin.");    
-                }, (err)=>{
+                }.bind(this), function(err){
                     this.err_logger.error('Failed to send mail to admin!' + err);
-                });
+                }.bind(this));
 
-            }, (err)=>{
+            }.bind(this), function(err){
                 this.err_logger.error(err);
                 res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
-            });
+            }.bind(this));
 
-        });
+        }.bind(this));
 
         //This endpoint deletes the request with id,
         //only if the logged in user made it.
@@ -835,20 +836,20 @@ class RobotRemoteServer {
                 return;
             }
 
-            db_fetch.delete_request(req.params.id, req.session.user_id).then(()=>{
+            db_fetch.delete_request(req.params.id, req.session.user_id).then(function(){
                 res.status(200).send('Success');
-            },(err)=>{
+            }.bind(this),function(err){
                 this.err_logger.error(err);
                 res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
-            });
-        });
+            }.bind(this));
+        }.bind(this));
 
         this._app.get('/Logout', function(req, res){
             res.append('Cache-Control', "no-cache, no-store, must-revalidate");
             req.session.loggedin = false;
             delete req.session;
             res.redirect(303, '/Home.html');
-        });
+        }.bind(this));
         
         this._app.get('/verify', function(req,res){
             res.append('Cache-Control', "no-cache, no-store, must-revalidate");
@@ -858,11 +859,11 @@ class RobotRemoteServer {
                 mail.mail_to_admins(__dirname + '/Emails/new_confirmation.txt', {});
                 
                 res.redirect(303, '/Login.html');
-            },function(err){
+            }.bind(this),function(err){
                 this.err_logger.error(err);
                 res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
-            });
-        });
+            }.bind(this));
+        }.bind(this));
     }
 
     registerApp404Route(){
@@ -880,7 +881,7 @@ class RobotRemoteServer {
         
             res.status(req.session.error_status).send(html_fetcher(__dirname + '/www/Error.html', req, opts));
             req.session.error_status = undefined;
-        });
+        }.bind(this));
     }
 
     createServers(){
