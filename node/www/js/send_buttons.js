@@ -2,23 +2,8 @@ let socket;
 let socket_ready = false;
 let pressed_buttons = [];
 
-const log4js = require('log4js');
-log4js.configure({
-  appenders: {
-    info_log: { type: 'file', filename: 'info.log' },
-    err_log: { type: 'file', filename: 'err.log' }
-  },
-  categories: {
-    info: { appenders: [ 'info' ], level: 'info' },
-    err:  { appenders: ['err_log'], level: 'error'}
-  }
-});
-
-const info_logger = log4js.getLogger('info');
-const err_logger = log4js.getLogger('err');
-
 function SocketMessage(event){
-    info_logger.info('SEND_BUTTONS:' + event);
+    console.log('SEND_BUTTONS:' + event);
 }
 
 function SocketReady(){ 
@@ -27,7 +12,7 @@ function SocketReady(){
 }
 
 function SocketError(err){
-	err_logger.error('SEND BUTTONS: Socket encountered an error:' + err);
+	console.error('SEND BUTTONS: Socket encountered an error:' + err);
 }
 
 function SocketClose(){
@@ -44,7 +29,7 @@ var InitSocket = function(){
     socket.onmessage = SocketMessage;
     socket.onerror = SocketError;
     socket.onclose = SocketClose;
-    info_logger.info('SEND_BUTTONS:' + socket);
+    console.log('SEND_BUTTONS:' + socket);
 }
 
 var ButtonPressed = function(button_code){
