@@ -135,17 +135,16 @@ class RobotRemoteServer {
         //Loggings
         let appenders = {
             info_log: { type: 'file', filename: 'info.log', layout: log4js_template },
-            err_log: { type: 'file', filename: 'err.log', layout: log4js_template }
+            info_log_nolayout: { type: 'file', filename: 'info.log', layout: { type: 'messagePassThrough' } },
+            err_log: { type: 'file', filename: 'err.log', layout: log4js_template },
+            err_log_nolayout: { type: 'file', filename: 'err.log', layout: { type: 'messagePassThrough' } },
+            multiprocess : {type: 'multiprocess', mode: 'master', appender:'info_log_nolayout', loggerPort: this._options.multiprocess_logging_port}
         };
-
-        if(this._options.multiprocess_logging){
-            appenders.multiprocess = {type: 'multiprocess', mode: 'master', appender:'info_log', loggerPort: this._options.multiprocess_logging_port};
-        } 
 
         log4js.configure({
             appenders: appenders,
             categories: {
-                default: {appenders: [ 'info_log' ], level: this._options.log_level}
+                default: {appenders: ['info_log'], level: this._options.log_level}
             }
         });
         

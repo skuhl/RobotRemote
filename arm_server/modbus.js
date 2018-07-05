@@ -2,20 +2,6 @@ const modbus = require('jsmodbus');
 const net = require('net');
 const Reconnect = require('node-net-reconnect');
 
-const log4js = require('log4js');
-log4js.configure({
-    appenders: {
-        info_log: { type: 'file', filename: 'info.log' },
-        err_log: { type: 'file', filename: 'err.log' }
-      },
-      categories: {
-        default: {appenders: [ 'info_log' ], level: 'info'}
-      }
-});
-
-const info_logger = log4js.getLogger('default');
-const err_logger = log4js.getLogger('default');
-
 class Run {
     constructor(run_start, run_length){
         this._run_length = run_length;
@@ -70,7 +56,7 @@ module.exports = {
         }
         
         setPressed(button_array){
-            info_logger.info('MODBUS: Pressed: ' + button_array);
+            //TODO put back logging here?
             this._runs = this._getRuns(button_array);
         }
         

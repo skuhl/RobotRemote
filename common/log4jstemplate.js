@@ -17,7 +17,8 @@ function getNonLog4jsStack(stack){
     for(let i = 2; i < stack.length; i++){
         if(stack[i] === null) return null;
         if(stack[i].getFileName() === null) continue;
-        if(stack[i].getFileName().indexOf('/node_modules/log4js/') === -1) return stack[i];
+        if(stack[i].getFileName().indexOf('/node_modules/log4js/') === -1 &&
+           stack[i].getFileName().indexOf('/common/layout_appender.js') === -1) return stack[i];
     }
     return null;
 }

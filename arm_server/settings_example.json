@@ -22,5 +22,8 @@
         "f1" : 0,
         "f2" : 0,
         "f3" : 0
-    }
+    },
+    "log_level": "info",
+    "multiprocess_logging": true,
+    "multiprocess_logging_port": 10000 
 }
