@@ -23,21 +23,25 @@ if(!process.argv[2].startsWith('/')) process.argv[2] = './' + process.argv[2];
 var options = require(process.argv[2]);
 
 const log4js = require('log4js');
+let appenders = {
+	info_log: { type: 'file', filename: 'info.log', layout: log4js_template},
+	err_log: { type: 'file', filename: 'err.log', layout: log4js_template}
+}
+
+if(options.multiprocess_logging){
+	appenders.multiprocess = { type: 'multiprocess', mode: 'worker', loggerPort: options.multiprocess_logging_port},
+	appenders.multiprocess_layout = {type: '../common/layout_appender', appender: 'multiprocess', layout: log4js_template}
+}
+
 log4js.configure({
-    appenders: {
-        info_log: { type: 'file', filename: 'info.log', layout: log4js_template},
-        err_log: { type: 'file', filename: 'err.log', layout: log4js_template},
-		multiprocess: { type: 'multiprocess', mode: 'worker', loggerPort: options.multiprocess_logging_port},
-		multiprocess_layout: {type: '../common/layout_appender', appender: 'multiprocess', layout: log4js_template}
-    },
+    appenders: appenders,
     categories: {
-        multiprocess: {appenders: ['multiprocess_layout'], level: options.log_level},
-        default: {appenders: [ 'info_log' ], level: options.log_level}
+        default: {appenders: [ options.multiprocess_logging ? 'multiprocess_layout' : 'info_log' ], level: options.log_level}
     }
 });
 
-const info_logger = log4js.getLogger(options.multiprocess_logging ? 'multiprocess' : 'default');
-const err_logger = log4js.getLogger(options.multiprocess_logging ? 'multiprocess' : 'default');
+const info_logger = log4js.getLogger();
+const err_logger = log4js.getLogger();
 
 var STREAM_SECRET = null,
 	STREAM_PORT = options['stream_port'],

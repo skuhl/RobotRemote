@@ -46,7 +46,7 @@ function getLogLineNumber(logEvent){
 
 module.exports = {
     type: 'pattern',
-    pattern: '[%d] [%p] %x{file}:%x{line}: %m',
+    pattern: '[%d] (PID: %z) [%p] %x{file}:%x{line}: %m',
     tokens: {
         file: getLogFileName,
         line: getLogLineNumber
