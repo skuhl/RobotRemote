@@ -50,6 +50,77 @@ module.exports = {
         
         return {is_admin: res[0].admin, id: res[0].id};
     },
+
+    valid_user: async function (username, password){
+        let connection = await pool.getConnection();
+            
+        try{
+            var [res, field] = await connection.query('SELECT id, passhash, passsalt, approved, admin from users where email = ?', [username]);
+        }finally{
+            connection.release();
+        }
+
+        if(res.length < 1){
+            throw {
+                reason: 'Couldn\'t find username in DB.',
+                client_reason: 'Invalid email or password.'
+            }
+        }
+
+        
+        if(res.length > 1){
+            throw {
+                reason: 'More than 1 user with given email!',
+                client_reason: 'Internal database error.'
+            };
+        }
+
+        let hash = crypto.createHash('sha256').update(password + res[0].passsalt).digest('hex');
+
+        if(hash !== res[0].passhash){
+            throw {
+                reason: 'Invalid password.',
+                client_reason: 'Invalid email or password.'
+            };
+        }
+
+        return {is_admin: res[0].admin, id: res[0].id};
+    },
+
+    needs_verification : async function(user_id){
+        let connection = await pool.getConnection();
+            
+        try{
+            var [res, field] = await connection.query('SELECT loginreq_id FROM users WHERE id=?', [user_id]);
+
+            if(res.length < 1){
+                throw {
+                    reason: 'Couldn\'t find username in DB.',
+                    client_reason: 'Invalid email or password.'
+                }
+            }
+
+            if(res[0].loginreq_id === null){
+                return {needs_verif: false, email_token: null};
+            }
+
+            let [res1, fields1] = await connection.query('SELECT email_validated, email_token FROM loginrequests WHERE id=?', [res[0].loginreq_id]);
+
+            if(res1.length < 1){
+                throw {
+                    reason: 'Couldn\'t find login request in DB.',
+                    client_reason: 'Internal server error.'
+                }
+            }
+
+            return {needs_verif: !res1[0].email_validated, email_token: res1[0].email_token};
+
+        }finally{
+            connection.release();
+        }
+
+        
+    },
     /* 
     Creates a non-approved login_request.
     Return value is the same as above.

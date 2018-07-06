@@ -222,11 +222,8 @@ class RobotRemoteServer {
 				                    //TODO set up these options for cookie correctly
 				                    //(https only, age, when it expires, possibly session stuff)
 				                    res.cookie('act-url', act.ip + ":" + act.websock_port + "/")
-				                    res.cookie('act-secret', secret);
-				        
-				                    //TODO Spin up every webcam (probably in the actuator_comm code)
-				                    //This probably means having some small server listen for messages,
-				                    //meaning an extra parameter for each webcam.
+                                    res.cookie('act-secret', secret);
+                                    
 				                    let secret_promises = [];
 				                    for(let i = 0; i < act.webcams.length; i++){
 				                        // 30 second secret TODO change to duration of timeslot.
@@ -356,7 +353,7 @@ class RobotRemoteServer {
                     mail.mail(req.body.username, __dirname + '/Emails/confirm_email.txt', {link: link, name: req.body.username});
         
                 }.bind(this), function(err){
-                    this.err_logger.err(err);
+                    this.err_logger.error(err);
                     res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
                 }.bind(this));
         }.bind(this));
@@ -390,6 +387,56 @@ class RobotRemoteServer {
             res.status(200).send(html_fetcher(__dirname + '/www/Admin.html', req));
         }.bind(this));
         
+        this._app.post('/ResendVerification.html', function(req, res){
+            if(req.body.username === undefined){
+                req.session.login_error = 'Must provide a username.';
+                res.redirect(302, '/Login.html');
+                return;
+            }
+
+            if(req.body.password === undefined){
+                req.session.login_error = 'Must provide a password.';
+                res.redirect(302, '/Login.html');
+                return;
+            }
+
+            user_auth.valid_user(req.body.username, req.body.password)
+            .then(function(info){
+                user_auth.needs_verification(info.id)
+                .then(function(obj){
+                    if(obj.needs_verif){
+                        //resend verification email
+                        let link = self._options['domain_name_secure'] + "/verify?email=" + encodeURIComponent(req.body.username) + "&email_tok=" + encodeURIComponent(obj.email_token);
+                        mail.mail(req.body.username, __dirname + '/Emails/confirm_email.txt', {link: link, name: req.body.username})
+                        .then(function(){
+                            req.session.login_error = 'Verification email resent.';
+                            res.redirect(302, '/Login.html');
+                        }.bind(this))
+                        .catch(function(err){
+                            this.err_logger.error('Encountered an error: ');
+                            this.err_logger.error(err);
+                            req.session.login_error = err.client_reason !== undefined ? err.client_reason : "Internal server error.";
+                            res.redirect(302, '/Login.html');
+                        }.bind(this));
+                    }else{
+                        req.session.login_error = 'Your email is already verified!';
+                        res.redirect(302, '/Login.html');
+                    }
+                }.bind(this))
+                .catch(function(err){
+                    this.err_logger.error('Encountered an error: ');
+                    this.err_logger.error(err);
+                    req.session.login_error = err.client_reason !== undefined ? err.client_reason : "Internal server error.";
+                    res.redirect(302, '/Login.html');
+                }.bind(this));  
+            }.bind(this))
+            .catch(function(err){
+                this.err_logger.error('Encountered an error: ');
+                this.err_logger.error(err);
+                req.session.login_error = err.client_reason !== undefined ? err.client_reason : "Internal server error.";
+                res.redirect(302, '/Login.html');
+            }.bind(this));
+        }.bind(this));
 
     }
 

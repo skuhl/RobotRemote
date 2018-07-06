@@ -15,8 +15,8 @@ function loader(){
         if(!loaded.width){ //if the table width is 0 wait some more
             loader();
         }else{ //if the table width is non zero make it show up!
-				document.getElementById("loader").classname = ('shrinking-cog');
-				document.getElementById("loader").style.display = "none";	
+            document.getElementById("loader").classname = ('shrinking-cog');
+            document.getElementById("loader").style.display = "none";	
         }
         
     },time);
