@@ -5,6 +5,8 @@ const fs = require('fs');
 const ARM_PORTS_START = 3002;
 const MAX_ARMS = 1;
 const CAMERA_PORTS_START = ARM_PORTS_START + 2*MAX_ARMS + 1;
+const MAX_CAMERAS = 3;
+const CAMERA_PORTS_END = CAMERA_PORTS_START + MAX_CAMERAS * 3;
 
 //Logger for standard out no time stamp
 const log4js = require('log4js');
@@ -469,7 +471,7 @@ async function setupArmsAndCameras(state){
     state.num_cameras = num_results.cameras;
     state.num_arms = num_results.arms;
 
-    let base_pin_assignments = require('./python/settings_example.json').pin_assignments;
+    let base_pin_assignments = require('./arm_server/settings_example.json').pin_assignments;
     //generate all python settings
     state.node_options.actuator_servers = [];
     for(let i = 0; i < state.num_arms; i++){
@@ -491,6 +493,9 @@ async function setupArmsAndCameras(state){
        opts.client_ca_file = "cert/cacert.pem";
        opts.debug = false;
        opts.pin_assignments = base_pin_assignments;
+       opts.log_level = 'info';
+       opts.multiprocess_logging = true;
+       opts.multiprocess_logging_port = CAMERA_PORTS_END + 1;
 
        let webserver_cam_opts = [];
        //camera settings
@@ -503,6 +508,9 @@ async function setupArmsAndCameras(state){
             cam_opts.cert = "cert/cert.pem";
             cam_opts.key = "cert/key.pem";
             cam_opts.client_ca = "cert/cacert.pem";
+            cam_opts.log_level = 'info';
+            cam_opts.multiprocess_logging = true;
+            cam_opts.multiprocess_logging_port = CAMERA_PORTS_END + 1;
             
             webserver_cam_opts.push({ip: '127.0.0.1', websock_port: cam_opts.websock_port, secure: true, comm_port: cam_opts.webserver_listen_port});
 
@@ -522,6 +530,11 @@ async function generateRunScript(state){
     let script = 
 `const { spawn } = require('child_process');
 const fs = require('fs');
+function getCloseFunction(process_name){
+    return function(code, signal){
+        console.log('Process ' + process_name + ' exited with code ' + code + ' caused by signal ' + signal);
+    }
+}
 
 //Start up the webserver.
 let webserver_proc = spawn('npm', ['run', 'start_webserver'], 
@@ -531,6 +544,9 @@ let webserver_proc = spawn('npm', ['run', 'start_webserver'],
         process.stderr]
     }
 );
+
+webserver_proc.on('close', getCloseFunction('Webserver'));
+
 //Start up arm servers
 ${(()=>{
     let exec_arms = '';
@@ -541,7 +557,8 @@ ${(()=>{
         process.stdout, 
         process.stderr]
     }       
-);\n`;
+);
+arm_${i}_proc.on('close', getCloseFunction('Arm${i}'));\n`;
     }
     return exec_arms;
 })()}
@@ -556,7 +573,8 @@ ${(()=>{
         process.stdout, 
         process.stderr]
     }
-);\n`
+);
+camera_${i}_${j}_proc.on('close', getCloseFunction('Camera(Arm${i}) ${j}'));\n`
         }
     }
     return exec_cameras;
@@ -576,7 +594,8 @@ ${(()=>{
             process.stdout, 
             process.stderr]
         }   
-);\n`;
+);
+ffmpeg_${i}_${j}_proc.on('close', getCloseFunction('FFmpeg(Arm${i}) ${j}'));\n\n`;
         }
     }
     return exec_ffmpeg;
@@ -584,7 +603,7 @@ ${(()=>{
 
 //Terminate all when this process gets SIGTERM
 function terminate_all(){
-    logger.info('Killing all processes...');
+    console.log('Killing all processes...');
     webserver_proc.kill('SIGTERM');
 ${(()=>{
     let kill_arms = '';
@@ -621,7 +640,7 @@ process.on('SIGHUP', terminate_all);
 
 process.stdin.resume();
 
-logger.info('All processes started, use CTRL+C to kill.');
+console.log('All processes started, use CTRL+C to kill.');
 `;
         
     fs.writeFileSync(__dirname + '/run.js', script, {flags: 'w'});
@@ -707,16 +726,22 @@ async function generateServerCerts(state){
 }
 
 async function finalizeOptions(state){
+    state.node_options.log_level = 'info';
+    state.node_options.multiprocess_logging = true;
+    state.node_options.multiprocess_logging_port = CAMERA_PORTS_END + 1;
+
     fs.writeFileSync(__dirname + '/node/settings.json', JSON.stringify(state.node_options, undefined, 4), {flags:'w'});
     return state;
 }
 
 process.on('uncaughtException', function (exception) {
-    logger.info(exception);
+    logger.fatal(exception);
+    process.exit(1);
 });
 
 process.on('unhandledRejection', (reason, p) => {
-    logger.info("Unhandled Rejection at: Promise ", p, " reason: ", reason);
+    logger.fatal("Unhandled Rejection at: Promise ", p, " reason: ", reason);
+    process.exit(1);
 });
 
 main().then(()=>{
