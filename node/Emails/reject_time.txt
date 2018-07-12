@@ -1,4 +1,4 @@
-Re:Robot Remote: Time Slot Regection
+Re:Robot Remote: Time Slot Rejection
 
 <!doctype html>
 <html>
