@@ -527,7 +527,7 @@ class RobotRemoteServer {
             db_fetch.admin_get_timeslot_requests(new Date(Date.now()), new Date(Date.now() + 7*24*60*60*1000)).then(function(val){
                 res.status(200).json(val);
             }.bind(this), function(err){
-                this.err_logger.error('INDEX:' + err);
+                this.err_logger.error(err);
                 res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
             }.bind(this));
 
@@ -561,7 +561,7 @@ class RobotRemoteServer {
                 res.status(200).send("Success");
             }.bind(this))
             .catch(function(err){
-                this.err_logger.error('INDEX:' + err);
+                this.err_logger.error(err);
                 res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
             }.bind(this));
         }.bind(this));
@@ -594,7 +594,7 @@ class RobotRemoteServer {
                 res.status(200).send("Success");
             }.bind(this))
             .catch(function(err){
-                this.err_logger.error('INDEX:' + err);
+                this.err_logger.error(err);
                 res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
             }.bind(this));
         }.bind(this));
@@ -697,7 +697,7 @@ class RobotRemoteServer {
                 res.status(200).send('Success!');
             }.bind(this))
             .catch(function(err){
-                this.err_logger.error('INDEX:' + err);
+                this.err_logger.error(err);
                 res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
             }.bind(this));
         }.bind(this));
