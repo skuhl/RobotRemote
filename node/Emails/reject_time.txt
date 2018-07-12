@@ -107,7 +107,7 @@ Re:Robot Remote: Time Slot Rejection
                      <td style="font-family: sans-serif; font-size: 14px; vertical-align: top;">
                         <p style="font-family: sans-serif; font-size: 24px; font-weight: normal; margin: 0; Margin-bottom: 15px;"><b>Robot Run <i style="font-size:14px; "> Robot Remote</i></b></p>
                         <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">Hello {name},</p>
-                        <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">Your time slot request has ben rejected because {reason}. If you are interested plase feel free to sign up for a different time.</p>
+                        <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">Your time slot request starting at {start_time} and ending at {end_time} has been rejected because {reason}. Please sign up for a different time.</p>
                        <!-- <table border="0" cellpadding="0" cellspacing="0" class="btn btn-primary" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; box-sizing: border-box;">
                           <tbody>
                             <tr>

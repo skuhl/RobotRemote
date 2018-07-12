@@ -17,6 +17,7 @@ const mysql = require('mysql2/promise');
 const MySQLStore = require('express-mysql-session')(session);
 const log4js = require('log4js');
 const log4js_template = require('../common/log4jstemplate');
+const client_utils = require('./www/js/utils.js');
 
 
 function getDefaultIfUndefined(curval, default_){
@@ -386,57 +387,6 @@ class RobotRemoteServer {
             //emit admin page
             res.status(200).send(html_fetcher(__dirname + '/www/Admin.html', req));
         }.bind(this));
-        
-        this._app.post('/ResendVerification.html', function(req, res){
-            if(req.body.username === undefined){
-                req.session.login_error = 'Must provide a username.';
-                res.redirect(302, '/Login.html');
-                return;
-            }
-
-            if(req.body.password === undefined){
-                req.session.login_error = 'Must provide a password.';
-                res.redirect(302, '/Login.html');
-                return;
-            }
-
-            user_auth.valid_user(req.body.username, req.body.password)
-            .then(function(info){
-                user_auth.needs_verification(info.id)
-                .then(function(obj){
-                    if(obj.needs_verif){
-                        //resend verification email
-                        let link = self._options['domain_name_secure'] + "/verify?email=" + encodeURIComponent(req.body.username) + "&email_tok=" + encodeURIComponent(obj.email_token);
-                        mail.mail(req.body.username, __dirname + '/Emails/confirm_email.txt', {link: link, name: req.body.username})
-                        .then(function(){
-                            req.session.login_error = 'Verification email resent.';
-                            res.redirect(302, '/Login.html');
-                        }.bind(this))
-                        .catch(function(err){
-                            this.err_logger.error('Encountered an error: ');
-                            this.err_logger.error(err);
-                            req.session.login_error = err.client_reason !== undefined ? err.client_reason : "Internal server error.";
-                            res.redirect(302, '/Login.html');
-                        }.bind(this));
-                    }else{
-                        req.session.login_error = 'Your email is already verified!';
-                        res.redirect(302, '/Login.html');
-                    }
-                }.bind(this))
-                .catch(function(err){
-                    this.err_logger.error('Encountered an error: ');
-                    this.err_logger.error(err);
-                    req.session.login_error = err.client_reason !== undefined ? err.client_reason : "Internal server error.";
-                    res.redirect(302, '/Login.html');
-                }.bind(this));  
-            }.bind(this))
-            .catch(function(err){
-                this.err_logger.error('Encountered an error: ');
-                this.err_logger.error(err);
-                req.session.login_error = err.client_reason !== undefined ? err.client_reason : "Internal server error.";
-                res.redirect(302, '/Login.html');
-            }.bind(this));
-        }.bind(this));
 
     }
 
@@ -535,6 +485,7 @@ class RobotRemoteServer {
         /* 
             Request to reject login request with given id
         */
+        //TODO CHANGE THIS ENDPOINT SO A REASON MAY BE PROVIDED (Change to post?)
         this._app.get('/admin/rejectloginrequest/:id', function(req, res){
             res.append('Cache-Control', "no-cache, no-store, must-revalidate");
             
@@ -557,8 +508,16 @@ class RobotRemoteServer {
             }
 
             db_fetch.delete_user_by_request(req.params.id).then(async function(user_info){
-                await mail.mail_to_user(user_info, __dirname + '/Emails/reject_user.txt', {});
+                //TODO figure out how this should work. Who should emails be sent to?
+                //Should it REALLY be mailer_email? Maybe it should be some other email,
+                //that can be configured to be a mailing list if needed or just forward an email.
+                let reason = req.body.reason !== undefined ? req.body.reason :
+                `an unspecified reason. Please contact <a href='mailto:${this._options['mailer_email']}'>${this._options['mailer_email']}</a> for more information.`;
+                
+                await mail.mail_to_user(user_info, __dirname + '/Emails/reject_user.txt', {name: user_info.email, reason: reason});
+                
                 res.status(200).send("Success");
+            
             }.bind(this))
             .catch(function(err){
                 this.err_logger.error(err);
@@ -623,8 +582,6 @@ class RobotRemoteServer {
             }
 
             db_fetch.adminify(req.params.id).then(function(user_id){
-                //Do we want a account terminated email??? my guess is nah
-                //mail.mail_to_user(user_id, __dirname + '/Emails/reject_user.txt', {});
                 res.status(200).send("Success");
             }.bind(this))
             .catch(function(err){
@@ -657,8 +614,6 @@ class RobotRemoteServer {
             }
 
             db_fetch.deAdminify(req.params.id).then(function(user_id){
-                //Do we want a account terminated email??? my guess is nah
-                //mail.mail_to_user(user_id, __dirname + '/Emails/reject_user.txt', {});
                 res.status(200).send("Success");
             }.bind(this))
             .catch(function(err){
@@ -692,8 +647,8 @@ class RobotRemoteServer {
             }
 
             db_fetch.accept_user(req.params.id)
-            .then(function(user_id){
-                mail.mail_to_user(user_id, __dirname + '/Emails/accepted_user.txt', {});
+            .then(function(user_info){
+                mail.mail_to_user(user_info.id, __dirname + '/Emails/accepted_user.txt', {name: user_info.email});
                 res.status(200).send('Success!');
             }.bind(this))
             .catch(function(err){
@@ -727,9 +682,16 @@ class RobotRemoteServer {
             }
 
             db_fetch.delete_timeslotrequest_admin(req.params.id)
-            .then(function(user_id){
-                    mail.mail_to_user(user_id, __dirname + '/Emails/reject_time.txt', {});
-                    res.status(200).send("Success");
+            .then(function(timeslot_info){
+                let reason = req.body.reason !== undefined ? req.body.reason :
+                `of an unspecified reason. Please contact <a href='mailto:${this._options['mailer_email']}'>${this._options['mailer_email']}</a> for more information.`;
+                
+                mail.mail_to_user(timeslot_info.user_info.id , __dirname + '/Emails/reject_time.txt', {name: timeslot_info.user_info.email, 
+                    reason: reason, 
+                    start_time: client_utils.DateTimeBeautify(timeslot_info.start_time), 
+                    end_time: client_utils.DateTimeBeautify(timeslot_info.end_time)});
+                
+                res.status(200).send("Success");
             }.bind(this))
             .catch(function(err){
                 this.err_logger.error(err);
@@ -761,8 +723,11 @@ class RobotRemoteServer {
             }
 
             db_fetch.accept_timeslot_request(req.params.id)
-            .then(function(user_id){
-                mail.mail_to_user(user_id, __dirname + '/Emails/accept_time.txt', {});
+            .then(function(timeslot_info){
+                mail.mail_to_user(user_id, __dirname + '/Emails/accept_time.txt', {name: timeslot_info.user_info.email, 
+                    reason: reason, 
+                    start_time: client_utils.DateTimeBeautify(timeslot_info.start_time), 
+                    end_time: client_utils.DateTimeBeautify(timeslot_info.end_time)});
                 res.status(200).send("Success");
             }.bind(this)).catch(function(err){
                 this.err_logger.error(err);
@@ -905,13 +870,66 @@ class RobotRemoteServer {
             res.append('Cache-Control', "no-cache, no-store, must-revalidate");
             user_auth.email_verify(req.query.email, req.query.email_tok).then(function(){
                 let admin_link = this._options['domain_name_secure'] + "/admin/Admin.html"; 
-                
+                //TODO send email that there are awaiting login requests.
                 mail.mail_to_admins(__dirname + '/Emails/new_confirmation.txt', {});
                 
                 res.redirect(303, '/Login.html');
             }.bind(this),function(err){
                 this.err_logger.error(err);
                 res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
+            }.bind(this));
+        }.bind(this));
+
+
+        //Resends verification email.
+        this._app.post('/resendverification', function(req, res){
+            if(req.body.username === undefined){
+                req.session.login_error = 'Must provide a username.';
+                res.redirect(302, '/Login.html');
+                return;
+            }
+
+            if(req.body.password === undefined){
+                req.session.login_error = 'Must provide a password.';
+                res.redirect(302, '/Login.html');
+                return;
+            }
+
+            user_auth.valid_user(req.body.username, req.body.password)
+            .then(function(info){
+                user_auth.needs_verification(info.id)
+                .then(function(obj){
+                    if(obj.needs_verif){
+                        //resend verification email
+                        let link = self._options['domain_name_secure'] + "/verify?email=" + encodeURIComponent(req.body.username) + "&email_tok=" + encodeURIComponent(obj.email_token);
+                        return mail.mail(req.body.username, __dirname + '/Emails/new_confirmation.txt', {link: link, name: req.body.username})
+                        .then(function(){
+                            req.session.login_error = 'Verification email resent.';
+                            res.redirect(302, '/Login.html');
+                        }.bind(this))
+                        .catch(function(err){
+                            this.err_logger.error('Encountered an error: ');
+                            this.err_logger.error(err);
+                            req.session.login_error = err.client_reason !== undefined ? err.client_reason : "Internal server error.";
+                            res.redirect(302, '/Login.html');
+                        }.bind(this));
+                    }else{
+                        req.session.login_error = 'Your email is already verified!';
+                        res.redirect(302, '/Login.html');
+                    }
+                }.bind(this))
+                .catch(function(err){
+                    this.err_logger.error('Encountered an error: ');
+                    this.err_logger.error(err);
+                    req.session.login_error = err.client_reason !== undefined ? err.client_reason : "Internal server error.";
+                    res.redirect(302, '/Login.html');
+                }.bind(this));  
+            }.bind(this))
+            .catch(function(err){
+                this.err_logger.error('Encountered an error: ');
+                this.err_logger.error(err);
+                req.session.login_error = err.client_reason !== undefined ? err.client_reason : "Internal server error.";
+                res.redirect(302, '/Login.html');
             }.bind(this));
         }.bind(this));
     }
@@ -987,7 +1005,8 @@ class RobotRemoteServer {
     }
 }
 
-if(process.argv[1] === __dirname + '/index.js'){
+
+if(!module.parent){
     const options = require('./settings.json');
     let server = new RobotRemoteServer(options);
     server.initApp();
@@ -999,6 +1018,10 @@ if(process.argv[1] === __dirname + '/index.js'){
 
     server.info_logger.info('Server listening on http://localhost:' + options['http_port'] + 
     ' and https://localhost:' + options['https_port']);
+
+    //SIGUSR2 must be used. SIGUSR1 is reserved for node.
+    //This tells the parent process that the server is started.
+    process.kill(process.ppid, 'SIGUSR2');
 }
 
 module.exports.RobotRemoteServer = RobotRemoteServer;

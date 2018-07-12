@@ -17,5 +17,5 @@ function SwitchToVerification(){
         extras[i].parentElement.removeChild(extras[i]);
     }
 
-    form_container.getElementsByTagName('form')[0].action = '/ResendVerification.html';
+    form_container.getElementsByTagName('form')[0].action = '/resendverification';
 }

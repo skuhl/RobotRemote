@@ -285,7 +285,7 @@ module.exports = {
         return true;        
     },
     delete_request: async function(req_id, user_id){   
-                
+        
         let [res, fields] = await pool.query("DELETE FROM timeslots WHERE user_id=? AND id=?", [user_id, req_id]);
     
         if(res.affectedRows <= 0){
@@ -306,7 +306,7 @@ module.exports = {
         let connection = await pool.getConnection();
         
         try{
-            let [res, fields] = await connection.query("SELECT user_id FROM timeslots WHERE id=?", [id]);
+            let [res, fields] = await connection.query("SELECT user_id, start_time, duration FROM timeslots WHERE id=?", [id]);
             
 
             if(res.length < 1){
@@ -316,7 +316,10 @@ module.exports = {
                 };
             }
 
-            var user_id = res[0].user_id;
+            var user = await this.get_user_by_id(res[0].user_id, connection);
+            var start_time = res[0].start_time;
+            var end_time = new Date(res[0].start_time.getTime() + res[0].duration * 1000);
+
 
             await connection.query("DELETE FROM timeslots WHERE id=?", [id]);
 
@@ -324,7 +327,7 @@ module.exports = {
             connection.release();
         }
 
-        return user_id;
+        return {user_info: user, start_time: start_time, end_time: end_time};
         
     },
 
@@ -346,10 +349,11 @@ module.exports = {
                 };
             }
 
-            var user_id = res0[0].user_id;
-            let start_date = res0[0].start_time;
-            let end_date = new Date(start_date.getTime() + res0[0].duration * 1000);
+            var user = await this.get_user_by_id(res[0].user_id, connection);
+            var start_date = res0[0].start_time;
+            var end_date = new Date(start_date.getTime() + res0[0].duration * 1000);
 
+            //TODO SEND EMAILS TO THESE GUYS
             //Delete overlapping timeslots
             await connection.query("DELETE FROM timeslots WHERE id!=? AND"+
             " ((start_time <= ? AND DATE_ADD(start_time, INTERVAL duration SECOND) >= ?)"+
@@ -462,7 +466,7 @@ module.exports = {
     accept_user: async function (req_id){
         let connection = await pool.getConnection();
         try{
-            let [res, fields] = await connection.query("SELECT id FROM users WHERE loginreq_id=?", [req_id]);
+            let [res, fields] = await connection.query("SELECT id, email FROM users WHERE loginreq_id=?", [req_id]);
             
             if(res.length != 1){
                 throw {
@@ -471,7 +475,7 @@ module.exports = {
                 };
             }
             
-            var user_id = res[0].id;
+            var user_info = {id: res[0].id, email: res[0].email};
             
             await connection.query("UPDATE users SET approved=1, loginreq_id=NULL WHERE id=?", [user_id]);
             
