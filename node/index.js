@@ -1001,7 +1001,6 @@ class RobotRemoteServer {
     }
 }
 
-
 if(!module.parent){
     const options = require('./settings.json');
     let server = new RobotRemoteServer(options);
@@ -1017,7 +1016,10 @@ if(!module.parent){
 
     //SIGUSR2 must be used. SIGUSR1 is reserved for node.
     //This tells the parent process that the server is started.
-    process.kill(process.ppid, 'SIGUSR2');
+    //The passed in (optional) argument is the pid to signal.
+    if(process.argv.length === 3){
+        process.kill(parseInt(process.argv[2]), 'SIGUSR2');
+    }
 }
 
 module.exports.RobotRemoteServer = RobotRemoteServer;

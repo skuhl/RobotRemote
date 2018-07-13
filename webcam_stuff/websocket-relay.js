@@ -12,8 +12,8 @@ var fs = require('fs'),
 const log4js_template = require('../common/log4jstemplate');
 
 //Q: why is this one with ` instead of ' ????
-if(process.argv.length != 3){
-	info_logger.info(`Usage: node websocket-relay <settings_file>`);
+if(process.argv.length < 3 || process.argv.length > 4){
+	info_logger.info(`Usage: node websocket-relay <settings_file> [<signal_pid>]`);
 	process.exit(1);
 }
 
@@ -236,4 +236,6 @@ info_logger.info('Awaiting WebSocket connections on ws://127.0.0.1:'+WEBSOCKET_P
 
 //SIGUSR2 must be used. SIGUSR1 is reserved for node.
 //This tells the parent process that the server is started.
-process.kill(process.ppid, 'SIGUSR2');
+if(process.argv.length === 4){
+	process.kill(parseInt(process.argv[3]), 'SIGUSR2');
+}

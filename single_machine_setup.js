@@ -550,7 +550,7 @@ function waitForNUsr2Signals(n){
 async function main(){
     let spawned = waitForNUsr2Signals(1);
     //Start up the webserver.
-    let webserver_proc = spawn('npm', ['run', 'start_webserver'], 
+    let webserver_proc = spawn('npm', ['run', 'start_webserver', '--', process.pid.toString()], 
         {stdio: [
             0, 
             process.stdout, 
@@ -567,7 +567,7 @@ async function main(){
 ${(()=>{
     let exec_arms = '';
     for(let i = 0; i<state.num_arms;i++){
-        exec_arms += `  let arm_${i}_proc = spawn('npm', ['run', 'start_arm', '--', 'arm-${i}.json'],
+        exec_arms += `  let arm_${i}_proc = spawn('npm', ['run', 'start_arm', '--', 'arm-${i}.json', process.pid.toString()],
         {stdio: [
             0, 
             process.stdout, 
@@ -586,7 +586,7 @@ ${(()=>{
     let exec_cameras = '';
     for(let i = 0; i<state.num_arms; i++){
         for(let j = 0; j<state.num_cameras; j++){
-            exec_cameras += `   let camera_${i}_${j}_proc = spawn('npm', ['run', 'start_camera', '--', 'webcam-${i}-${j}.json'],
+            exec_cameras += `   let camera_${i}_${j}_proc = spawn('npm', ['run', 'start_camera', '--', 'webcam-${i}-${j}.json', process.pid.toString()],
         {stdio: [
             0, 
             process.stdout, 
@@ -657,14 +657,13 @@ ${(()=>{
     process.on('SIGTERM', terminate_all);
     process.on('SIGINT', terminate_all);
     process.on('SIGHUP', terminate_all);
-
-    process.stdin.resume();
-
-    console.log('All processes started, use CTRL+C to kill.');
 }
 
 if(!module.parent){
-    main();
+    process.stdin.resume();
+    main().then(()=>{
+        console.log('All processes started, use CTRL+C to kill.');
+    });
 }
 
 `;

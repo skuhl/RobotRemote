@@ -4,8 +4,8 @@ const fs = require('fs');
 const PLCConnection = require('./modbus').PLCConnection;
 const log4js_template = require('../common/log4jstemplate');
 
-if(process.argv.length != 3){
-    info_logger.info('Usage: node server.js <options_file>');
+if(process.argv.length < 3 || process.argv.length > 4){
+    info_logger.info('Usage: node server.js <options_file> [<signal pid>]');
     process.exit(1);
 }
 
@@ -228,4 +228,6 @@ info_logger.info('Arm server listening for webserver on ' + options['socket_port
 
 //SIGUSR2 must be used. SIGUSR1 is reserved for node.
 //This tells the parent process that the server is started.
-process.kill(process.ppid, 'SIGUSR2');
+if(process.argv.length === 4){
+	process.kill(parseInt(process.argv[3]), 'SIGUSR2');
+}
