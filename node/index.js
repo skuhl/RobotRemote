@@ -724,8 +724,7 @@ class RobotRemoteServer {
 
             db_fetch.accept_timeslot_request(req.params.id)
             .then(function(timeslot_info){
-                mail.mail_to_user(user_id, __dirname + '/Emails/accept_time.txt', {name: timeslot_info.user_info.email, 
-                    reason: reason, 
+                mail.mail_to_user(timeslot_info.user_info, __dirname + '/Emails/accept_time.txt', {name: timeslot_info.user_info.email, 
                     start_time: client_utils.DateTimeBeautify(timeslot_info.start_time), 
                     end_time: client_utils.DateTimeBeautify(timeslot_info.end_time)});
                 res.status(200).send("Success");

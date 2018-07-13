@@ -331,8 +331,8 @@ module.exports = {
         
     },
 
-    /*Same general format as above. returns ID of the user 
-    who's timeslot was accepted. 
+    /*Same general format as above. returns an object with information
+    about the timeslot that was accepted
     */
     accept_timeslot_request: async function(id){
 
@@ -349,7 +349,7 @@ module.exports = {
                 };
             }
 
-            var user = await this.get_user_by_id(res[0].user_id, connection);
+            var user = await this.get_user_by_id(res0[0].user_id, connection);
             var start_date = res0[0].start_time;
             var end_date = new Date(start_date.getTime() + res0[0].duration * 1000);
 
@@ -371,7 +371,7 @@ module.exports = {
             connection.release();
         }
 
-        return user_id;
+        return {user_info: user, start_time: start_date, end_time: end_date};
     },
     /*
       Deletes the user and request associated with the passed in ID.
