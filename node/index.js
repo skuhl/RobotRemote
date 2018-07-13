@@ -512,7 +512,7 @@ class RobotRemoteServer {
                 //Should it REALLY be mailer_email? Maybe it should be some other email,
                 //that can be configured to be a mailing list if needed or just forward an email.
                 let reason = req.body.reason !== undefined ? req.body.reason :
-                `an unspecified reason. Please contact <a href='mailto:${this._options['mailer_email']}'>${this._options['mailer_email']}</a> for more information.`;
+                `an unspecified reason. Please contact <a href='mailto:${this._options['mailer_email']}'>${this._options['mailer_email']}</a> for more information`;
                 
                 await mail.mail_to_user(user_info, __dirname + '/Emails/reject_user.txt', {name: user_info.email, reason: reason});
                 
@@ -684,7 +684,7 @@ class RobotRemoteServer {
             db_fetch.delete_timeslotrequest_admin(req.params.id)
             .then(function(timeslot_info){
                 let reason = req.body.reason !== undefined ? req.body.reason :
-                `of an unspecified reason. Please contact <a href='mailto:${this._options['mailer_email']}'>${this._options['mailer_email']}</a> for more information.`;
+                `of an unspecified reason. Please contact <a href='mailto:${this._options['mailer_email']}'>${this._options['mailer_email']}</a> for more information`;
                 
                 mail.mail_to_user(timeslot_info.user_info.id , __dirname + '/Emails/reject_time.txt', {name: timeslot_info.user_info.email, 
                     reason: reason, 
