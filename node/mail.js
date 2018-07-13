@@ -40,8 +40,8 @@ module.exports = {
     //should be like the one returned from get_user_by_id
     mail_to_user: async function(user, file, variables){
         let user_info_promise;
-        if(typeof user_id == 'number'){
-            user_info_promise = db_fetch.get_user_by_id(user_id);
+        if(typeof user == 'number'){
+            user_info_promise = db_fetch.get_user_by_id(user);
         }else{
             user_info_promise = Promise.resolve(user);
         }
