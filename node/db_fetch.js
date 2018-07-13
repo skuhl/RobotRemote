@@ -477,7 +477,7 @@ module.exports = {
             
             var user_info = {id: res[0].id, email: res[0].email};
             
-            await connection.query("UPDATE users SET approved=1, loginreq_id=NULL WHERE id=?", [user_id]);
+            await connection.query("UPDATE users SET approved=1, loginreq_id=NULL WHERE id=?", [user_info.id]);
             
             await connection.query("DELETE FROM loginrequests WHERE id=?", req_id);
 
@@ -485,7 +485,7 @@ module.exports = {
             connection.release();
         }
 
-        return user_id;
+        return user_info;
     }
 };
 
