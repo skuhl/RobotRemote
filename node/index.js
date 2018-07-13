@@ -800,7 +800,7 @@ class RobotRemoteServer {
             }
 
             let date = new Date(req.body.start_time);
-            //TODO make this check more robust
+            //TODO make this check more robust (Only works if 60 % time_quantum = 0)
             //This should check that it starts on a time quantum
             if((date.getMinutes() % time_quantum) != 0){
                 res.status(400).send('Requested time not a multiple of the time quantum');
@@ -822,12 +822,8 @@ class RobotRemoteServer {
 
                 let admin_link = self._options['domain_name_secure'] + "/admin/Admin.html"; 
                 
-                smtpTransport.sendMail({
-                    to: self._options['admin_email'],
-                    from: self._options['mailer_email'],
-                    subject: "User " + req.query.email + " Requested a timeslot.",
-                    html: "User " + req.query.email + " has requeste a timeslot. Please visit <a href='" + admin_link + "'> the admin control panel </a> to accept or reject."
-                }).then(function(res){
+                mail.mail_to_admins('Emails/new_request.txt', {})
+                .then(function(res){
                     this.info_logger.info("Sent mail to admin.");    
                 }.bind(this), function(err){
                     this.err_logger.error('Failed to send mail to admin!' + err);

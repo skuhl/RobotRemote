@@ -233,3 +233,7 @@ var streamServer = http.createServer( function(request, response) {
 
 info_logger.info('Listening for incomming MPEG-TS Stream on http://127.0.0.1:'+STREAM_PORT+'/');
 info_logger.info('Awaiting WebSocket connections on ws://127.0.0.1:'+WEBSOCKET_PORT+'/<secret>');
+
+//SIGUSR2 must be used. SIGUSR1 is reserved for node.
+//This tells the parent process that the server is started.
+process.kill(process.ppid, 'SIGUSR2');

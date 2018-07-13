@@ -225,3 +225,7 @@ wsServer.listen(options['websocket_port']);
 webserver_comm.listen(options['socket_port']);
 
 info_logger.info('Arm server listening for webserver on ' + options['socket_port']);
+
+//SIGUSR2 must be used. SIGUSR1 is reserved for node.
+//This tells the parent process that the server is started.
+process.kill(process.ppid, 'SIGUSR2');

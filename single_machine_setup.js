@@ -536,79 +536,99 @@ function getCloseFunction(process_name){
     }
 }
 
-//Start up the webserver.
-let webserver_proc = spawn('npm', ['run', 'start_webserver'], 
-    {stdio: [
-        0, 
-        process.stdout, 
-        process.stderr]
-    }
-);
+function waitForNUsr2Signals(n){
+    n = n === undefined ? 1 : n;
+    return new Promise(function(resolve, reject){
+        process.on('SIGUSR2', function(){
+            n--;
+            if(n <= 0){
+                resolve();
+            }
+        })
+    });
+}
+async function main(){
+    let spawned = waitForNUsr2Signals(1);
+    //Start up the webserver.
+    let webserver_proc = spawn('npm', ['run', 'start_webserver'], 
+        {stdio: [
+            0, 
+            process.stdout, 
+            process.stderr]
+        }
+    );
 
-webserver_proc.on('close', getCloseFunction('Webserver'));
+    webserver_proc.on('close', getCloseFunction('Webserver'));
 
-//Start up arm servers
+    await spawned;
+    
+    //Start up arm servers
+    spawned = waitForNUsr2Signals(${state.num_arms});
 ${(()=>{
     let exec_arms = '';
     for(let i = 0; i<state.num_arms;i++){
-        exec_arms += `let arm_${i}_proc = spawn('npm', ['run', 'start_arm', '--', 'arm-${i}.json'],
-    {stdio: [
-        0, 
-        process.stdout, 
-        process.stderr]
-    }       
-);
-arm_${i}_proc.on('close', getCloseFunction('Arm${i}'));\n`;
+        exec_arms += `  let arm_${i}_proc = spawn('npm', ['run', 'start_arm', '--', 'arm-${i}.json'],
+        {stdio: [
+            0, 
+            process.stdout, 
+            process.stderr]
+        }       
+    );
+    arm_${i}_proc.on('close', getCloseFunction('Arm${i}'));\n`;
     }
     return exec_arms;
 })()}
-//start up camera servers
+    await spawned;
+
+    spawned = waitForNUsr2Signals(${state.num_arms * state.num_cameras});
+    //start up camera servers
 ${(()=>{
     let exec_cameras = '';
     for(let i = 0; i<state.num_arms; i++){
         for(let j = 0; j<state.num_cameras; j++){
-            exec_cameras += `let camera_${i}_${j}_proc = spawn('npm', ['run', 'start_camera', '--', 'webcam-${i}-${j}.json'],
-    {stdio: [
-        0, 
-        process.stdout, 
-        process.stderr]
-    }
-);
-camera_${i}_${j}_proc.on('close', getCloseFunction('Camera(Arm${i}) ${j}'));\n`
+            exec_cameras += `   let camera_${i}_${j}_proc = spawn('npm', ['run', 'start_camera', '--', 'webcam-${i}-${j}.json'],
+        {stdio: [
+            0, 
+            process.stdout, 
+            process.stderr]
+        }
+    );
+    camera_${i}_${j}_proc.on('close', getCloseFunction('Camera(Arm${i}) ${j}'));\n`
         }
     }
     return exec_cameras;
 })()}
-//Boot up ffmpeg streams
+    await spawned;
+    //Boot up ffmpeg streams
 ${(()=>{
     let exec_ffmpeg = '';
     for(let i = 0; i<state.num_arms; i++){
         for(let j = 0; j<state.num_cameras; j++){
             //TODO fix this so that this could work on windows too (change v4l2 to DirectShow or whatever)
             //TODO add configuration for resolution of camera, maybe
-            exec_ffmpeg += `let ffmpeg_${i}_${j}_proc = spawn('ffmpeg', ['-nostdin', '-loglevel', 'fatal', '-nostats', '-f', 'v4l2', 
-    '-framerate', '24', '-video_size', '640x480', '-i', '/dev/video${i*state.num_cameras + j}', '-f', 'mpegts',
-    '-codec:v', 'mpeg1video', '-s', '640x480', '-b:v', '1000k', '-bf', '0', 'http://localhost:${CAMERA_PORTS_START + i*state.num_cameras + j*3 + 1}'],
-        {stdio:[
-            0, 
-            process.stdout, 
-            process.stderr]
-        }   
-);
-ffmpeg_${i}_${j}_proc.on('close', getCloseFunction('FFmpeg(Arm${i}) ${j}'));\n\n`;
+            exec_ffmpeg += `    let ffmpeg_${i}_${j}_proc = spawn('ffmpeg', ['-nostdin', '-loglevel', 'fatal', '-nostats', '-f', 'v4l2', 
+        '-framerate', '24', '-video_size', '640x480', '-i', '/dev/video${i*state.num_cameras + j}', '-f', 'mpegts',
+        '-codec:v', 'mpeg1video', '-s', '640x480', '-b:v', '1000k', '-bf', '0', 'http://localhost:${CAMERA_PORTS_START + i*state.num_cameras + j*3 + 1}'],
+            {stdio:[
+                0, 
+                process.stdout, 
+                process.stderr]
+            }   
+        );
+        ffmpeg_${i}_${j}_proc.on('close', getCloseFunction('FFmpeg(Arm${i}) ${j}'));\n\n`;
         }
     }
     return exec_ffmpeg;
 })()}
 
-//Terminate all when this process gets SIGTERM
-function terminate_all(){
-    console.log('Killing all processes...');
-    webserver_proc.kill('SIGTERM');
+    //Terminate all when this process gets SIGTERM
+    function terminate_all(){
+        console.log('Killing all processes...');
+        webserver_proc.kill('SIGTERM');
 ${(()=>{
     let kill_arms = '';
     for(let i = 0; i < state.num_arms; i++){
-        kill_arms += `    arm_${i}_proc.kill('SIGTERM');\n`;
+        kill_arms += `       arm_${i}_proc.kill('SIGTERM');\n`;
     }
     return kill_arms;
 })()}
@@ -616,31 +636,37 @@ ${(()=>{
     let kill_cams = '';
     for(let i = 0; i < state.num_arms; i++){
         for(let j = 0; j < state.num_cameras; j++){
-            kill_cams += `    camera_${i}_${j}_proc.kill('SIGTERM');\n`;
+            kill_cams += `        camera_${i}_${j}_proc.kill('SIGTERM');\n`;
         }
     }
     return kill_cams;
 })()}
-    //ffmpeg should die when the cameras die, but just in case...
+       //ffmpeg should die when the cameras die, but just in case...
 ${(()=>{
     let ffmpeg_kill = '';
     for(let i = 0; i < state.num_arms; i++){
         for(let j = 0; j < state.num_cameras; j++){
-            ffmpeg_kill += `    ffmpeg_${i}_${j}_proc.kill('SIGTERM');\n`;
+            ffmpeg_kill += `       ffmpeg_${i}_${j}_proc.kill('SIGTERM');\n`;
         }
     }
     return ffmpeg_kill;
 })()}
-    process.exit(0);
+        process.exit(0);
+    }
+
+    process.on('SIGTERM', terminate_all);
+    process.on('SIGINT', terminate_all);
+    process.on('SIGHUP', terminate_all);
+
+    process.stdin.resume();
+
+    console.log('All processes started, use CTRL+C to kill.');
 }
 
-process.on('SIGTERM', terminate_all);
-process.on('SIGINT', terminate_all);
-process.on('SIGHUP', terminate_all);
+if(!module.parent){
+    main();
+}
 
-process.stdin.resume();
-
-console.log('All processes started, use CTRL+C to kill.');
 `;
         
     fs.writeFileSync(__dirname + '/run.js', script, {flags: 'w'});
