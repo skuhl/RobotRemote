@@ -107,12 +107,12 @@ Robot Remote: Account Rejected
                     <td style="font-family: sans-serif; font-size: 14px; vertical-align: top;">
                     <p style="font-family: sans-serif; font-size: 24px; font-weight: normal; margin: 0; Margin-bottom: 15px;"><b>Robot Run <i style="font-size:14px; "> Robot Remote</i></b></p>                        
                     <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">Hello {name},</p>
-                    <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">Your account request has been rejected due to {reason}.</p>
+                    <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">Thank you for your intrest in Robot Remote but, your account request has been rejected. Apologies for any inconvenience this may have caused.</p>
                     </td>
                 </tr>
                 </table>
-                    <!--<p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">Some other information or something maybe?</p> -->
-                <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">Thank you and enjoy from the Robot Remote Team.</p>
+                    <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">If you have any questions about why your time slot was rejected, please email {email} with your concerns.</p>
+                <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">Thank you from the Robot Remote Team.</p>
             </td>
             </tr>
         </table>
