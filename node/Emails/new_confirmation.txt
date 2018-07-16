@@ -1,4 +1,4 @@
-Re:Robot Remote: Confirm Email
+Re: Robot Remote: Confirm Email
 
 <!doctype html>
 <html>
@@ -124,7 +124,7 @@ Re:Robot Remote: Confirm Email
                           </tbody>
                         </table>
                         <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">If the button does not work please copy and paste this link into your browser: {link} </p>
-                        <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">Thank you and enjoy from the Robot Remote team.</p>
+                        <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">Thank you and enjoy from the Robot Remote Team.</p>
                       </td>
                     </tr>
                   </table>

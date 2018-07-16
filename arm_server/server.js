@@ -2,23 +2,10 @@ const https = require('https');
 const WebSocket = require('ws');
 const fs = require('fs');
 const PLCConnection = require('./modbus').PLCConnection;
+const log4js_template = require('../common/log4jstemplate');
 
-const log4js = require('log4js');
-log4js.configure({
-    appenders: {
-        info_log: { type: 'file', filename: 'info.log' },
-        err_log: { type: 'file', filename: 'err.log' }
-      },
-      categories: {
-        default: {appenders: [ 'info_log' ], level: 'info'}
-      }
-});
-
-const info_logger = log4js.getLogger('default');
-const err_logger = log4js.getLogger('default');
-
-if(process.argv.length != 3){
-    info_logger.info('SERVER: Usage: node server.js <options_file>');
+if(process.argv.length < 3 || process.argv.length > 4){
+    info_logger.info('Usage: node server.js <options_file> [<signal pid>]');
     process.exit(1);
 }
 
@@ -37,6 +24,27 @@ function get_file_relative_dirname(str){
 }
 
 let options = require(process.argv[2].startsWith('/') ? process.argv[2] : './' + process.argv[2]);
+
+const log4js = require('log4js');
+let appenders = {
+	info_log: { type: 'file', filename: 'info.log', layout: log4js_template},
+	err_log: { type: 'file', filename: 'err.log', layout: log4js_template}
+}
+
+if(options.multiprocess_logging){
+	appenders.multiprocess = { type: 'multiprocess', mode: 'worker', loggerPort: options.multiprocess_logging_port},
+	appenders.multiprocess_layout = {type: '../common/layout_appender', appender: 'multiprocess', layout: log4js_template}
+}
+
+log4js.configure({
+    appenders: appenders,
+    categories: {
+        default: {appenders: [ options.multiprocess_logging ? 'multiprocess_layout' : 'info_log' ], level: options.log_level}
+    }
+});
+
+const info_logger = log4js.getLogger();
+const err_logger = log4js.getLogger();
 
 let server_key = fs.readFileSync(get_file_relative_dirname(options['key_file']));
 let server_cert = fs.readFileSync(get_file_relative_dirname(options['cert_file']));
@@ -75,7 +83,6 @@ socketServer.connectionCount = 0;
 socketServer.on('connection', function(socket, upgradeReq){
     socket.isAlive = true;
 
-	//Q: does this need special handeling?
     info_logger.info(
 		'New WebSocket Connection: ', 
 		(upgradeReq || socket.upgradeReq).socket.remoteAddress,
@@ -86,7 +93,7 @@ socketServer.on('connection', function(socket, upgradeReq){
     socket.on('pong', heartbeat);
 
     socket.on('message', function(message){
-        info_logger.info('SERVER: Received message: ' + message);
+        info_logger.info('Received message: ' + message);
         plc.setPressed(JSON.parse(message).pressed);
     });
 
@@ -146,7 +153,7 @@ let webserver_comm = https.createServer(https_options, function(req, res){
                 clearTimeout(secret_timer);
                 secret_timer = null;
             }
-            info_logger.info('SERVER: Got payload: ' + payload);
+            info_logger.info('Got payload: ' + payload);
             //TODO kill current socket connection on timeout;
             secret = payload.secret;
             setTimeout(function(){
@@ -158,7 +165,7 @@ let webserver_comm = https.createServer(https_options, function(req, res){
             res.end('Success');
         
         }).catch((err)=>{
-            err_logger.error('SERVER: Error setting secret:' + err);
+            err_logger.error('Error setting secret:' + err);
             
             res.writeHead(err.err_code !== undefined ? err.err_code : 500);
             res.end(err.message);
@@ -186,15 +193,15 @@ wsServer.on('upgrade', function(request, socket, head){
 
 	 //Q:not sure if we want this in the error log or not it seems like error checking tho
     if(secret == null ||  request.url.substring(1).split('/')[0] != encodeURIComponent(secret)){
-	     err_logger.error('SERVER: Invalid incoming secret, refuse to connect.');
-        err_logger.error('SERVER: Sent ' + request.url.substring(1).split('/')[0]);
-        err_logger.error('SERVER: Secret should be ' + secret);
+	    err_logger.error('Invalid incoming secret, refuse to connect.');
+        err_logger.error('Sent ' + request.url.substring(1).split('/')[0]);
+        err_logger.error('Secret should be ' + secret);
         socket.destroy();
         return;
     }
 
     if(socketServer.connectionCount > 0){
-        err_logger.error('SERVER: Already a connection.')
+        err_logger.error('Already a connection.')
         socket.destroy();
         return;
     }
@@ -204,7 +211,7 @@ wsServer.on('upgrade', function(request, socket, head){
     socket.on('close', function(code, message){
         socketServer.connectionCount--;
 		info_logger.info(
-			'SERVER: Disconnected WebSocket ('+socketServer.connectionCount+' total)'
+			'Disconnected WebSocket ('+socketServer.connectionCount+' total)'
 		);
     });
 
@@ -216,3 +223,11 @@ wsServer.on('upgrade', function(request, socket, head){
 
 wsServer.listen(options['websocket_port']);
 webserver_comm.listen(options['socket_port']);
+
+info_logger.info('Arm server listening for webserver on ' + options['socket_port']);
+
+//SIGUSR2 must be used. SIGUSR1 is reserved for node.
+//This tells the parent process that the server is started.
+if(process.argv.length === 4){
+	process.kill(parseInt(process.argv[3]), 'SIGUSR2');
+}

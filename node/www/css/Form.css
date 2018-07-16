@@ -150,3 +150,16 @@ textarea {
    padding-top: 0;
    font-size: 14px;
 }
+
+.extraSignin {
+    font-size: 10px;
+    float: left;
+    margin: 5px 0 0 18px;
+    color: blue;
+    cursor: pointer;
+}
+
+.extraSignin:hover {
+    color:blue;
+    text-decoration: underline;
+}

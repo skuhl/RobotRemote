@@ -5,6 +5,8 @@ const fs = require('fs');
 const ARM_PORTS_START = 3002;
 const MAX_ARMS = 1;
 const CAMERA_PORTS_START = ARM_PORTS_START + 2*MAX_ARMS + 1;
+const MAX_CAMERAS = 3;
+const CAMERA_PORTS_END = CAMERA_PORTS_START + MAX_CAMERAS * 3;
 
 //Logger for standard out no time stamp
 const log4js = require('log4js');
@@ -469,7 +471,7 @@ async function setupArmsAndCameras(state){
     state.num_cameras = num_results.cameras;
     state.num_arms = num_results.arms;
 
-    let base_pin_assignments = require('./python/settings_example.json').pin_assignments;
+    let base_pin_assignments = require('./arm_server/settings_example.json').pin_assignments;
     //generate all python settings
     state.node_options.actuator_servers = [];
     for(let i = 0; i < state.num_arms; i++){
@@ -491,6 +493,9 @@ async function setupArmsAndCameras(state){
        opts.client_ca_file = "cert/cacert.pem";
        opts.debug = false;
        opts.pin_assignments = base_pin_assignments;
+       opts.log_level = 'info';
+       opts.multiprocess_logging = true;
+       opts.multiprocess_logging_port = CAMERA_PORTS_END + 1;
 
        let webserver_cam_opts = [];
        //camera settings
@@ -503,6 +508,9 @@ async function setupArmsAndCameras(state){
             cam_opts.cert = "cert/cert.pem";
             cam_opts.key = "cert/key.pem";
             cam_opts.client_ca = "cert/cacert.pem";
+            cam_opts.log_level = 'info';
+            cam_opts.multiprocess_logging = true;
+            cam_opts.multiprocess_logging_port = CAMERA_PORTS_END + 1;
             
             webserver_cam_opts.push({ip: '127.0.0.1', websock_port: cam_opts.websock_port, secure: true, comm_port: cam_opts.webserver_listen_port});
 
@@ -522,74 +530,105 @@ async function generateRunScript(state){
     let script = 
 `const { spawn } = require('child_process');
 const fs = require('fs');
-
-//Start up the webserver.
-let webserver_proc = spawn('npm', ['run', 'start_webserver'], 
-    {stdio: [
-        0, 
-        process.stdout, 
-        process.stderr]
+function getCloseFunction(process_name){
+    return function(code, signal){
+        console.log('Process ' + process_name + ' exited with code ' + code + ' caused by signal ' + signal);
     }
-);
-//Start up arm servers
+}
+
+function waitForNUsr2Signals(n){
+    n = n === undefined ? 1 : n;
+    return new Promise(function(resolve, reject){
+        process.on('SIGUSR2', function(){
+            n--;
+            if(n <= 0){
+                resolve();
+            }
+        })
+    });
+}
+async function main(){
+    let spawned = waitForNUsr2Signals(1);
+    //Start up the webserver.
+    let webserver_proc = spawn('npm', ['run', 'start_webserver', '--', process.pid.toString()], 
+        {stdio: [
+            0, 
+            process.stdout, 
+            process.stderr]
+        }
+    );
+
+    webserver_proc.on('close', getCloseFunction('Webserver'));
+
+    await spawned;
+    
+    //Start up arm servers
+    spawned = waitForNUsr2Signals(${state.num_arms});
 ${(()=>{
     let exec_arms = '';
     for(let i = 0; i<state.num_arms;i++){
-        exec_arms += `let arm_${i}_proc = spawn('npm', ['run', 'start_arm', '--', 'arm-${i}.json'],
-    {stdio: [
-        0, 
-        process.stdout, 
-        process.stderr]
-    }       
-);\n`;
+        exec_arms += `  let arm_${i}_proc = spawn('npm', ['run', 'start_arm', '--', 'arm-${i}.json', process.pid.toString()],
+        {stdio: [
+            0, 
+            process.stdout, 
+            process.stderr]
+        }       
+    );
+    arm_${i}_proc.on('close', getCloseFunction('Arm${i}'));\n`;
     }
     return exec_arms;
 })()}
-//start up camera servers
+    await spawned;
+
+    spawned = waitForNUsr2Signals(${state.num_arms * state.num_cameras});
+    //start up camera servers
 ${(()=>{
     let exec_cameras = '';
     for(let i = 0; i<state.num_arms; i++){
         for(let j = 0; j<state.num_cameras; j++){
-            exec_cameras += `let camera_${i}_${j}_proc = spawn('npm', ['run', 'start_camera', '--', 'webcam-${i}-${j}.json'],
-    {stdio: [
-        0, 
-        process.stdout, 
-        process.stderr]
-    }
-);\n`
+            exec_cameras += `   let camera_${i}_${j}_proc = spawn('npm', ['run', 'start_camera', '--', 'webcam-${i}-${j}.json', process.pid.toString()],
+        {stdio: [
+            0, 
+            process.stdout, 
+            process.stderr]
+        }
+    );
+    camera_${i}_${j}_proc.on('close', getCloseFunction('Camera(Arm${i}) ${j}'));\n`
         }
     }
     return exec_cameras;
 })()}
-//Boot up ffmpeg streams
+    await spawned;
+    //Boot up ffmpeg streams
 ${(()=>{
     let exec_ffmpeg = '';
     for(let i = 0; i<state.num_arms; i++){
         for(let j = 0; j<state.num_cameras; j++){
             //TODO fix this so that this could work on windows too (change v4l2 to DirectShow or whatever)
             //TODO add configuration for resolution of camera, maybe
-            exec_ffmpeg += `let ffmpeg_${i}_${j}_proc = spawn('ffmpeg', ['-nostdin', '-loglevel', 'fatal', '-nostats', '-f', 'v4l2', 
-    '-framerate', '24', '-video_size', '640x480', '-i', '/dev/video${i*state.num_cameras + j}', '-f', 'mpegts',
-    '-codec:v', 'mpeg1video', '-s', '640x480', '-b:v', '1000k', '-bf', '0', 'http://localhost:${CAMERA_PORTS_START + i*state.num_cameras + j*3 + 1}'],
-        {stdio:[
-            0, 
-            process.stdout, 
-            process.stderr]
-        }   
-);\n`;
+            exec_ffmpeg += `    let ffmpeg_${i}_${j}_proc = spawn('ffmpeg', ['-nostdin', '-loglevel', 'fatal', '-nostats', '-f', 'v4l2', 
+        '-framerate', '24', '-video_size', '640x480', '-i', '/dev/video${i*state.num_cameras + j}', '-f', 'mpegts',
+        '-codec:v', 'mpeg1video', '-s', '640x480', '-b:v', '1000k', '-bf', '0', 'http://localhost:${CAMERA_PORTS_START + i*state.num_cameras + j*3 + 1}'],
+            {stdio:[
+                0, 
+                process.stdout, 
+                process.stderr]
+            }   
+        );
+        ffmpeg_${i}_${j}_proc.on('close', getCloseFunction('FFmpeg(Arm${i}) ${j}'));\n\n`;
         }
     }
     return exec_ffmpeg;
 })()}
 
-//Terminate all when this process gets SIGTERM
-function terminate_all(){
-    logger.info('Killing all processes...');
-    webserver_proc.kill('SIGTERM');
+    //Terminate all when this process gets SIGTERM
+    function terminate_all(){
+        console.log('Killing all processes...');
+        webserver_proc.kill('SIGTERM');
 ${(()=>{
     let kill_arms = '';
     for(let i = 0; i < state.num_arms; i++){
-        kill_arms += `    arm_${i}_proc.kill('SIGTERM');\n`;
+        kill_arms += `       arm_${i}_proc.kill('SIGTERM');\n`;
     }
     return kill_arms;
 })()}
@@ -597,31 +636,36 @@ ${(()=>{
     let kill_cams = '';
     for(let i = 0; i < state.num_arms; i++){
         for(let j = 0; j < state.num_cameras; j++){
-            kill_cams += `    camera_${i}_${j}_proc.kill('SIGTERM');\n`;
+            kill_cams += `        camera_${i}_${j}_proc.kill('SIGTERM');\n`;
         }
     }
     return kill_cams;
 })()}
-    //ffmpeg should die when the cameras die, but just in case...
+       //ffmpeg should die when the cameras die, but just in case...
 ${(()=>{
     let ffmpeg_kill = '';
     for(let i = 0; i < state.num_arms; i++){
         for(let j = 0; j < state.num_cameras; j++){
-            ffmpeg_kill += `    ffmpeg_${i}_${j}_proc.kill('SIGTERM');\n`;
+            ffmpeg_kill += `       ffmpeg_${i}_${j}_proc.kill('SIGTERM');\n`;
         }
     }
     return ffmpeg_kill;
 })()}
-    process.exit(0);
+        process.exit(0);
+    }
+
+    process.on('SIGTERM', terminate_all);
+    process.on('SIGINT', terminate_all);
+    process.on('SIGHUP', terminate_all);
 }
 
-process.on('SIGTERM', terminate_all);
-process.on('SIGINT', terminate_all);
-process.on('SIGHUP', terminate_all);
+if(!module.parent){
+    process.stdin.resume();
+    main().then(()=>{
+        console.log('All processes started, use CTRL+C to kill.');
+    });
+}
 
-process.stdin.resume();
-
-logger.info('All processes started, use CTRL+C to kill.');
 `;
         
     fs.writeFileSync(__dirname + '/run.js', script, {flags: 'w'});
@@ -707,16 +751,22 @@ async function generateServerCerts(state){
 }
 
 async function finalizeOptions(state){
+    state.node_options.log_level = 'info';
+    state.node_options.multiprocess_logging = true;
+    state.node_options.multiprocess_logging_port = CAMERA_PORTS_END + 1;
+
     fs.writeFileSync(__dirname + '/node/settings.json', JSON.stringify(state.node_options, undefined, 4), {flags:'w'});
     return state;
 }
 
 process.on('uncaughtException', function (exception) {
-    logger.info(exception);
+    logger.fatal(exception);
+    process.exit(1);
 });
 
 process.on('unhandledRejection', (reason, p) => {
-    logger.info("Unhandled Rejection at: Promise ", p, " reason: ", reason);
+    logger.fatal("Unhandled Rejection at: Promise ", p, " reason: ", reason);
+    process.exit(1);
 });
 
 main().then(()=>{

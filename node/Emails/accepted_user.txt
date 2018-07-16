@@ -123,8 +123,8 @@ Robot Remote: Account Approved
                             </tr>
                           </tbody>
                         </table>
-                        <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">Some other information or something maybe?</p>
-                        <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">Thank you and enjoy from the Robot Remote team.</p>
+                        <!--<p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">Some other information or something maybe?</p> -->
+                        <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">Thank you and enjoy from the Robot Remote Team.</p>
                       </td>
                     </tr>
                   </table>

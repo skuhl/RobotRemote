@@ -12,19 +12,6 @@ const TEST_DB_NAME = 'RobotRemoteTest';
 const SLOW_HTTP_MS = 300;
 
 const log4js = require('log4js');
-log4js.configure({
-  appenders: {
-    info_log: { type: 'file', filename: 'info.log' },
-    err_log: { type: 'file', filename: 'err.log' }
-  },
-  categories: {
-    info: { appenders: [ 'info' ], level: 'info' },
-    err:  { appenders: ['err_log'], level: 'error'}
-  }
-});
-
-const info_logger = log4js.getLogger('info');
-const err_logger = log4js.getLogger('err');
 
 let pool;
 let server;
@@ -58,7 +45,7 @@ describe('Tests', function(){
     after(function(){
         pool.end();
         //Q: err?
-        err_logger.log('TEST: Dumping possible open connections: (diagnose these if mocha stays open)');
+        console.log('TEST: Dumping possible open connections: (diagnose these if mocha stays open)');
         wtf.dump();
     });
 

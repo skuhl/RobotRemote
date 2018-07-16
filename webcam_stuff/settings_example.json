@@ -5,5 +5,8 @@
     "ssl": true,
     "cert": "cert/cert.pem",
     "key": "cert/key.pem",
-    "client_ca" : "cert/cacert.pem"
+    "client_ca" : "cert/cacert.pem",
+    "log_level": "info",
+    "multiprocess_logging": true,
+    "multiprocess_logging_port": 10000 
 }

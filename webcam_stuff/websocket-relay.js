@@ -5,34 +5,43 @@
 // ffmpeg -i <some input> -f mpegts http://localhost:8081
 
 // Written by Dominic Szablewski for jsmpeg, modified for Robot Remote.
-
-const log4js = require('log4js');
-log4js.configure({
-    appenders: {
-        info_log: { type: 'file', filename: 'info.log' },
-        err_log: { type: 'file', filename: 'err.log' }
-      },
-      categories: {
-        default: {appenders: [ 'info_log' ], level: 'info'}
-      }
-});
-
-const info_logger = log4js.getLogger('default');
-const err_logger = log4js.getLogger('default');
-
 var fs = require('fs'),
 	http = require('http'),
 	WebSocket = require('ws'),
 	https = require('https');
+const log4js_template = require('../common/log4jstemplate');
+
 //Q: why is this one with ` instead of ' ????
-if(process.argv.length != 3){
-	info_logger.info(`WEBSOCKET_RELAY: Usage: node websocket-relay <settings_file>`);
+if(process.argv.length < 3 || process.argv.length > 4){
+	info_logger.info(`Usage: node websocket-relay <settings_file> [<signal_pid>]`);
 	process.exit(1);
 }
 
 if(!process.argv[2].startsWith('/')) process.argv[2] = './' + process.argv[2];
 
+
 var options = require(process.argv[2]);
+
+const log4js = require('log4js');
+let appenders = {
+	info_log: { type: 'file', filename: 'info.log', layout: log4js_template},
+	err_log: { type: 'file', filename: 'err.log', layout: log4js_template}
+}
+
+if(options.multiprocess_logging){
+	appenders.multiprocess = { type: 'multiprocess', mode: 'worker', loggerPort: options.multiprocess_logging_port},
+	appenders.multiprocess_layout = {type: '../common/layout_appender', appender: 'multiprocess', layout: log4js_template}
+}
+
+log4js.configure({
+    appenders: appenders,
+    categories: {
+        default: {appenders: [ options.multiprocess_logging ? 'multiprocess_layout' : 'info_log' ], level: options.log_level}
+    }
+});
+
+const info_logger = log4js.getLogger();
+const err_logger = log4js.getLogger();
 
 var STREAM_SECRET = null,
 	STREAM_PORT = options['stream_port'],
@@ -51,7 +60,7 @@ var socketServer = new WebSocket.Server({
 socketServer.connectionCount = 0;
 socketServer.on('connection', function(socket, upgradeReq) {
 	info_logger.info(
-		'WEBSOCKET_RELAY: New WebSocket Connection: ', 
+		'New WebSocket Connection: ', 
 		(upgradeReq || socket.upgradeReq).socket.remoteAddress,
 		(upgradeReq || socket.upgradeReq).headers['user-agent'],
 		'('+socketServer.connectionCount+' total)'
@@ -91,7 +100,7 @@ function read_all_data(readable, encoding, byte_cap){
 
 function webserver_comm(req, res){
 	if(req.url === '/' && req.method === 'POST'){
-		info_logger.info('WEBSOCKET_RELAY: Attempting to set secret...')
+		info_logger.info('Attempting to set secret...')
 		read_all_data(req, 'utf8')
 		.then((data) => {
 			let json = JSON.parse(data);
@@ -121,12 +130,12 @@ function webserver_comm(req, res){
 				});
 			}, json.expires_in);
 			
-			info_logger.info('WEBSOCKET_RELAY: Secret set.');
+			info_logger.info('Secret set.');
 			
 			res.writeHead(200);
 			res.write('Successfully received and executed request.');
 		}).catch((err) => {
-			err_logger.error('WEBSOCKET_RELAY: Error: ' + err);
+			err_logger.error(err);
 			res.writeHead(500);
 			res.write('Error occured while processing your request.');
 		}).finally(()=>{
@@ -161,16 +170,16 @@ if(options['ssl']){
 }
 
 wsServer.on('upgrade', function(request, socket, head){
-	info_logger.info('WEBSOCKET_RELAY: Connection attempted, trying to upgrade...');
+	info_logger.info('Connection attempted, trying to upgrade...');
 
 	if(STREAM_SECRET == null ||  request.url.substring(1).split('/')[0] != encodeURIComponent(STREAM_SECRET)){
-		err_logger.error('WEBSOCKET_RELAY: Invalid incoming secret, refuse to connect.');
+		err_logger.error('Invalid incoming secret, refuse to connect.');
 		socket.destroy();
 		return;
 	}
 
 	if(socketServer.connectionCount > 0){
-		err_logger.error('WEBSOCKET_RELAY: More than one connection already!');
+		err_logger.error('More than one connection already!');
 		socket.destory();
 		return;
 	}
@@ -180,7 +189,7 @@ wsServer.on('upgrade', function(request, socket, head){
 	socket.on('close', function(code, message){
 		socketServer.connectionCount--;
 		info_logger.info(
-			'WEBSOCKET_RELAY: Disconnected WebSocket ('+socketServer.connectionCount+' total)'
+			'Disconnected WebSocket ('+socketServer.connectionCount+' total)'
 		);
 	});
 
@@ -207,7 +216,7 @@ var streamServer = http.createServer( function(request, response) {
 	response.connection.setTimeout(0);
 	
 	info_logger.info(
-		'WEBSOCKET_RELAY: Stream Connected: ' + 
+		'Stream Connected: ' + 
 		request.socket.remoteAddress + ':' +
 		request.socket.remotePort
 	);
@@ -217,10 +226,16 @@ var streamServer = http.createServer( function(request, response) {
 	});
 
 	request.on('end',function(){
-		info_logger.info('WEBSOCKET_RELAY: close');
+		info_logger.info('close');
 	});
 
 }).listen(STREAM_PORT);
 
-info_logger.info('WEBSOCKET_RELAY: Listening for incomming MPEG-TS Stream on http://127.0.0.1:'+STREAM_PORT+'/');
-info_logger.info('WEBSOCKET_RELAY: Awaiting WebSocket connections on ws://127.0.0.1:'+WEBSOCKET_PORT+'/<secret>');
+info_logger.info('Listening for incomming MPEG-TS Stream on http://127.0.0.1:'+STREAM_PORT+'/');
+info_logger.info('Awaiting WebSocket connections on ws://127.0.0.1:'+WEBSOCKET_PORT+'/<secret>');
+
+//SIGUSR2 must be used. SIGUSR1 is reserved for node.
+//This tells the parent process that the server is started.
+if(process.argv.length === 4){
+	process.kill(parseInt(process.argv[3]), 'SIGUSR2');
+}

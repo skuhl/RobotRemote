@@ -1,21 +1,6 @@
 const mysql = require('mysql2/promise');
 const crypto = require('crypto');
 
-const log4js = require('log4js');
-log4js.configure({
-  appenders: {
-    info_log: { type: 'file', filename: 'info.log' },
-    err_log: { type: 'file', filename: 'err.log' }
-  },
-  categories: {
-    info: { appenders: [ 'info' ], level: 'info' },
-    err:  { appenders: ['err_log'], level: 'error'}
-  }
-});
-
-const info_logger = log4js.getLogger('info');
-const err_logger = log4js.getLogger('err');
-
 class SeedLoginRequest {
     constructor(email_token, email_validated, comment, date_requested){
         this.email_token = email_token;
@@ -144,7 +129,6 @@ async function seedDB(pool){
     promise = Promise.all(promises);
     await promise;
 
-    info_logger.info('SEED_DB: finished login requests');
     promises = [];
 
     for(let user of SEED_USERS){

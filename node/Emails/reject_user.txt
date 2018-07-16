@@ -1,4 +1,4 @@
-Robot Remote: Account rejected
+Robot Remote: Account Rejected
 
 <!doctype html>
 <html>
@@ -123,8 +123,8 @@ Robot Remote: Account rejected
                             </tr>
                           </tbody>
                         </table>
-                        <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">Some other information or something maybe?</p>
-                        <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">Our apoligze, Robot Remote team.</p>
+                        <!-- <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">Some other information or something maybe?</p> -->
+                        <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">Our apologies, the Robot Remote Team.</p>
                       </td>
                     </tr>
                   </table>

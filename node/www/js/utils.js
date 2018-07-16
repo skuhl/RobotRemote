@@ -105,3 +105,10 @@ function CreateTableRow(inner_htmls, class_prefix, is_header, id){
     }
     return tr;
 }
+
+//If this is require'd from nodejs, export some functions.
+if(typeof module === 'object'){
+    module.exports.DateTimeBeautify = DateTimeBeautify;
+    module.exports.DateBeautify = DateBeautify;
+    module.exports.TimeBeautify = TimeBeautify;   
+}
