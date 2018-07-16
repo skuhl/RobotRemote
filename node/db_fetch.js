@@ -100,17 +100,16 @@ module.exports = {
     },
     //id in this instance should be the user id
     check_user_access: async function(id){
-        let connection = await pool.getConnection();
+        connection = await pool.getConnection();
         let json = [];
         try{
-            var [res, fields] = await connection.query('SELECT id, start_time, duration, approved FROM timeslots ' +
-            														  'WHERE user_id=?', [id]);
+            var [res, fields] = await connection.query('SELECT id, start_time, duration, approved FROM timeslots WHERE user_id=?', [id]);
         }finally{
         connection.release();
         }
         if(res.length > 0){
         		for(let i = 0; i<res.length; i++){
-	            mine.push({
+	            json.push({
 	            	 id: res[i].id,
 	                start: res[i].start_time.toISOString(),
 	                end: res[i].duration }
@@ -123,7 +122,6 @@ module.exports = {
                 reason: "No time slots for this user!",
                 client_reason: ""
             };
-            return null;
         }
     },
     /*Timeframe is between beginDate and endDate.*/
