@@ -6,7 +6,7 @@ var SubmitRequest = function(){
 	var reason = form.elements.reason.value;
 
 	if(!user || !pass || !reason){ //in the scenario that one of these are missing
-		alert('Missing username, password, or reason for request.<br/> These items are required.');
+		alert('Missing username, password, or reason for request.\n These items are required.');
 		return;
 	}
 	

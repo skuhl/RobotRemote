@@ -348,11 +348,12 @@ class RobotRemoteServer {
                 return;
             }
             //TODO password tests? (length, numbers, symbols maybe?)
+            //These tests do exist in one of the client side js files
         
             user_auth.login_request(req.body.username, req.body.password, req.body.reason)
                 .then(function(email_token){
                     res.status(200).send('success!');
-                    let link = self._options['domain_name_secure'] + "/verify?email=" + encodeURIComponent(req.body.username) + "&email_tok=" + encodeURIComponent(email_token);
+                    let link = self._options['domain_name_secure'] + "/Verified.html?email=" + encodeURIComponent(req.body.username) + "&email_tok=" + encodeURIComponent(email_token);
                     
                     mail.mail(req.body.username, __dirname + '/Emails/confirm_email.txt', {link: link, name: req.body.username});
         
