@@ -363,6 +363,27 @@ class RobotRemoteServer {
                 }.bind(this));
         }.bind(this));
         
+        /**********************************************************************/
+        
+        this._app.get('/NewPass.html', function(req, res){
+            res.status(200).send(html_fetcher(__dirname + '/www/NewPass.html', req));
+        }.bind(this));
+        
+        this._app.post('/NewPass.html', function(req,res){
+        		res.append('Cache-Control', "no-cache, no-store, must-revalidate");
+        		if(!req.body.password){
+        			res.status(400).send('Missing new password!');
+        			return;
+        		}
+        		
+        		user_auth.update_password(req.session.email,req.body.password)
+        			.then(function(email_token)){
+        				res.status(200).send('Success!');
+        			}
+        }
+        
+        /***********************************************************************/
+        
         this._app.get('/Scheduler.html', function(req, res){
             res.append('Cache-Control', "no-cache, no-store, must-revalidate");
             this.info_logger.info("Called scheduler");
