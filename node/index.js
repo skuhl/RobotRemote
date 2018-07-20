@@ -377,10 +377,10 @@ class RobotRemoteServer {
         		}
         		
         		user_auth.update_password(req.session.email,req.body.password)
-        			.then(function(email_token)){
+        			.then(function(email_token){
         				res.status(200).send('Success!');
-        			}
-        }
+        			})
+        }.bind(this));
         
         /***********************************************************************/
         
@@ -885,15 +885,16 @@ class RobotRemoteServer {
             delete req.session;
             res.redirect(303, '/Home.html');
         }.bind(this));
-        
-        this._app.get('/verify', function(req,res){
+
+        this._app.get('/Verified.html', function(req,res){
             res.append('Cache-Control', "no-cache, no-store, must-revalidate");
+            res.status(200).send(html_fetcher(__dirname + '/www/Verified.html', req));
             user_auth.email_verify(req.query.email, req.query.email_tok).then(function(){
                 let admin_link = this._options['domain_name_secure'] + "/admin/Admin.html"; 
                 //TODO send email that there are awaiting login requests.
                 mail.mail_to_admins(__dirname + '/Emails/new_confirmation.txt', {});
                 
-                res.redirect(303, '/Login.html');
+                res.redirect(303, 'Home/.html');
             }.bind(this),function(err){
                 this.err_logger.error(err);
                 res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
