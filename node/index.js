@@ -354,8 +354,13 @@ class RobotRemoteServer {
                     res.status(200).send('success!');
                     let link = self._options['domain_name_secure'] + "/Verified.html?email=" + encodeURIComponent(req.body.username) + "&email_tok=" + encodeURIComponent(email_token);
                     
-                    mail.mail(req.body.username, __dirname + '/Emails/confirm_email.txt', {link: link, name: req.body.username});
-        
+                    mail.mail(req.body.username, __dirname + '/Emails/confirm_email.txt', {link: link, name: req.body.username}).then(function(){
+                        this.info_logger.info('Sent verification email to user!');
+                    }.bind(this))
+                    .catch(function(err){
+                        this.err_logger.error('Failed to send verification email to user.');
+                        this.err_logger.error(err);
+                    }.bind(this));
                 }.bind(this), function(err){
                     this.err_logger.error(err);
                     res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
@@ -520,7 +525,6 @@ class RobotRemoteServer {
         /* 
             Request to reject login request with given id
         */
-        //TODO CHANGE THIS ENDPOINT SO A REASON MAY BE PROVIDED (Change to post?)
         this._app.get('/admin/rejectloginrequest/:id', function(req, res){
             res.append('Cache-Control', "no-cache, no-store, must-revalidate");
             
@@ -543,13 +547,7 @@ class RobotRemoteServer {
             }
 
             db_fetch.delete_user_by_request(req.params.id).then(async function(user_info){
-                //TODO figure out how this should work. Who should emails be sent to?
-                //Should it REALLY be mailer_email? Maybe it should be some other email,
-                //that can be configured to be a mailing list if needed or just forward an email.
-                let reason = req.body.reason !== undefined ? req.body.reason :
-                `an unspecified reason. Please contact <a href='mailto:${this._options['mailer_email']}'>${this._options['mailer_email']}</a> for more information`;
-                
-                await mail.mail_to_user(user_info, __dirname + '/Emails/reject_user.txt', {name: user_info.email, reason: reason});
+                await mail.mail_to_user(user_info, __dirname + '/Emails/reject_user.txt', {name: user_info.email, email: this._options['mailer_email']});
                 
                 res.status(200).send("Success");
             
@@ -718,11 +716,8 @@ class RobotRemoteServer {
 
             db_fetch.delete_timeslotrequest_admin(req.params.id)
             .then(function(timeslot_info){
-                let reason = req.body.reason !== undefined ? req.body.reason :
-                `of an unspecified reason. Please contact <a href='mailto:${this._options['mailer_email']}'>${this._options['mailer_email']}</a> for more information`;
-                
                 mail.mail_to_user(timeslot_info.user_info.id , __dirname + '/Emails/reject_time.txt', {name: timeslot_info.user_info.email, 
-                    reason: reason, 
+                    email: this._options['mailer_email'], 
                     start_time: client_utils.DateTimeBeautify(timeslot_info.start_time), 
                     end_time: client_utils.DateTimeBeautify(timeslot_info.end_time)});
                 
@@ -856,7 +851,7 @@ class RobotRemoteServer {
 
                 let admin_link = self._options['domain_name_secure'] + "/admin/Admin.html"; 
                 
-                mail.mail_to_admins('Emails/new_request.txt', {})
+                mail.mail_to_admins( __dirname +  '/Emails/admin_new_time.txt', {})
                 .then(function(res){
                     this.info_logger.info("Sent mail to admin.");    
                 }.bind(this), function(err){
@@ -900,9 +895,15 @@ class RobotRemoteServer {
             res.append('Cache-Control', "no-cache, no-store, must-revalidate");
             res.status(200).send(html_fetcher(__dirname + '/www/Verified.html', req));
             user_auth.email_verify(req.query.email, req.query.email_tok).then(function(){
-                let admin_link = this._options['domain_name_secure'] + "/admin/Admin.html"; 
-                //TODO send email that there are awaiting login requests.
-                mail.mail_to_admins(__dirname + '/Emails/new_confirmation.txt', {});
+                let admin_link = this._options['domain_name_secure'] + "/admin/Admin.html";
+                
+                mail.mail_to_admins( __dirname + '/Emails/admin_new_user.txt', {}).then(function(){
+                    this.info_logger.info('Sent email to admins!');
+                }.bind(this))
+                .catch(function(err){
+                    this.err_logger.error('Failed to send email to admins');
+                    this.err_logger.error(err);
+                }.bind(this));
                 
                 res.redirect(303, 'Home/.html');
             }.bind(this),function(err){
