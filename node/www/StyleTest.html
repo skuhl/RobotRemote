@@ -1,12 +1,17 @@
 <!doctype html>
 <html>
   <head>
-    <link rel="stylesheet" type="text/css" href="./css/NavBar.css">
+    <title>Robot Remote</title>
+    <link rel="stylesheet" type="text/css" href="./css/admin.css">
     <link rel="stylesheet" type="text/css" href="./css/Button.css">
-    <link rel="stylesheet" type="text/css" href="./css/Form.css">
-    <link rel="stylesheet" type="text/css" href="./css/Error.css">
-    <link rel="stylesheet" type="text/css" href="./css/Scheduler.css">
     <link rel="stylesheet" type="text/css" href="./css/cog.css">
+    <link rel="stylesheet" type="text/css" href="./css/Error.css">
+    <link rel="stylesheet" type="text/css" href="./css/Form.css">
+    <link rel="stylesheet" type="text/css" href="./css/NavBar.css">
+    <link rel="stylesheet" type="text/css" href="./css/Scheduler.css">
+    <link rel="stylesheet" type="text/css" href="./css/paginate.css">
+    <link rel="stylesheet" type="text/css" href="./css/Home.css">
+    <link rel="shortcut icon" type="image/ico" href="/img/favicon.ico">
   </head>
   <div id="Navbar">
     <h1 class="Title">
@@ -23,31 +28,6 @@
     </ul>
   </div>
   <body>
-<div id="containerSignUp">
-  <div id="pageID">
-      <p><b>Create an Account</b></p>
-  </div>
-  <form action="javascript:SubmitRequest()" name="signup" method="post"> <!--We will eventually need an action-->
-    <label for="username">Email:</label>
-    <input type="email" name="username" required onleyup="validate()"/> </br>
-    <p id="email_error" class="error">Error!</p></br>
-    
-    <label for="password">Password: </label>
-    <p id="sub">(Include one capital and lowercase letter, number, and special character.)</p>
-    <input type="password" name="password" required onkeyup="validate()"/> </br>
-    <p id="pass_error" class="error"></p>
-    
-    <label for="REpassword">Retype Password: </label>
-    <input type="password" name="REpassword" required onkeyup="validate()"/> </br>
-    <p id="repass_error" class="error"></p>
-    
-    <label for="reason">Please state the reason for your request:</label>
-    <textarea name="reason" cols="20" rows="3" required onkeyup="validate()"></textarea> </br>
 
-    <button type="submit" onsubmit="SubmitRequest()" >Submit</button>
-  </form>
-</div>
-<script src="/js/submit_request.js"></script>
-<script src="/js/validate.js"></script>
   </body>
 </html>
