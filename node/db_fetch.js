@@ -107,12 +107,13 @@ module.exports = {
             We want start to be before NOW and start + duration to be later than now
         		start_time <= Date.now() && (start_time + duration) > Date.now()
         */
-            var [res, fields] = await connection.query("SELECT count(*) FROM timeslots WHERE user_id=? AND" +
-            																" (start_time <= NOW() AND DATE_ADD(start_time, INTERVAL duration SECOND) > NOW())", [id]);
+            var [res, fields] = await connection.query("SELECT (TO_SECONDS(DATE_ADD(start_time, INTERVAL duration SECOND)) - TO_SECONDS(NOW())) AS time" +
+            																" FROM timeslots WHERE user_id=? AND (start_time <= NOW() AND DATE_ADD(start_time, INTERVAL duration SECOND)" +
+            																" > NOW())", [id]);
         }finally{
         		connection.release();
 			}
-			return res[0]['count(*)'];
+			return res[0]['time'];
     },
     /*Timeframe is between beginDate and endDate.*/
     user_get_timeslot_requests: async function(beginDate, endDate, user_id){

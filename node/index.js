@@ -212,11 +212,11 @@ class RobotRemoteServer {
             db_fetch.get_user_by_email(req.session.email).then(function(user){
 	                db_fetch.check_user_access(user.id).then(function(allow){
 	                	this.info_logger.info(allow);
-	                		if(allow != 0){
+	                		if(allow){
 	                			actuator_comm.getFreeActuator(self._actuators).then((act)=>{
                                 this.info_logger.info(act);
 				                //send client details (secret).
-				                act.sendClientDetails(5*60*1000).then((secret) => {
+				                act.sendClientDetails(allow*1000).then((secret) => {
 				                    this.info_logger.info('Sending secret ' + secret);
 				                    //send cookie containing client secret!
 				                    //TODO set up these options for cookie correctly
