@@ -229,7 +229,7 @@ class RobotRemoteServer {
 				                        // 30 second secret TODO change to duration of timeslot.
 				                        //Currently all webcams share a secret. Changing this should be easy, if needed.
 				                        secret_promises.push(
-				                            act.webcams[i].setSecret(secret, 30*1000).then(()=>{
+				                            act.webcams[i].setSecret(secret, allow*1000).then(()=>{
 				                                res.cookie("webcam-" + (i+1), (act.webcams[i].secure ? 'wss' : 'ws')+'://' + act.webcams[i].ip + ':' +  act.webcams[i].sock_port);
 				                                res.cookie("webcam"+ (i+1) + "-secret", secret);
 				                            })
