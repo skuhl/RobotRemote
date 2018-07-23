@@ -893,7 +893,7 @@ class RobotRemoteServer {
 
         this._app.get('/Verified.html', function(req,res){
             res.append('Cache-Control', "no-cache, no-store, must-revalidate");
-            res.status(200).send(html_fetcher(__dirname + '/www/Verified.html', req));
+            
             user_auth.email_verify(req.query.email, req.query.email_tok).then(function(){
                 let admin_link = this._options['domain_name_secure'] + "/admin/Admin.html";
                 
@@ -905,7 +905,7 @@ class RobotRemoteServer {
                     this.err_logger.error(err);
                 }.bind(this));
                 
-                res.redirect(303, 'Home/.html');
+                res.status(200).send(html_fetcher(__dirname + '/www/Verified.html', req));
             }.bind(this),function(err){
                 this.err_logger.error(err);
                 res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
