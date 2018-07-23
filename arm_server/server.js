@@ -189,7 +189,7 @@ https_options.rejectUnauthorized = undefined;
 let wsServer = https.createServer(https_options);
 
 wsServer.on('upgrade', function(request, socket, head){
-    info_loggger.info('Attempting to upgrade to websocket...');
+    info_logger.info('Attempting to upgrade to websocket...');
 
 	 //Q:not sure if we want this in the error log or not it seems like error checking tho
     if(secret == null ||  request.url.substring(1).split('/')[0] != encodeURIComponent(secret)){
