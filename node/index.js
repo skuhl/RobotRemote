@@ -200,7 +200,7 @@ class RobotRemoteServer {
         this._app.get('/ControlPanel.html', function(req, res){
             res.append('Cache-Control', "no-cache, no-store, must-revalidate");
             if(!req.session.loggedin){
-                res.redirect(303, '/Login.html')
+                res.redirect(303, '/Login.html');
                 return;
             }
         
@@ -210,13 +210,9 @@ class RobotRemoteServer {
             }
             
             db_fetch.get_user_by_email(req.session.email).then(function(user){
-	                db_fetch.check_user_access(user.id).then(function(json){
-                	 var res = JSON.parse(json);
-                	 this.err_logger.error(res[0].id);
-	                this.err_logger.error(res[0].start);
-	                this.err_logger.error(res[0].end);
-	                for(var i =0; i < res.length; i++){
-	                		if(res[i].start_time <= Date.now() && (res[i].start_time + res[i].duration) > Date.now()){
+	                db_fetch.check_user_access(user.id).then(function(allow){
+	                	this.info_logger.info(allow);
+	                		if(allow != 0){
 	                			actuator_comm.getFreeActuator(self._actuators).then((act)=>{
                                 this.info_logger.info(act);
 				                //send client details (secret).
@@ -258,21 +254,24 @@ class RobotRemoteServer {
 				                res.status(500).send(err);
 				            }.bind(this));
 	                	}
-	                }
+	                	else{
+	                		this.err_logger.info('Unable to find any time slots for user: ' + req.session.email);
+								res.redirect(303, '/Scheduler.html');
+	                	}
 	            }.bind(this), function(err){
-	            	 /* This may want to be classified as just 'info' as it's not really an error if the user
-	                 * has no time slots.
+	            	  /* This may want to be classified as just 'info' as it's not really an error if the user
+	                  * has no time slots.
                      * 
                      * Try warn instead? Not quite an error, but could be?
 	                 */
-	                this.err_logger.error(err);
-                	this.err_logger.error('Unable to find any time slots for user: ' + req.session.email);
-						res.redirect(303, '/Scheduler.html')
+	               this.err_logger.error(err);
+                	this.err_logger.info('Unable to find any time slots for user: ' + req.session.email);
+						res.redirect(303, '/Scheduler.html');
 	            }.bind(this));
             }.bind(this), function(err){
                 this.err_logger.error(err);
                 this.err_logger.error('Unable to find user with email: ' + req.session.email);
-                res.redirect(303, '/Scheduler.html')
+                res.redirect(303, '/Scheduler.html');
             }.bind(this));
         }.bind(this));
         
@@ -362,6 +361,27 @@ class RobotRemoteServer {
                     res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
                 }.bind(this));
         }.bind(this));
+        
+        /**********************************************************************/
+        
+        this._app.get('/NewPass.html', function(req, res){
+            res.status(200).send(html_fetcher(__dirname + '/www/NewPass.html', req));
+        }.bind(this));
+        
+        this._app.post('/NewPass.html', function(req,res){
+        		res.append('Cache-Control', "no-cache, no-store, must-revalidate");
+        		if(!req.body.password){
+        			res.status(400).send('Missing new password!');
+        			return;
+        		}
+        		
+        		user_auth.update_password(req.session.email,req.body.password)
+        			.then(function(email_token){
+        				res.status(200).send('Success!');
+        			})
+        }.bind(this));
+        
+        /***********************************************************************/
         
         this._app.get('/Scheduler.html', function(req, res){
             res.append('Cache-Control', "no-cache, no-store, must-revalidate");
@@ -864,15 +884,16 @@ class RobotRemoteServer {
             delete req.session;
             res.redirect(303, '/Home.html');
         }.bind(this));
-        
-        this._app.get('/verify', function(req,res){
+
+        this._app.get('/Verified.html', function(req,res){
             res.append('Cache-Control', "no-cache, no-store, must-revalidate");
+            res.status(200).send(html_fetcher(__dirname + '/www/Verified.html', req));
             user_auth.email_verify(req.query.email, req.query.email_tok).then(function(){
                 let admin_link = this._options['domain_name_secure'] + "/admin/Admin.html"; 
                 //TODO send email that there are awaiting login requests.
                 mail.mail_to_admins(__dirname + '/Emails/new_confirmation.txt', {});
                 
-                res.redirect(303, '/Login.html');
+                res.redirect(303, 'Home/.html');
             }.bind(this),function(err){
                 this.err_logger.error(err);
                 res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");

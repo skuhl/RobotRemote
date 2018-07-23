@@ -101,33 +101,23 @@ module.exports = {
     //id in this instance should be the user id
     check_user_access: async function(id){
         connection = await pool.getConnection();
-        let json = [];
+        
         try{
-            var [res, fields] = await connection.query('SELECT id, start_time, duration, approved FROM timeslots WHERE user_id=?', [id]);
+        /*
+            We want start to be before NOW and start + duration to be later than now
+        		start_time <= Date.now() && (start_time + duration) > Date.now()
+        */
+            var [res, fields] = await connection.query("SELECT count(*) FROM timeslots WHERE user_id=? AND" +
+            																" (start_time <= ? AND (start_time + duration) > ?)", [id, Date.now(), Date.now()]);
         }finally{
-        connection.release();
-        }
-        if(res.length > 0){
-        		for(let i = 0; i<res.length; i++){
-	            json.push({
-	            	 id: res[i].id,
-	                start: res[i].start_time.toISOString(),
-	                end: res[i].duration }
-	            );
-        		return json;
-        	 }
-        }
-        else{
-        		throw {
-                reason: "No time slots for this user!",
-                client_reason: ""
-            };
-        }
+        		connection.release();
+			}
+			return res[0]['count(*)'];
     },
     /*Timeframe is between beginDate and endDate.*/
     user_get_timeslot_requests: async function(beginDate, endDate, user_id){
     
-        let connection = await pool.getConnection();   
+        let connection = await pool.getConnection();
         try{
             var [res, fields] = await connection.query('SELECT id, start_time, duration, approved, user_id FROM timeslots WHERE start_time > ? AND start_time < ?', [beginDate, endDate]);
         }finally{
