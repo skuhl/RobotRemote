@@ -149,6 +149,7 @@ function GenerateGrid(elements){
                 table_class = other_json.accepted ? 'td_other_accepted' : 'td_other_pending';
                 can_select = !other_json.accepted;
             }
+            
             if(isValidDate(row_date)){
                 grid[i].push({time: row_date, class: table_class, selectable: can_select, index: num_rows*i + j + i});
             }

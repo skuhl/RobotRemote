@@ -390,9 +390,10 @@ class RobotRemoteServer {
                 res.redirect(303, '/Login.html');
                 return;
             }
-            this.info_logger.debug(scheduler_generator.GenerateGrid({mine:[], others:[]}));
-            db_fetch.user_get_timeslot_requests()
+            //TODO should be getting only up to now + max number of schedule days timeslot requests 
+            db_fetch.user_get_timeslot_requests(new Date(), new Date(Date.now() + 7*24*60*60*1000), req.session.user_id)
             .then(function(requests){
+
                 res.send(html_fetcher(__dirname + '/www/Scheduler.html', req, {
                     afterNavbar: ()=>`<input type='hidden' id='grid-data' value='${JSON.stringify(scheduler_generator.GenerateGrid(requests)
                         .reduce((acc, x) => acc.concat(x))).replace("'", '"')}'/>`

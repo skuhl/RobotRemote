@@ -2,6 +2,7 @@ var mouse_down = false;
 var mode = null;
 
 var max_quantums = 4;
+var time_quantum = 30
 var select_begin_index = -1;
 var select_end_index = -1;
 //Generates scheduler table.
@@ -112,6 +113,8 @@ function GetTableHTML(times){
         var my_element = html.children[row].children[col];
         my_element.setAttribute('can_select', dates[i].selectable);
         my_element.setAttribute('index', dates[i].index);
+        my_element.id = 'schedule-' + dates[i].index;
+        my_element.setAttribute('date', dates[i].time);
         if(typeof dates[i].class === 'string' && dates[i].class !== ''){
             my_element.classList.add(dates[i].class);
         }
@@ -177,7 +180,7 @@ var DeleteTimeslot = function(id){
         }
     }
 
-    xhr.open("GET", 'http://' + window.location.host + "/deletetimeslot/" + id, true);
+    xhr.open("GET", location.protocol + '//' + window.location.host + "/deletetimeslot/" + id, true);
     xhr.send();
 }
 
@@ -330,7 +333,7 @@ var SubmitSelected = function(){
 }
 
 var req = new XMLHttpRequest();
-/*
+
 req.onreadystatechange = function(){
     if(this.readyState === 4 && this.status === 200){
         var i;
@@ -341,17 +344,15 @@ req.onreadystatechange = function(){
             res.mine[i].start_date = new Date(res.mine[i].starttime);
             res.mine[i].end_date = new Date((new Date(res.mine[i].starttime)).getTime() +
                 res.mine[i].duration*1000);
-            console.log("SCHEDULER: Starts: " + res.mine[i].start_date + ", Ends: " + res.mine[i].end_date);
         }
 
         for(i = 0; i < res.others.length; i++){
             res.others[i].start_date = new Date(res.others[i].starttime);
             res.others[i].end_date = new Date((new Date(res.others[i].starttime)).getTime() +
                 res.others[i].duration*1000);
-            console.log("SCHEDULER: Starts: " + res.others[i].start_date + ", Ends: " + res.others[i].end_date);
         }
+
         GenerateTable(res.mine);
-        GenerateGrid(res);
     }else if(this.readyState === 4){
         console.error('SCHEDULER: Error getting timeslot requests.\n' + this.responseText);
     }
@@ -359,7 +360,7 @@ req.onreadystatechange = function(){
 
 req.open("GET", location.protocol + '//' + window.location.host + "/timeslotrequests", true);
 req.send();
-*/
+
 //Imediately and asynchronously execute the get table html function
 setTimeout(function(){
     let table_div = document.getElementById('table_content');
