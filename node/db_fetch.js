@@ -108,7 +108,7 @@ module.exports = {
         		start_time <= Date.now() && (start_time + duration) > Date.now()
         */
             var [res, fields] = await connection.query("SELECT count(*) FROM timeslots WHERE user_id=? AND" +
-            																" (start_time <= ? AND (start_time + duration) > ?)", [id, Date.now(), Date.now()]);
+            																" (start_time <= NOW() AND DATE_ADD(start_time, INTERVAL duration SECOND) > NOW())", [id]);
         }finally{
             connection.release();
         }
