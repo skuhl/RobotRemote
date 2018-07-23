@@ -18,7 +18,7 @@ const MySQLStore = require('express-mysql-session')(session);
 const log4js = require('log4js');
 const log4js_template = require('../common/log4jstemplate');
 const client_utils = require('./www/js/utils.js');
-
+const scheduler_generator = require('./scheduler_generator');
 
 function getDefaultIfUndefined(curval, default_){
     return curval === undefined ? default_ : curval; 
@@ -390,8 +390,19 @@ class RobotRemoteServer {
                 res.redirect(303, '/Login.html');
                 return;
             }
-            
-            res.send(html_fetcher(__dirname + '/www/Scheduler.html', req));
+            //TODO should be getting only up to now + max number of schedule days timeslot requests 
+            db_fetch.user_get_timeslot_requests(new Date(), new Date(Date.now() + 7*24*60*60*1000), req.session.user_id)
+            .then(function(requests){
+
+                res.send(html_fetcher(__dirname + '/www/Scheduler.html', req, {
+                    afterNavbar: ()=>`<input type='hidden' id='grid-data' value='${JSON.stringify(scheduler_generator.GenerateGrid(requests)
+                        .reduce((acc, x) => acc.concat(x))).replace("'", '"')}'/>`
+                }));
+            }.bind(this))
+            .catch(function(err){
+                this.err_logger.error(err);
+                res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
+            }.bind(this));
         }.bind(this));
 
         this._app.get('/admin/Admin.html', function(req, res){

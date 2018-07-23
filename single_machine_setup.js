@@ -377,7 +377,7 @@ async function setupClientCertificate(state){
         fs.appendFileSync(__dirname + '/helperscripts/cacert/serial.txt', '01');
 
         let create_ca = spawnSync('openssl', ['req', '-x509', '-config', 'openssl-ca.cnf', '-newkey', 'rsa:4096', '-sha256', '-nodes', 
-            '-subj', '/C=US/ST=Michigan/L=Houghton/O=Michigan Technological University/OU=RobotRemote Team/CN=RobotRemote CA', 
+            '-subj', '/C=US/ST=Michigan/L=Houghton/O=Michigan Technological University/OU=RobotRemote Team/CN=RobotRemote CA', '-days', '3650', 
             '-keyout', 'cacert/cakey.pem', '-out', 'cacert/cacert.pem', '-outform', 'PEM'], {cwd: __dirname + '/helperscripts'});
         
         if(create_ca.status != 0){

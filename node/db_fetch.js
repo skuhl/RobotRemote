@@ -134,6 +134,8 @@ module.exports = {
                 mine.push({
                     id: res[i].id,
                     starttime: res[i].start_time.toISOString(),
+                    start_date: res[i].start_time,
+                    end_date: new Date(res[i].start_time.getTime() + res[i].duration * 1000),
                     duration: res[i].duration,
                     email: res[i].email,
                     accepted: res[i].approved
@@ -141,6 +143,8 @@ module.exports = {
             }else{
                 others.push({
                     starttime: res[i].start_time.toISOString(),
+                    start_date: res[i].start_time,
+                    end_date: new Date(res[i].start_time.getTime() + res[i].duration * 1000),
                     duration: res[i].duration,
                     accepted: res[i].approved
                 });
