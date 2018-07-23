@@ -77,7 +77,7 @@ function CreateElementWithText(tagname, content){
 }
 /*This function creates a table row, using an array of inner HTML strings
   Returns an element that contains all inner htmls in their own td or th elements.
-  is_header controls weather to use th or not. This is an optional argument.
+  is_header controls whether to use th or not. This is an optional argument.
   id is also an optional argument. If it's defined, it sets the ID's using it as a suffix.
   ID of a row = class_prefix + id
 */
@@ -105,6 +105,33 @@ function CreateTableRow(inner_htmls, class_prefix, is_header, id){
     }
     return tr;
 }
+//Comparator functions work like this: 
+//Comparator(a,b): returns -1 if a < b, 0 if a=b, or 1 if a > b.
+
+//Compare only the date components of 2 Date objects
+function DateCompare(date1, date2){
+    if(date1.getFullYear() < date2.getFullYear()) return -1
+    if(date2.getFullYear() < date1.getFullYear()) return 1;
+    if(date1.getMonth() < date2.getMonth()) return -1
+    if(date2.getMonth() < date1.getMonth()) return 1;
+    if(date1.getDate() < date2.getDate()) return -1
+    if(date2.getDate() < date1.getDate()) return 1;
+    return 0;
+}
+
+//Compare only the time component of 2 dates
+function TimeCompare(date1, date2){
+    if(date1.getHours() < date2.getHours()) return -1
+    if(date2.getHours() < date1.getHours()) return 1;
+    if(date1.getMinutes() < date2.getMinutes()) return -1
+    if(date2.getMinutes() < date1.getMinutes()) return 1;
+    if(date1.getSeconds() < date2.getSeconds()) return -1
+    if(date2.getSeconds() < date1.getSeconds()) return 1;
+    if(date1.getMilliseconds() < date2.getMilliseconds()) return -1
+    if(date2.getMilliseconds() < date1.getMilliseconds()) return 1;
+    return 0;
+}
+
 
 //If this is require'd from nodejs, export some functions.
 if(typeof module === 'object'){

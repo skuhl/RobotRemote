@@ -110,9 +110,24 @@ module.exports = {
             var [res, fields] = await connection.query("SELECT count(*) FROM timeslots WHERE user_id=? AND" +
             																" (start_time <= ? AND (start_time + duration) > ?)", [id, Date.now(), Date.now()]);
         }finally{
-        		connection.release();
-			}
-			return res[0]['count(*)'];
+            connection.release();
+        }
+        if(res.length > 0){
+        		for(let i = 0; i<res.length; i++){
+	            json.push({
+	            	 id: res[i].id,
+	                start: res[i].start_time.toISOString(),
+	                end: res[i].duration }
+	            );
+        		return json;
+        	 }
+        }
+        else{
+        		throw {
+                reason: "No time slots for this user!",
+                client_reason: ""
+            };
+        }
     },
     /*Timeframe is between beginDate and endDate.*/
     user_get_timeslot_requests: async function(beginDate, endDate, user_id){
@@ -133,6 +148,8 @@ module.exports = {
                 mine.push({
                     id: res[i].id,
                     starttime: res[i].start_time.toISOString(),
+                    start_date: res[i].start_time,
+                    end_date: new Date(res[i].start_time.getTime() + res[i].duration * 1000),
                     duration: res[i].duration,
                     email: res[i].email,
                     accepted: res[i].approved
@@ -140,6 +157,8 @@ module.exports = {
             }else{
                 others.push({
                     starttime: res[i].start_time.toISOString(),
+                    start_date: res[i].start_time,
+                    end_date: new Date(res[i].start_time.getTime() + res[i].duration * 1000),
                     duration: res[i].duration,
                     accepted: res[i].approved
                 });

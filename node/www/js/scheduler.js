@@ -1,12 +1,128 @@
 var mouse_down = false;
 var mode = null;
-var max_quantums = 4;
 
+var max_quantums = 4;
 var select_begin_index = -1;
 var select_end_index = -1;
+//Generates scheduler table.
+//Returns element for the generated table. 
+function GetTableHTML(times){
+    var html = document.createElement('table');
+    var i, j;
+    html.classList.add('schedule_table_element');
+    html.id = 'schedule_table';
+    html.appendChild(CreateTableRow([], 'schedule_table_', true));
+    html.setAttribute('onmouseleave', 'TableLeave(this)');
+    html.setAttribute('onmouseup', 'TableMouseUp(this)');
+    //We sort these dates. The dates *SHOULD* be ordered when they are added
+    //to the hidden element, but to ensure correctness, we sort.
+    var dates = times
+        .sort(function(a,b){
+            a = new Date(a.time); 
+            b = new Date(b.time);
+            if(a < b) return -1; 
+            else if (a > b) return 1; 
+            return 0;
+        });
+    
+    for(i = 0; i < dates.length; i++){
+        dates[i].time = new Date(dates[i].time);
+    }
 
-var time_quantum = 30; /*Time quantum in minutes */
-var num_days = 7; /*Number of days to display*/
+    for(i = 0; i < dates.length; i++){
+        var col = -1; 
+        var header_row = html.children[0];
+        //find the column to insert the given date into
+        for(j = 0; j < header_row.children.length; j++){
+            var element = header_row.children[j];
+            var date = new Date(element.getAttribute('date'));
+            if(DateCompare(date, dates[i].time) === 0){
+                col = j;
+                break;
+            }
+        }
+
+        if(col === -1){
+            //No column to put the date in, we need to create one
+            var th = document.createElement('th');
+            th.classList.add('schedule_table_element');
+            th.classList.add('schedule_table_cell');
+            th.innerHTML  = '<span class="block">' + day_index_to_string[dates[i].time.getDay()] +
+            '</span><span class="block">' + month_index_to_string[dates[i].time.getMonth()] + 
+            '</span><span class="block">' + dates[i].time.getDate() + '</span>';
+            th.setAttribute('date', dates[i].time);
+            html.children[0].appendChild(th);
+
+            //Add the extra cell to every row
+            for(j = 1; j < html.children.length; j++){
+                var td = document.createElement('td');
+                td.classList.add('schedule_table_element');
+                td.classList.add('schedule_table_cell');
+                td.setAttribute('can_select', 'false');
+                td.setAttribute('onmousedown', 'GridMouseDown(this)');
+                td.setAttribute('onmouseover', 'GridMouseOver(this)');
+                html.children[j].appendChild(td);
+            }
+            col = html.children[0].children.length - 1;
+        }
+
+        //Find the row to insert the date into
+        var row = -1;
+        var found_row = false;
+        var insertRowBefore = null; //null indicates that we append to the end of the list of rows
+        for(j = 1; j < html.children.length; j++){
+            date = new Date(html.children[j].getAttribute('date'));
+            if(TimeCompare(dates[i].time, date) === 0){
+                row = j;
+                found_row = true;
+                break;
+            }else if(TimeCompare(dates[i].time, date) < 0){
+                //This row comes after our row. So we should insert our row before this one.
+                insertRowBefore = html.children[j];
+                row = j; // When inserted, this date will go into row j
+                break;
+            }
+        }
+
+        if(!found_row){
+            //Couldn't find the correct row, insert a new one.
+            var tr = document.createElement('tr');
+            tr.classList.add('schedule_table_element');
+            tr.classList.add('schedule_table_row');
+            tr.setAttribute('date', dates[i].time); // Only the time component is relevant here.
+            //Add columns
+            for(j = 0; j < header_row.children.length; j++){
+                var td = document.createElement('td');
+                td.classList.add('schedule_table_element');
+                td.classList.add('schedule_table_cell');
+                td.setAttribute('can_select', 'false');
+                td.setAttribute('onmousedown', 'GridMouseDown(this)');
+                td.setAttribute('onmouseover', 'GridMouseOver(this)');
+                tr.appendChild(td);
+            }
+
+            if(insertRowBefore == null){
+                html.appendChild(tr);
+                row = html.children.length - 1; // Row we need to insert into is the last one.
+            }else{
+                html.insertBefore(tr, insertRowBefore);
+            }
+        };
+        //insert the date into the td at row, col
+        var my_element = html.children[row].children[col];
+        my_element.setAttribute('can_select', dates[i].selectable);
+        my_element.setAttribute('index', dates[i].index);
+        if(typeof dates[i].class === 'string' && dates[i].class !== ''){
+            my_element.classList.add(dates[i].class);
+        }
+
+        my_element.innerText = TimeBeautify(dates[i].time);
+
+    }
+
+
+    return html;
+}
 
 function loader(){
     var time = (Math.random() * 100) + 150;
@@ -15,11 +131,11 @@ function loader(){
         if(!loaded.width){ //if the table width is 0 wait some more
             loader();
         }else{ //if the table width is non zero make it show up!
-            document.getElementById("loader").classname = ('shrinking-cog');
-            document.getElementById("loader").style.display = "none";	
+            document.getElementById("loader").classname = 'shrinking-cog';
+            document.getElementById("loader").style.display = "none";
         }
         
-    },time);
+    }, time);
 }
 
 var GenerateTable = function(my_elements){
@@ -31,7 +147,7 @@ var GenerateTable = function(my_elements){
         let start = my_elements[i].start_date;
         let end = my_elements[i].end_date;
         html+='<tr id="request_table_row_'+ my_elements[i].id +'"class="request_table_row request_table_element">';
-        //TODO pretty print dates?
+        
         html+='<td class="request_table_element request_table_cell">' + DateTimeBeautify(start) +'</td>';
         
         html+='<td class="request_table_element request_table_cell">' + DateTimeBeautify(end) +'</td>';
@@ -65,86 +181,6 @@ var DeleteTimeslot = function(id){
     xhr.send();
 }
 
-var GenerateGrid = function(elements){
-	 let earliest_start = 8*60*60*1000; // 8am earliest time to get the bot
-    let end_time_hours = 16.5;				// 5pm is the latest we want people able to schedule
-    let num_columns = num_days;
-    let num_rows = (9*60)/time_quantum; // 8-5 is the 9 hour period of time when the bot may be used
-    
-    let start_time = Date.now();
-    
-    let start_date = new Date(start_time); 	 		// get today's date
-    start_date.setDate(start_date.getDate() + 1);  // make it start on the next day
-
-    if(start_date.getHours() >= end_time_hours){ 			// if it's past 5 start another day ahead
-    	 start_date.setDate(start_date.getDate() + 1);
-    	 start_date.setHours(0);
-    }
-    var start_day_date = new Date(start_date.getFullYear(), start_date.getMonth(), start_date.getDate());
-    var html = '<table id="schedule_table" class="schedule_table_element" onmouseleave="TableLeave(this)" onmouseup="TableMouseUp(this)" ><tr class="schedule_table_element schedule_table_row">'
-    var i, j;
-    //Generate days (headers)
-    for(i = 0; i < num_days; i++){
-        var col_date = new Date(start_day_date.getTime() + i*24*60*60*1000);
-        html += '<th class="schedule_table_element schedule_table_cell"><span class="block">' + day_index_to_string[col_date.getDay()] +
-        '</span><span class="block">' + month_index_to_string[col_date.getMonth()] + 
-        '</span><span class="block">' + col_date.getDate() + '</span></th>'; 
-    }
-
-    html += '</tr>';
-
-    //Generate elements for dates (table cells) 
-    for( i = 0; i < num_rows; i++){
-        html += '<tr class="schedule_table_element schedule_table_row">';
-        for(j = 0; j < num_columns; j++){
-            var table_class = '';
-            //row date = start_day + j days + i time quantums. 24*60*60*1000 = 1 day in ms
-            
-            var element_date = new Date(start_day_date.getTime() + earliest_start + j*24*60*60*1000 + i*time_quantum*60*1000);
-            var my_json = elements.mine.find(function(x){return element_date >= x.start_date && element_date <= x.end_date});
-            var other_json = elements.others.find(function(x){return element_date >= x.start_date && element_date <= x.end_date});
-            var can_select = true;
-
-            if(my_json !== undefined){
-                table_class = my_json.accepted ? 'td_accepted' : 'td_pending';
-                //Can't select them if they are already ours.
-                can_select = false;
-            }else if(other_json !== undefined){
-                table_class = other_json.accepted ? 'td_other_accepted' : 'td_other_pending';
-                can_select = !other_json.accepted;
-            }
-
-            if(element_date < start_date){
-                can_select = false;
-            }
-            //can't select a time on the weekend
-            if(element_date.getDay() == 0 || element_date.getDay() == 6){
-            	can_select = false;
-            	
-            }
-
-            html += '<td id = "schedule-' +
-                    (j*num_rows + i) +
-                    '" class="' + 
-                    table_class + 
-                    ' schedule_table_element schedule_table_cell" date="' + 
-                    element_date.toISOString() +
-                    '" index="' + 
-                    (j*num_rows + i) + 
-                    '" can_select="' +
-                    can_select +
-                    '" onmousedown="GridMouseDown(this)" onmouseover="GridMouseOver(this)">';
-            
-            if(!(element_date.getDay() == 0 || element_date.getDay() == 6)) 
-            	html += TimeBeautify(element_date); 
-            html += '</td>';
-        }
-        html += '</tr>';
-    }
-    html += '</table>';
-
-    document.getElementById('table_content').innerHTML += html;
-}
 
 function SelectElement(element){
     element.setAttribute('old_class', element.getAttribute('class'));
@@ -158,9 +194,10 @@ function DeselectElement(element){
 var GridMouseDown = function(element){
 
     mouse_down = true;
+    if(element.getAttribute('can_select') == 'false') return;
 
     var index = Number.parseInt(element.getAttribute('index'));
-    
+
     if(index == select_end_index){
         //Deselect
         select_end_index-=1;
@@ -178,14 +215,13 @@ var GridMouseDown = function(element){
         mode = 'deselect';
         DeselectElement(element);
     }else if(select_begin_index < 0 || select_end_index < 0){
-        //select
-        if(element.getAttribute('can_select') == 'false') return;
+        //select        
         select_begin_index = select_end_index = index;
         mode = 'select';
         SelectElement(element);
     }else if(select_begin_index - 1 == index){
         //select
-        if((select_end_index - select_begin_index + 1) >= max_quantums || element.getAttribute('can_select') == 'false'){
+        if((select_end_index - select_begin_index + 1) >= max_quantums){
             return;
         }
         select_begin_index -= 1;
@@ -193,7 +229,7 @@ var GridMouseDown = function(element){
         SelectElement(element);
     }else if(select_end_index + 1 == index){
         //select
-        if((select_end_index - select_begin_index + 1) >= max_quantums || element.getAttribute('can_select') == 'false'){
+        if((select_end_index - select_begin_index + 1) >= max_quantums){
             return;
         }
         select_end_index += 1;
@@ -203,6 +239,7 @@ var GridMouseDown = function(element){
 }
 
 var GridMouseOver = function(element){
+    if(element.getAttribute('can_select') == 'false') return;
     var index = Number.parseInt(element.getAttribute('index'));
     if(mouse_down){
         if(mode == 'select'){
@@ -213,14 +250,14 @@ var GridMouseOver = function(element){
                 SelectElement(element);
             }else if(select_begin_index - 1 == index){
                 //select
-                if((select_end_index - select_begin_index + 1) >= max_quantums || element.getAttribute('can_select') == 'false'){
+                if((select_end_index - select_begin_index + 1) >= max_quantums){
                     return;
                 }
                 select_begin_index -= 1;
                 SelectElement(element);
             }else if(select_end_index + 1 == index){
                 //select
-                if((select_end_index - select_begin_index + 1) >= max_quantums || element.getAttribute('can_select') == 'false'){
+                if((select_end_index - select_begin_index + 1) >= max_quantums){
                     return;
                 }
                 select_end_index += 1;
@@ -271,7 +308,7 @@ var SubmitSelected = function(){
         if(this.readyState === 4 && this.status === 200){
             alert("Successfully requested time slot!");
             //Update table (or remake it, or something)
-            console.log('SCHEDUKER: Success!');
+            console.log('SCHEDULER: Success!');
             //reload the page becuase the table is updated
             location.reload();
         }else if(this.readyState === 4){
@@ -286,14 +323,14 @@ var SubmitSelected = function(){
         }
     }
 
-    xhr.open("POST",location.protocol + '//' + window.location.host +  '/requesttimeslot', true);
+    xhr.open("POST", location.protocol + '//' + window.location.host +  '/requesttimeslot', true);
     xhr.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
     document.getElementById('req_submit').disabled = true;
     xhr.send(JSON.stringify({start_time: begin_utc_time, duration: duration}));
 }
 
 var req = new XMLHttpRequest();
-
+/*
 req.onreadystatechange = function(){
     if(this.readyState === 4 && this.status === 200){
         var i;
@@ -322,3 +359,9 @@ req.onreadystatechange = function(){
 
 req.open("GET", location.protocol + '//' + window.location.host + "/timeslotrequests", true);
 req.send();
+*/
+//Imediately and asynchronously execute the get table html function
+setTimeout(function(){
+    let table_div = document.getElementById('table_content');
+    table_div.appendChild(GetTableHTML(JSON.parse(document.getElementById('grid-data').value)));
+}, 0);
