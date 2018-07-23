@@ -1,6 +1,7 @@
 const { spawnSync } = require('child_process');
 const prompt = require('prompt');
 const fs = require('fs');
+const os = require('os');
 
 const ARM_PORTS_START = 3002;
 const MAX_ARMS = 1;
@@ -100,7 +101,16 @@ async function main(){
     }catch(err){
 
     }
-
+    if(state.mach_type === null){
+        if(os.platform() === 'win32'){
+            state.mach_type = 'win32';
+        }else if(os.platform() === 'linux' && os.release().contains('Microsoft')){
+            state.mach_type = 'wsl'; //Windows subsystem for linux is used
+        }else{
+            //Assume linux otherwise.
+            state.mach_type = 'linux';
+        }
+    }
     let first_prompt = true;
     try{
         for(;state.step < setup_actions.length;state.step++){
@@ -175,6 +185,44 @@ function getAllNetworkInterfaces(){
 
     return interfaces;
 }
+
+/*Gets a list of all windows video devices.
+It uses ffmpeg and dshow to get these device names.
+It will use the connonical names, and not alternative names.
+*/
+function windowsGetVidDevNames(){
+    let probe = spawnSync('ffmpeg.exe', ['-list_devices', 'true', '-f', 'dshow', '-i', 'dummy']);
+    if(probe.status != 1){
+        throw 'Failed to identify video devices!\n' +
+        + 'Failed output: \n' +
+        probe.stdout ? probe.stdout.toString('utf8') + '\n' : '' +
+        probe.stderr ? probe.stderr.toString('utf8') + '\n' : '';
+    }
+
+    let ffmpeg_output = probe.stderr.toString('utf8');
+    console.log(ffmpeg_output);
+    let start = ffmpeg_output.search(/\[dshow @ [0-9a-f]*\].*/m);
+    console.log(start);
+    
+    ffmpeg_output = ffmpeg_output.slice(start, ffmpeg_output.length);
+    
+    //fmpeg just has the dshow stuff now
+    //However, some of these may be audio devices
+    //Lets strip those out
+    let vid_dev_str = /^[dshow @ [0-9a-f]*\] DirectShow video devices \(some may be both video and audio devices\)([^]*)[dshow @ [0-9]*\] DirectShow audio devices/
+    .exec(ffmpeg_output);
+    vid_dev_str = vid_dev_str[1];
+    console.log(vid_dev_str);
+    let dev_regex = /^\[dshow @ [0-9a-f]*\]  "([^\n]*)"$/mg;
+    let devices = [];
+    let res = null;
+    while((res = dev_regex.exec(vid_dev_str)) !== null){
+        devices.push(res[1]);
+    }
+
+    return devices;
+}
+
 //Does a deep copy of an object.
 //Currently a super slow, naive implementation.
 //Doesn't need to be fast, though, so this should be good enough.
@@ -524,8 +572,7 @@ async function setupArmsAndCameras(state){
 
     return state;
 }
-
-//TODO when generating the run script, we need to 
+ 
 async function generateRunScript(state){
     let script = 
 `const { spawn } = require('child_process');
@@ -602,20 +649,40 @@ ${(()=>{
     //Boot up ffmpeg streams
 ${(()=>{
     let exec_ffmpeg = '';
-    for(let i = 0; i<state.num_arms; i++){
-        for(let j = 0; j<state.num_cameras; j++){
-            //TODO fix this so that this could work on windows too (change v4l2 to DirectShow or whatever)
-            //TODO add configuration for resolution of camera, maybe
-            exec_ffmpeg += `    let ffmpeg_${i}_${j}_proc = spawn('ffmpeg', ['-nostdin', '-loglevel', 'fatal', '-nostats', '-f', 'v4l2', 
-        '-framerate', '24', '-video_size', '640x480', '-i', '/dev/video${i*state.num_cameras + j}', '-f', 'mpegts',
-        '-codec:v', 'mpeg1video', '-s', '640x480', '-b:v', '1000k', '-bf', '0', 'http://localhost:${CAMERA_PORTS_START + i*state.num_cameras + j*3 + 1}'],
-            {stdio:[
-                0, 
-                process.stdout, 
-                process.stderr]
-            }   
-        );
-        ffmpeg_${i}_${j}_proc.on('close', getCloseFunction('FFmpeg(Arm${i}) ${j}'));\n\n`;
+
+    if(state.mach_type === 'linux'){
+        for(let i = 0; i<state.num_arms; i++){
+            for(let j = 0; j<state.num_cameras; j++){
+                
+                exec_ffmpeg += `    let ffmpeg_${i}_${j}_proc = spawn('ffmpeg', ['-nostdin', '-loglevel', 'fatal', '-nostats', '-f', 'v4l2', 
+            '-framerate', '24', '-video_size', '640x480', '-i', '/dev/video${i*state.num_cameras + j}', '-f', 'mpegts',
+            '-codec:v', 'mpeg1video', '-s', '640x480', '-b:v', '1000k', '-bf', '0', 'http://localhost:${CAMERA_PORTS_START + i*state.num_cameras + j*3 + 1}'],
+                {stdio:[
+                    0, 
+                    process.stdout, 
+                    process.stderr]
+                }   
+            );
+            ffmpeg_${i}_${j}_proc.on('close', getCloseFunction('FFmpeg(Arm${i}) ${j}'));\n\n`;
+            }
+        }
+    }else{
+        for(let i = 0; i<state.num_arms; i++){
+            for(let j = 0; j<state.num_cameras; j++){
+                let interfaces = windowsGetVidDevNames();
+                //This REALLY only works if there's only one camera on one arm server;
+                //There needs to be a better way to select what camera you want for certain things.
+                exec_ffmpeg += `    let ffmpeg_${i}_${j}_proc = spawn('ffmpeg.exe', ['-nostdin', '-loglevel', 'fatal', '-nostats', '-f', 'dshow', 
+            '-framerate', '24', '-video_size', '640x480', '-i', '${interfaces[i*state.num_cameras + j]}', '-f', 'mpegts',
+            '-codec:v', 'mpeg1video', '-s', '640x480', '-b:v', '1000k', '-bf', '0', 'http://localhost:${CAMERA_PORTS_START + i*state.num_cameras + j*3 + 1}'],
+                {stdio:[
+                    0, 
+                    process.stdout, 
+                    process.stderr]
+                }   
+            );
+            ffmpeg_${i}_${j}_proc.on('close', getCloseFunction('FFmpeg(Arm${i}) ${j}'));\n\n`;
+            }
         }
     }
     return exec_ffmpeg;
@@ -674,75 +741,96 @@ if(!module.parent){
 }
 
 async function redirectPorts(state){
-    //TODO make this skippable (doesn't work on WSL)    
     let redirect_script = '';
-    let interfaces = getAllNetworkInterfaces();
+    if(state.mach_type === 'linux'){
+        let interfaces = getAllNetworkInterfaces();
 
-    for(let i = 0; i < interfaces.length; i++){
-        redirect_script += `\tiptables -t nat -A PREROUTING -i ${interfaces[i]} -p tcp --dport 80 -j REDIRECT --to-port 3000 &&\n`;
-        redirect_script += `\tiptables -t nat -A PREROUTING -i ${interfaces[i]} -p tcp --dport 443 -j REDIRECT --to-port 3001 &&\n`;
-    }
+        for(let i = 0; i < interfaces.length; i++){
+            redirect_script += `\tiptables -t nat -A PREROUTING -i ${interfaces[i]} -p tcp --dport 80 -j REDIRECT --to-port 3000 &&\n`;
+            redirect_script += `\tiptables -t nat -A PREROUTING -i ${interfaces[i]} -p tcp --dport 443 -j REDIRECT --to-port 3001 &&\n`;
+        }
 
-    redirect_script = redirect_script.slice(0,-4) + ';';
+        redirect_script = redirect_script.slice(0,-4) + ';';
 
-    //Attempt running the redirections (probably fails if not root or using sudo)
-    let redirect_proc = spawnSync(redirect_script, [], {shell: true});
+        //Attempt running the redirections (probably fails if not root or using sudo)
+        let redirect_proc = spawnSync(redirect_script, [], {shell: true});
 
-    if(redirect_proc.status != 0){
-        /*
-        throw 'Failed to redirect ports! Make sure you are running using sudo/as root\n' +
-        'Failed output: \n' +
-        redirect_proc.stdout.toString('utf8') + '\n' +
-        redirect_proc.stderr.toString('utf8');
-        */
-       logger.info('Failed to redirect port 80 to 3000, and failed to redirect port 443 to 3001, please do this manually.');
-       return state;
-    }
+        if(redirect_proc.status != 0){
+            /*
+            throw 'Failed to redirect ports! Make sure you are running using sudo/as root\n' +
+            'Failed output: \n' +
+            redirect_proc.stdout.toString('utf8') + '\n' +
+            redirect_proc.stderr.toString('utf8');
+            */
+        logger.info('Failed to redirect port 80 to 3000, and failed to redirect port 443 to 3001, please do this manually.');
+        return state;
+        }
 
-    logger.info('Attempting to add to rc.local...');
-    //Create file if it doesn't exist
-    fs.closeSync(fs.openSync('/etc/rc.local', 'a'));
-    //Check if the generated string already exists
-    //To do this, we add some comments.
-    //#BEGIN PORT REDIRECT
-    //and
-    //#END PORT REDIRECT
-    //If these comments exist, we assume that the correct string is there.
-    //Also, we look for exit 0, and attempt to insert above that, if it exists.
-    port_redirect_regex = /#BEGIN PORT REDIRECT\n[^]*\n#END PORT REDIRECT\n/
-    redirect_script = '#BEGIN PORT REDIRECT\n' + redirect_script + '\n#END PORT REDIRECT\n'
+        logger.info('Attempting to add to rc.local...');
+        //Create file if it doesn't exist
+        fs.closeSync(fs.openSync('/etc/rc.local', 'a'));
+        //Check if the generated string already exists
+        //To do this, we add some comments.
+        //#BEGIN PORT REDIRECT
+        //and
+        //#END PORT REDIRECT
+        //If these comments exist, we assume that the correct string is there.
+        //Also, we look for exit 0, and attempt to insert above that, if it exists.
+        port_redirect_regex = /#BEGIN PORT REDIRECT\n[^]*\n#END PORT REDIRECT\n/
+        redirect_script = '#BEGIN PORT REDIRECT\n' + redirect_script + '\n#END PORT REDIRECT\n'
 
-    rc_local = fs.readFileSync('/etc/rc.local', {encoding: 'utf8'});
+        rc_local = fs.readFileSync('/etc/rc.local', {encoding: 'utf8'});
 
-    if(!port_redirect_regex.test(rc_local)){
-        //We need to insert our script for startup...
-        let insert_point = 0;
-        let exit_start = rc_local.indexOf('exit 0');
-        let new_rc_local;
+        if(!port_redirect_regex.test(rc_local)){
+            //We need to insert our script for startup...
+            let insert_point = 0;
+            let exit_start = rc_local.indexOf('exit 0');
+            let new_rc_local;
 
-        if(exit_start == -1){
-            insert_point = 0;
-            redirect_script += 'exit 0';
-        }else{
-            insert_point = exit_start;
+            if(exit_start == -1){
+                insert_point = 0;
+                redirect_script += 'exit 0';
+            }else{
+                insert_point = exit_start;
+            }
+            
+            //Might be a new file, needs #!/bin/sh
+            if(!rc_local.startsWith('#!')){
+                rc_local = '#/bin/sh\n' + rc_local;
+                insert_point += '#/bin/sh\n'.length;
+            }
+
+            new_rc_local = rc_local.split(0, insert_point) + '\n' + redirect_script + rc_local.split(insert_point);
+
+            fs.writeFileSync('/etc/rc.local', new_rc_local, {flags: 'w'});
+        }
+
+        //activate rc.local if it's not already active
+        let cur_mode = fs.statSync('/etc/rc.local').mode;
+        cur_mode += 0o100; //Add execute bit for root.
+        fs.chmodSync('/etc/rc.local', cur_mode);
+    }else{
+        //Windows or WSL, we use netsh to redirect.
+        let redir_proc = spawnSync('netsh.exe', ['interface', 'portproxy', 'add', 'v4tov4', 'listenport=80', 'listenaddress=127.0.0.1',
+        'connectport=3000', 'connectaddress=127.0.0.1'], {shell: true});
+
+        if(redir_proc.status != 0){
+            throw 'Failed to redirect port 80 to port 3000!\n' +
+            'Failed output: \n' +
+            redir_proc.stdout ? redir_proc.stdout.toString('utf8') + '\n' : '' +
+            redir_proc.stderr ? redir_proc.stderr.toString('utf8') + '\n' : '';
         }
         
-        //Might be a new file, needs #!/bin/sh
-        if(!rc_local.startsWith('#!')){
-            rc_local = '#/bin/sh\n' + rc_local;
-            insert_point += '#/bin/sh\n'.length;
+        redir_proc = spawnSync('netsh.exe', ['interface', 'portproxy', 'add', 'v4tov4', 'listenport=443', 'listenaddress=127.0.0.1',
+        'connectport=3001', 'connectaddress=127.0.0.1'],  {shell: '/bin/bash'});
+        
+        if(redir_proc.status != 0){
+            throw 'Failed to redirect port 443 to port 3001!\n' +
+            'Failed output: \n' +
+            redir_proc.stdout ? redir_proc.stdout.toString('utf8') + '\n' : '' +
+            redir_proc.stderr ? redir_proc.stderr.toString('utf8') + '\n' : '';
         }
-
-        new_rc_local = rc_local.split(0, insert_point) + '\n' + redirect_script + rc_local.split(insert_point);
-
-        fs.writeFileSync('/etc/rc.local', new_rc_local, {flags: 'w'});
     }
-
-    //activate rc.local if it's not already active
-    let cur_mode = fs.statSync('/etc/rc.local').mode;
-    cur_mode += 0o100; //Add execute bit for root.
-    fs.chmodSync('/etc/rc.local', cur_mode);
-
     return state;
 }
 
