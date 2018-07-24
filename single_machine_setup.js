@@ -38,12 +38,31 @@ class SetupAction {
     }
 }
 
+class WebcamFormat {
+    constructor(format, resolution, framerate){
+        this.format = format;
+        this.resolution = resolution;
+        this.framerate = framerate;
+    }
+
+    toString(){
+        return `${this.format}, ${this.resolution} @ ${this.framerate}FPS`;
+    }
+
+    equals(other){
+        return this.format === other.format &&
+        this.resolution === other.resolution &&
+        this.framerate === other.framerate;
+    }
+}
+
 const setup_actions = [
     new SetupAction(setupDB, 'Setting up database...', true),
     new SetupAction(setupSMTP, 'Setting up SMTP information...', true),
     new SetupAction(setupDomainName, 'Setting up domain name information...', true),
     new SetupAction(setupClientCertificate,'Generating client certificate...'),
     new SetupAction(setupArmsAndCameras,'Setting up arm servers and cameras...'),
+    new SetupAction(setupWebcamSettings, 'Setting up webcams...'),
     new SetupAction(redirectPorts, 'Redirecting port 80 and 443 to webserver...'),
     new SetupAction(generateServerCerts, 'Generating server certificates...'),
     new SetupAction(finalizeOptions, 'Finalizing options...'),
@@ -160,9 +179,11 @@ function prompt_promise(schema){
     });
 }
 
-/* Gets an array, containing the identifiers of all network interfaces
+/* 
+   Gets an array, containing the identifiers of all network interfaces
    installed and recognized on the machine.
    It does this by scanning the output of the ip link show command.
+   Used on linux machines to port forward.
 */
 function getAllNetworkInterfaces(){
     let ip_proc = spawnSync('ip', ['link', 'show']);
@@ -220,6 +241,43 @@ function windowsGetVidDevNames(){
     }
 
     return devices;
+}
+
+function linuxGetVidDevNames(){
+    return [];
+}
+
+function windowsGetDeviceFormats(device_name){
+    let probe = spawnSync('ffmpeg.exe', ['-list_options', 'true', '-f', 'dshow', '-i', `video=${device_name}`]);
+    if(probe.status != 1){
+        throw 'Failed to identify video device options!\n' +
+        + 'Failed output: \n' +
+        probe.stdout ? probe.stdout.toString('utf8') + '\n' : '' +
+        probe.stderr ? probe.stderr.toString('utf8') + '\n' : '';
+    }
+    
+    let ffmpeg_output = probe.stderr.toString('utf8');
+    let format_regex = /^[dshow @ [0-9a-f]*\]   (?:pixel_format=(\w*)|vcodec=(\w*))  min s=([0-9]+x[0-9]+) fps=([0-9]+) [^\n\r]*$/mg
+    let formats = [];
+    let res = null;
+    while((res = format_regex.exec(ffmpeg_output)) !== null){
+        formats.push(new WebcamFormat(res[1] || res[2], res[3], res[4]));
+    }
+
+    //Filter out repeated formats:
+    for(let i = 0; i < formats.length; i++){
+        for(let j = formats.length - 1; j > i; j--){
+            if(formats[i].equals(formats[j])){
+                formats.splice(j, 1);
+            }
+        }
+    }
+
+    return formats;
+}
+
+function linuxGetDeviceFormats(device_name){
+    return [];
 }
 
 //Does a deep copy of an object.
@@ -572,6 +630,16 @@ async function setupArmsAndCameras(state){
     return state;
 }
  
+async function setupWebcamSettings(state){
+    let webcams;
+    if(state.mach_type === 'linux'){
+        webcams = windowsGetVidDevNames();
+    }else{
+        webcams = windowsGetVidDevNames();
+    }
+    return state;
+}
+
 async function generateRunScript(state){
     let script = 
 `const { spawn } = require('child_process');
