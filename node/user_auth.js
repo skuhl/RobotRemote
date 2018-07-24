@@ -10,7 +10,6 @@ module.exports = {
 
     verify_credentials: async function(username, password){
         let connection = await pool.getConnection();
-            
         try{
             var [res, field] = await connection.query('SELECT id, passhash, passsalt, approved, admin from users where email = ?', [username]);
         }finally{
@@ -207,5 +206,24 @@ module.exports = {
         }
 
         return;
-    }
+    },
+    update_passwword: async function(email, new_pass){
+      let salt = crypto.randomBytes(32).toString('hex');
+      let hash = crypto.createHash('sha256').update(new_pass + salt).digest('hex');
+		let connection = await pool.getConnection();
+   	
+   	try{
+   		var [res, fields] = await connection.query('UPDATE users SET passhash= ?, passsalt=? WHERE email=?' [hash, salt, email]);
+   		
+         if(results.length != 1){
+             throw {
+                 reason: "Couldn't find user with that email!",
+                 client_reason: 'Invalid query string.'
+             }
+         }
+      }finally{
+       	connection.release();
+   	}
+   	return;
+      }
 }
