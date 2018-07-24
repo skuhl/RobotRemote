@@ -200,9 +200,7 @@ function windowsGetVidDevNames(){
     }
 
     let ffmpeg_output = probe.stderr.toString('utf8');
-    console.log(ffmpeg_output);
     let start = ffmpeg_output.search(/\[dshow @ [0-9a-f]*\].*/m);
-    console.log(start);
     
     ffmpeg_output = ffmpeg_output.slice(start, ffmpeg_output.length);
     
@@ -212,10 +210,11 @@ function windowsGetVidDevNames(){
     let vid_dev_str = /^[dshow @ [0-9a-f]*\] DirectShow video devices \(some may be both video and audio devices\)([^]*)[dshow @ [0-9]*\] DirectShow audio devices/
     .exec(ffmpeg_output);
     vid_dev_str = vid_dev_str[1];
-    console.log(vid_dev_str);
+
     let dev_regex = /^\[dshow @ [0-9a-f]*\]  "([^\n]*)"$/mg;
     let devices = [];
     let res = null;
+    //Now we just get all device names
     while((res = dev_regex.exec(vid_dev_str)) !== null){
         devices.push(res[1]);
     }
@@ -672,8 +671,10 @@ ${(()=>{
                 let interfaces = windowsGetVidDevNames();
                 //This REALLY only works if there's only one camera on one arm server;
                 //There needs to be a better way to select what camera you want for certain things.
+                //There also needs to be a way to select resolution and framerate. Cuz right now, if the camera doesn't support
+                //30 fps at 640x480, this will just fail.
                 exec_ffmpeg += `    let ffmpeg_${i}_${j}_proc = spawn('ffmpeg.exe', ['-nostdin', '-loglevel', 'fatal', '-nostats', '-f', 'dshow', 
-            '-framerate', '24', '-video_size', '640x480', '-i', '${interfaces[i*state.num_cameras + j]}', '-f', 'mpegts',
+            '-framerate', '30', '-video_size', '640x480', '-i', 'video=${interfaces[i*state.num_cameras + j]}', '-f', 'mpegts',
             '-codec:v', 'mpeg1video', '-s', '640x480', '-b:v', '1000k', '-bf', '0', 'http://localhost:${CAMERA_PORTS_START + i*state.num_cameras + j*3 + 1}'],
                 {stdio:[
                     0, 
@@ -811,18 +812,21 @@ async function redirectPorts(state){
         fs.chmodSync('/etc/rc.local', cur_mode);
     }else{
         //Windows or WSL, we use netsh to redirect.
-        let redir_proc = spawnSync('netsh.exe', ['interface', 'portproxy', 'add', 'v4tov4', 'listenport=80', 'listenaddress=127.0.0.1',
-        'connectport=3000', 'connectaddress=127.0.0.1'], {shell: true});
-
+        let redir_proc = spawnSync('cmd.exe', ['/C', 'helperscripts\\windows_redirect.cmd'],
+         {env: {PATH: process.env.PATH + ':/mnt/c/Windows/System32'}})
+        /*
+        let redir_proc = spawnSync('runas.exe', ['/user:Administrator', 'netsh.exe interface portproxy add v4tov4 listenport=80 listenaddress=127.0.0.1' +
+        'connectport=3000 connectaddress=127.0.0.1'], {env: {PATH: process.env.PATH + ':/mnt/c/Windows/System32'}});
+        */
         if(redir_proc.status != 0){
             throw 'Failed to redirect port 80 to port 3000!\n' +
             'Failed output: \n' +
             redir_proc.stdout ? redir_proc.stdout.toString('utf8') + '\n' : '' +
             redir_proc.stderr ? redir_proc.stderr.toString('utf8') + '\n' : '';
         }
-        
+        /*
         redir_proc = spawnSync('netsh.exe', ['interface', 'portproxy', 'add', 'v4tov4', 'listenport=443', 'listenaddress=127.0.0.1',
-        'connectport=3001', 'connectaddress=127.0.0.1'],  {shell: '/bin/bash'});
+        'connectport=3001', 'connectaddress=127.0.0.1'],  {shell: '/bin/bash', stdin: process.stdin});
         
         if(redir_proc.status != 0){
             throw 'Failed to redirect port 443 to port 3001!\n' +
@@ -830,6 +834,7 @@ async function redirectPorts(state){
             redir_proc.stdout ? redir_proc.stdout.toString('utf8') + '\n' : '' +
             redir_proc.stderr ? redir_proc.stderr.toString('utf8') + '\n' : '';
         }
+        */
     }
     return state;
 }
