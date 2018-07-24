@@ -22,7 +22,7 @@ function SwitchToVerification(){
 
 function SwitchToForgotPass(){
 	var form_container = document.getElementById('container');
-   document.getElementById('pageIDText').innerText = 'Forgot Password';
+   document.getElementById('pageIDText').innerText = 'Forgot Password?';
 	document.getElementById('resetP').innerText = 'We will send you an email with a link to reset your password.';
 	document.getElementById("resetP").style.display = "block";
 	
