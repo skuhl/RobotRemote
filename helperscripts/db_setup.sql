@@ -34,7 +34,9 @@ CREATE TABLE IF NOT EXISTS timeslots (id INT UNSIGNED AUTO_INCREMENT KEY NOT NUL
                                       approved BIT(1) NOT NULL DEFAULT 0, /*Is this timeslot approved?*/
                                       act_num INT UNSIGNED NULL DEFAULT NULL,
                                       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-                                      INDEX user_id (user_id)) ENGINE INNODB; 
+                                      INDEX user_id (user_id)) ENGINE INNODB;
+
+CREATE TABLE IF NOT EXISTS resetrequests (passrequest CHAR(64) KEY NOT NULL, email char(64) NOT NULL)ENGINE INNODB;
 
 DROP PROCEDURE IF EXISTS user_request;
 

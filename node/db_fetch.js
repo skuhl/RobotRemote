@@ -1,4 +1,5 @@
 const mysql = require('mysql2/promise');
+const crypto = require('crypto');
 const minutes = 30;
 
 let pool = null;
@@ -479,7 +480,66 @@ module.exports = {
         }
 
         return user_info;
-    }
+    },
+    
+    reset_request: async function(email){
+    	let connection = await pool.getConnection();
+    	let secret = crypto.randomBytes(32).toString('hex');
+        try{
+            let [results, fields] = await connection.query('SELECT id FROM users WHERE email=?', [email]);
+            
+            if(results.length != 1){
+                throw {
+                    reason: "Couldn't find user with that email!",
+                    client_reason: 'Invalid query string.'
+                }
+            }
+            await connection.query("INSERT INTO resetrequests (passrequest, email) VALUES(?,?)", [secret, email]);
+            
+        }finally{
+            connection.release();
+        }
+        return secret;
+    },
+    
+    update_passwword: async function(secret, new_pass){
+      let salt = crypto.randomBytes(32).toString('hex');
+      let hash = crypto.createHash('sha256').update(new_pass + salt).digest('hex');
+		let connection = await pool.getConnection();
+   	
+   	try{
+   		let [results, fields] = await connection.query('SELECT email FROM users WHERE passrequest=?', [secret]);
+            
+         if(results.length != 1){
+             throw {
+                 reason: "Couldn't find reset request in database!",
+                 client_reason: 'Invalid query string.'
+             }
+         }
+
+         let used = results[0].used;
+         let email = results[0].email;
+         
+         if(email == null){
+            throw {
+                reason: "Email was NULL",
+                client_reason: 'Internal database error.'
+            };
+        }
+   		
+   		let [res, fields] = await connection.query('UPDATE users SET passhash= ?, passsalt=? WHERE email=?' [hash, salt, email]);
+   		
+         if(results.length != 1){
+             throw {
+                 reason: "Couldn't find user with that email!",
+                 client_reason: 'Invalid query string.'
+             }
+         }
+      }finally{
+       	connection.release();
+   	}
+   	return;
+      }
 };
 
 async function clean_db(){

@@ -952,9 +952,9 @@ class RobotRemoteServer {
                 return;
             }
             
-            user_auth.ResetRequest(req.body.username).then(function(/*some identifier*/){
+            db_fetch.reset_request(req.body.username).then(function(secret){
 	            	res.status(200).send('success!');
-	               let link = self._options['domain_name_secure'] + "/NewPass.html?email=" + encodeURIComponent(req.body.username) + "&identifier=" + encodeURIComponent(/*same identifier*/);
+	               let link = self._options['domain_name_secure'] + "/NewPass.html?email=" + encodeURIComponent(req.body.username) + "&identifier=" + encodeURIComponent(secret);
 	               
 	               mail.mail(req.body.username, __dirname + '/Emails/reset_pass.txt', {link: link, name: req.body.username}).then(function(){
 	               	this.info_logger.info('Sent re-set email to user!');
@@ -967,6 +967,7 @@ class RobotRemoteServer {
 		         	this.err_logger.error(err);
 		            res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
 		      }.bind(this));
+		      res.redirect(302, '/Home.html');
         }.bind(this));
         
         this._app.post('/NewPass.html', function(req,res){
@@ -976,7 +977,7 @@ class RobotRemoteServer {
         			return;
         		}
         		
-        		user_auth.update_password(/*Email Somehow*/req.body.password).then(function(){
+        		db_fetch.update_password(req.query.secret, req.query.password).then(function(){
         				res.status(200).send('Success!');
         			}.bind(this),function(err){
                 this.err_logger.error(err);
