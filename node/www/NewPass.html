@@ -4,12 +4,14 @@
   </div>
   <form action="javascript:UpdatePass()" name="update" method="post">
     <label for="password">Password:</label>
-    <input type="password" name="password" onkeyup="validate()" required/> </br>
+    <input type="password" name="password" onkeyup="validate()" required/>
+    <p id="pass_error" class="error"></p>
   
     <label for="REpassword">Retype Password: </label>
-    <input type="password" name="REpassword" onkeyup="validate()" required/> </br>
+    <input type="password" name="REpassword" onkeyup="validate()" required/>
+    <p id="repass_error" class="error"></p>
     
-    <button type="submit" id="sub_btn" onsubmit="update_pass()" >Submit</button>
+    <button type="submit" id="sub_btn" onsubmit="UpdatePass()" >Submit</button>
   </form>
 </div>
 <script src="/js/validate.js"></script>

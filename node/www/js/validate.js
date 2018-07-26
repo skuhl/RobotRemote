@@ -1,13 +1,24 @@
 var form = document.forms.signup;
-var password = form.elements.password;
-var passConfirm = form.elements.REpassword;
-var reason = form.elements.reason;
+var reason;
+var password;
+var passConfirm;
+
+if(form == null){
+	form = document.forms.update;	
+}else {
+	reason = form.elements.reason;
+}
+
+password = form.elements.password;
+passConfirm = form.elements.REpassword;
+
 
 var timeout = null;
 
 function validate()
 {
 	document.getElementById("sub_btn").disabled = true;
+	
 	var pass = [0,0];
 
 	var cap = /([A-Z])/;
