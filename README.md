@@ -6,6 +6,7 @@ There are 3 basic types processes. Each of these process can be on a different m
 - The Webserver
 - The Arm Server
 - The Webcam Server 
+
 The Webserver communicates with the Arm Server and the Camera Servers, in order to match a client with a group of an Arm Server with any Camera Servers it may have. All this is done over SSL, so only the certain client may connect. After this is done, websockets are used for streaming camera video to the client from the Webcam Servers, as well as for sending data about what the user is pressing. The Arm Server takes this pressed data, and sends it over modbus TCP to a connected PLC, which actuates some coils in order to press buttons on the robot. Because we are using websockets, if the client disconnects for some reason without properly terminating, say the network cable is unplugged, the Arm Server can and will detect this, and stop actuating any coils, instead of naively waiting for the client to send a message to actuate no coils.
 ## Setup
 This setup is meant for Linux, specifically Ubuntu. If you would like to run on Windows 10, these instructions are compatable with [Ubuntu for Windows](https://www.microsoft.com/en-us/store/p/ubuntu/9nblggh4msv6). Before starting, if you are using Ubunut for windows, you will need to install [ffmpeg on windows](ffmpeg.org), and make sure your that ffmpeg.exe is on your PATH.
