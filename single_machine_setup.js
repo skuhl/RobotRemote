@@ -1,3 +1,7 @@
+/* 
+TODO add option to skip non-fatal errors (need to turn functions into generators, then yield instead of throw)
+TODO add option to skip parts that have fatal errors (probably bad)
+*/
 const { spawnSync } = require('child_process');
 const prompt = require('prompt');
 const fs = require('fs');
@@ -53,6 +57,12 @@ class WebcamFormat {
         return this.format === other.format &&
         this.resolution === other.resolution &&
         this.framerate === other.framerate;
+    }
+}
+
+class NonFatalError extends Error {
+    constructor(msg){
+        super(msg);
     }
 }
 
@@ -555,6 +565,7 @@ async function setupClientCertificate(state){
 }
 
 async function setupArmsAndCameras(state){
+    
     schema = {
         arms: {
             description: 'How many arms are you using?',
@@ -562,19 +573,31 @@ async function setupArmsAndCameras(state){
             message: `Must be between 1 and ${MAX_ARMS} arms.`,
             default: 1,
             required: false
-        },
+        }
+    }
+
+    let arms_result = await prompt_promise(schema);
+    state.num_arms = arms_result.arms;
+
+    let num_cameras = state.mach_type === 'linux' ? linuxGetVidDevNames().length : windowsGetVidDevNames().length;
+    let max_cameras = Math.floor(num_cameras / state.num_arms);
+    
+    max_cameras = Math.min(max_cameras, 3);
+    
+    if(max_cameras <= 0) throw new NonFatalError(`Not enough cameras are connected for ${state.num_arms} arms!`);
+    
+    schema = {
         cameras: {
             description: 'How many cameras are you using per arm?',
-            conform: (val) => Number(val) != NaN && val > 0 && val <= 3,
-            message: 'Must be between 1 and 3 cameras.',
-            default: 2,
+            conform: (val) => Number(val) != NaN && val > 0 && val <= max_cameras,
+            message: `Must be between 1 and ${max_cameras} cameras.`,
+            default: Math.min(2, max_cameras),
             required: false
         }
     }
 
-    let num_results = await prompt_promise(schema);
-    state.num_cameras = num_results.cameras;
-    state.num_arms = num_results.arms;
+    let cameras_result = await prompt_promise(schema);
+    state.num_cameras = cameras_result.cameras;
 
     let base_pin_assignments = require('./arm_server/settings_example.json').pin_assignments;
     //generate all python settings
@@ -632,11 +655,66 @@ async function setupArmsAndCameras(state){
  
 async function setupWebcamSettings(state){
     let webcams;
+    let blacklist = [];
     if(state.mach_type === 'linux'){
-        webcams = windowsGetVidDevNames();
+        webcams = linuxGetVidDevNames();
     }else{
         webcams = windowsGetVidDevNames();
     }
+
+    logger.info('\nAvailable Webcams:');
+    let webcam_str = '';
+    for(let k = 0; k < webcams.length; k++){
+        webcam_str += `${k+1}. ${webcams[k]}\n`;;
+    }
+    logger.info(webcam_str);
+    
+    state.webcams = [];
+    for(let i = 0; i < state.num_arms; i++){
+        state.webcams[i] = [];
+        for(let j = 0; j < state.num_cameras; j++){
+            //TODO Should you be able to choose a webcam multiple times?
+            //TODO should there be a dummy webcam?
+            let schema = {
+                webcam: {
+                    description: `What webcam would you like to use for arm ${i}, camera ${j}? (enter the number of the webcam)`,
+                    conform: (val) => Number(val) != NaN && val > 0 && val <= webcams.length && !blacklist.includes(val),
+                    message: `Must be a numeric value of a non-chosen webcam.`,
+                    required: true
+                }
+            }
+
+            let chosen_webcam = await prompt_promise(schema);
+
+            let formats = windowsGetDeviceFormats(webcams[chosen_webcam.webcam - 1]);
+            let formats_str = '';
+            for(let k = 0; k < formats.length; k++){
+                formats_str += `${k+1}. ${formats[k].toString()}\n`;
+            }
+            logger.info('\nVideo output options: ');
+            logger.info(formats_str);
+            
+            schema = {
+                format: {
+                    description: `What video output would you like to use? (enter the number of the format)`,
+                    conform: (val) => Number(val) != NaN && val > 0 && val <= formats.length,
+                    message: `Must be a numeric value of a format.`,
+                    required: true
+                }
+            }
+
+            let chosen_format = await prompt_promise(schema);
+            
+            if(state.mach_type === 'linux'){
+                //I have a feeling something different might happen here for linux.
+                state.webcams[i].push({webcam_name: webcams[chosen_webcam.webcam - 1], webcam_format: formats[chosen_format.format - 1]});
+            }else{
+                state.webcams[i].push({webcam_name: webcams[chosen_webcam.webcam - 1], webcam_format: formats[chosen_format.format - 1]});
+            }
+
+        }
+    }
+
     return state;
 }
 
@@ -718,12 +796,11 @@ ${(()=>{
     let exec_ffmpeg = '';
 
     if(state.mach_type === 'linux'){
-        for(let i = 0; i<state.num_arms; i++){
-            for(let j = 0; j<state.num_cameras; j++){
-                
+        for(let i = 0; i<state.webcams.length; i++){
+            for(let j = 0; j<state.webcams[i].length; j++){
                 exec_ffmpeg += `    let ffmpeg_${i}_${j}_proc = spawn('ffmpeg', ['-nostdin', '-loglevel', 'fatal', '-nostats', '-f', 'v4l2', 
-            '-framerate', '24', '-video_size', '640x480', '-i', '/dev/video${i*state.num_cameras + j}', '-f', 'mpegts',
-            '-codec:v', 'mpeg1video', '-s', '640x480', '-b:v', '1000k', '-bf', '0', 'http://localhost:${CAMERA_PORTS_START + i*state.num_cameras + j*3 + 1}'],
+            '-framerate', '${state.webcams[i][j].webcam_format.framerate}', '-video_size', '${state.webcams[i][j].webcam_format.resolution}', '-i', '${state.webcams[i][j].webcam_name}', '-f', 'mpegts',
+            '-codec:v', 'mpeg1video', '-s', '${state.webcams[i][j].webcam_format.resolution}', '-b:v', '1000k', '-bf', '0', 'http://localhost:${CAMERA_PORTS_START + i*state.num_cameras + j*3 + 1}'],
                 {stdio:[
                     0, 
                     process.stdout, 
@@ -734,16 +811,15 @@ ${(()=>{
             }
         }
     }else{
-        for(let i = 0; i<state.num_arms; i++){
-            for(let j = 0; j<state.num_cameras; j++){
-                let interfaces = windowsGetVidDevNames();
+        for(let i = 0; i<state.webcams.length; i++){
+            for(let j = 0; j<state.webcams[i].length; j++){
                 //This REALLY only works if there's only one camera on one arm server;
                 //There needs to be a better way to select what camera you want for certain things.
                 //There also needs to be a way to select resolution and framerate. Cuz right now, if the camera doesn't support
                 //30 fps at 640x480, this will just fail.
                 exec_ffmpeg += `    let ffmpeg_${i}_${j}_proc = spawn('ffmpeg.exe', ['-nostdin', '-loglevel', 'fatal', '-nostats', '-f', 'dshow', 
-            '-framerate', '30', '-video_size', '640x480', '-i', 'video=${interfaces[i*state.num_cameras + j]}', '-f', 'mpegts',
-            '-codec:v', 'mpeg1video', '-s', '640x480', '-b:v', '1000k', '-bf', '0', 'http://localhost:${CAMERA_PORTS_START + i*state.num_cameras + j*3 + 1}'],
+            '-framerate', '${state.webcams[i][j].webcam_format.framerate}', '-video_size', '${state.webcams[i][j].webcam_format.resolution}', '-i', 'video=${state.webcams[i][j].webcam_name}', '-f', 'mpegts',
+            '-codec:v', 'mpeg1video', '-s', '${state.webcams[i][j].webcam_format.resolution}', '-b:v', '1000k', '-bf', '0', 'http://localhost:${CAMERA_PORTS_START + i*state.num_cameras + j*3 + 1}'],
                 {stdio:[
                     0, 
                     process.stdout, 
