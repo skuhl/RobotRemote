@@ -19,5 +19,5 @@ var UpdatePass = function(){
 	}
 	xms.open("POST", location.protocol + '//' + window.location.host + '/NewPass.html', true);
 	xms.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
-   xms.send(JSON.stringify({password:pass}));
+   xms.send(JSON.stringify({password:pass, email:document.getElementById('mail').value, identifier:document.getElementById('secret').value}));
 }

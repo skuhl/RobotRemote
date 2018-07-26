@@ -528,10 +528,10 @@ module.exports = {
                 client_reason: 'Internal database error.'
             };
         }
+
+   		let [res, field] = await connection.query('UPDATE users SET passhash= ?, passsalt=? WHERE email=?', [hash, salt, email]);
    		
-   		[res, fields] = await connection.query('UPDATE users SET passhash= ?, passsalt=? WHERE email=?' [hash, salt, email]);
-   		
-         if(results.length != 1){
+         if(res.affectedRows != 1){
              throw {
                  reason: "Couldn't find user with that email!",
                  client_reason: 'Invalid query string.'

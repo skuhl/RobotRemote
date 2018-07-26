@@ -970,7 +970,10 @@ class RobotRemoteServer {
         
         this._app.get('/NewPass.html', function(req,res){
         		res.append('Cache-Control', "no-cache, no-store, must-revalidate");
-				res.status(200).send(html_fetcher(__dirname + '/www/NewPass.html', req));
+				res.status(200).send(html_fetcher(__dirname + '/www/NewPass.html', req, {afterNavbar: function(){
+					return `<input type="hidden" name="mail" id="mail" value="${req.query.email}">
+							  <input type="hidden" name="secret" id="secret" value="${req.query.identifier}">`
+				}}));
         }.bind(this));
         
         this._app.post('/NewPass.html', function(req,res){
@@ -979,8 +982,7 @@ class RobotRemoteServer {
         			res.status(400).send('Missing new password!');
         			return;
         		}
-        		this.info_logger.info(req.query.email);
-        		db_fetch.update_password(req.query.email, req.query.identifier, req.query.password).then(function(){
+        		db_fetch.update_password(req.body.email, req.body.identifier, req.body.password).then(function(){
         				res.status(200).send('Success!');
         			}.bind(this),function(err){
                 this.err_logger.error(err);
