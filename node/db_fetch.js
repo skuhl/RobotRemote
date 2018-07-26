@@ -494,6 +494,9 @@ module.exports = {
                     client_reason: 'Invalid query string.'
                 }
             }
+            
+            await connection.query("DELETE FROM resetrequests WHERE email=?", [email]);
+            
             await connection.query("INSERT INTO resetrequests (passrequest, email) VALUES(?,?)", [secret, email]);
             
         }finally{
@@ -502,13 +505,15 @@ module.exports = {
         return secret;
     },
     
-    update_passwword: async function(secret, new_pass){
+    update_password: async function(email, secret, new_pass){
       let salt = crypto.randomBytes(32).toString('hex');
       let hash = crypto.createHash('sha256').update(new_pass + salt).digest('hex');
 		let connection = await pool.getConnection();
    	
    	try{
-   		let [results, fields] = await connection.query('SELECT email FROM users WHERE passrequest=?', [secret]);
+   		let [results, fields] = await connection.query('SELECT passrequest FROM resetrequests WHERE email=?', [email]);
+                  
+         let passreq= results[0].passrequest;
             
          if(results.length != 1){
              throw {
@@ -516,18 +521,15 @@ module.exports = {
                  client_reason: 'Invalid query string.'
              }
          }
-
-         let used = results[0].used;
-         let email = results[0].email;
          
-         if(email == null){
+         if(passreq != secret){
             throw {
-                reason: "Email was NULL",
+                reason: "Invalid Request",
                 client_reason: 'Internal database error.'
             };
         }
    		
-   		let [res, fields] = await connection.query('UPDATE users SET passhash= ?, passsalt=? WHERE email=?' [hash, salt, email]);
+   		[res, fields] = await connection.query('UPDATE users SET passhash= ?, passsalt=? WHERE email=?' [hash, salt, email]);
    		
          if(results.length != 1){
              throw {

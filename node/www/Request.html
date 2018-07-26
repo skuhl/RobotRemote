@@ -4,19 +4,22 @@
   </div>
   <form action="javascript:SubmitRequest()" name="signup" method="post">
     <label for="username">Email:</label>
-    <input type="email" name="username" required /> </br>
+    <input type="email" name="username" required /> 
     
     <label for="password">Password: </label>
     <p id="sub">(Include one capital and lowercase letter, number, and special character.)</p>
-    <input type="password" name="password" onkeyup="validate()" required/> </br>
-    <p id="pass_error" class="error"></p></br>
+    <input type="password" name="password" onkeyup="validate()" required/>
+    <p id="pass_error" class="error"></p>
     
     <label for="REpassword">Retype Password: </label>
-    <input type="password" name="REpassword" onkeyup="validate()" required/> </br>
-    <p id="repass_error" class="error"></p></br>
+    <input type="password" name="REpassword" onkeyup="validate()" required/> 
+    <p id="repass_error" class="error"></p>
     
     <label for="reason">Please state the reason for your request:</label>
-    <textarea name="reason" cols="20" rows="3" required></textarea> </br>
+    <textarea name="reason" cols="20" rows="3" required></textarea>
+    
+    <input type="hidden" name="email" id="email" value="">
+    <input type="hidden" name="sec" id="sec" value="">
 
     <button type="submit" id="sub_btn" onsubmit="SubmitRequest()" >Submit</button>
   </form>

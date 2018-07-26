@@ -953,13 +953,11 @@ class RobotRemoteServer {
             }
             
             db_fetch.reset_request(req.body.username).then(function(secret){
-	            	res.status(200).send('success!');
 	               let link = self._options['domain_name_secure'] + "/NewPass.html?email=" + encodeURIComponent(req.body.username) + "&identifier=" + encodeURIComponent(secret);
 	               
 	               mail.mail(req.body.username, __dirname + '/Emails/reset_pass.txt', {link: link, name: req.body.username}).then(function(){
 	               	this.info_logger.info('Sent re-set email to user!');
-	               }.bind(this))
-	               .catch(function(err){
+	               }.bind(this)).catch(function(err){
 	                   this.err_logger.error('Failed to send re-set email to user.');
 	                   this.err_logger.error(err);
 	               }.bind(this));
@@ -970,14 +968,19 @@ class RobotRemoteServer {
 		      res.redirect(302, '/Home.html');
         }.bind(this));
         
+        this._app.get('/NewPass.html', function(req,res){
+        		res.append('Cache-Control', "no-cache, no-store, must-revalidate");
+				res.status(200).send(html_fetcher(__dirname + '/www/NewPass.html', req));
+        }.bind(this));
+        
         this._app.post('/NewPass.html', function(req,res){
         		res.append('Cache-Control', "no-cache, no-store, must-revalidate");
         		if(!req.body.password){
         			res.status(400).send('Missing new password!');
         			return;
         		}
-        		
-        		db_fetch.update_password(req.query.secret, req.query.password).then(function(){
+        		this.info_logger.info(req.query.email);
+        		db_fetch.update_password(req.query.email, req.query.identifier, req.query.password).then(function(){
         				res.status(200).send('Success!');
         			}.bind(this),function(err){
                 this.err_logger.error(err);
