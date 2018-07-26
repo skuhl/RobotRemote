@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS timeslots (id INT UNSIGNED AUTO_INCREMENT KEY NOT NUL
                                       INDEX user_id (user_id)) ENGINE INNODB;
 
 CREATE TABLE IF NOT EXISTS resetrequests (passrequest CHAR(64) NOT NULL,
-                                          email CHAR(64) KEY NOT NULL,
+                                          email CHAR(191) KEY NOT NULL,
                                           FOREIGN KEY (email) REFERENCES users(email)) ENGINE INNODB;
 
 DROP PROCEDURE IF EXISTS user_request;
