@@ -27,8 +27,8 @@ This setup is meant for Linux, specifically Ubuntu. If you would like to run on 
 
 ## Options
 ### Node webserver (node/settings.json)
-|Option| Purpose| Possible Values|
-|------|--------------|-------------------|
+| Option     | Purpose | Possible Values |
+| ---------- | ------- | --------------- |
 |`http_port`| Specify port| An integer between 0 and 65535, should be above 1024|
 |`https_port`| Specify secure port| An integer between 0 and 65535,  should be above 1024|
 |`mysql_host`|Specify the location of the mysql server|Host name or IP address|
@@ -56,8 +56,8 @@ This setup is meant for Linux, specifically Ubuntu. If you would like to run on 
 |`multiprocess_logging_port`| The port on which the logger will listen and send to | An integer between 0 and 65535  should be above 1024|
 
 ### Arm Server(arm_server/settings.json)
-|Option| Purpose| Possible Values|
-|------|--------------|-------------------|
+| Option     | Purpose | Possible Values |
+| ---------- | ------- | --------------- |
 |`verbose`| Allows you to control the amount of output from this server | `true` will print more information, while `false` will print only the essentials (server errors)|
 |`socket_port`| Specify which port this actuator server will take commands from | This is a small integer. Try to keep this above 1024, as ports below that are reserved for other well-known services. This value must match what you have for this actuator in the webserver configuration.  Any integer between 1024 and 65535 is acceptable.|
 |`websocket_port`|Specify the socket for the python actuator server to communicate with the client.|Any integer between 1024 and 65535 is acceptable.|
