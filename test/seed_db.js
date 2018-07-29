@@ -101,7 +101,9 @@ const SEED_USERS = [
     new SeedUser('email@email.com', 'password1', 0, 0, SEED_LOGINREQUESTS[0]),
     new SeedUser('email2@xyz.com', 'password2', 0, 0, SEED_LOGINREQUESTS[1]),
     new SeedUser('email3@xyz.com', 'password3', 1, 0, null),
-    new SeedUser('admin@xyz.com', 'password4', 1, 1, null)
+    new SeedUser('email4@xyz.com', 'password4', 1, 0, null),
+    new SeedUser('admin@xyz.com', 'password5', 1, 1, null),
+    new SeedUser('admin2@xyz.com', 'password6', 1, 1, null)
 ]
 
 const SEED_TIMESLOTS = [
