@@ -131,15 +131,15 @@ async function seedDB(pool){
     promise = Promise.all(promises);
     await promise;
 
-    promises = [];
-
+    //I tried doing these inserts concurrently; It deadlocks way too often.
+    //Looking into it, it has something to do with unique keys, and things called 'gap locks'.
+    //There are other ways to resolve these locks, such as using transactions in specific ways,
+    //or probably a table lock, or ordering the insertions. They all cut into concurrency too.
+    //we'll just insert them sequentially instead.
     for(let user of SEED_USERS){
-        promises.push(user.insert(pool));
+        await user.insert(pool);
     }
 
-    promise =  Promise.all(promises);
-
-    await promise;
     promises = [];
 
     for(let timeslot of SEED_TIMESLOTS){
