@@ -83,3 +83,17 @@ canvas {
 .notTop {
    margin-left: 8px;
 }
+.cam {
+   position:fixed;
+   height:110px;
+   width:195px;
+   margin-top: 25px;
+   margin-left: 50px;
+}
+
+.main {
+   position:fixed;
+   height:505px;
+   width:900px;
+   margin: 165px 50px 0;
+}

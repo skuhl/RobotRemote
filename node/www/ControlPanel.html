@@ -1,6 +1,15 @@
 <script src="/js/jsmpeg.min.js"></script>
-<canvas class="cam"></canvas>
-<canvas class="cam"></canvas>
+<canvas id="cam1" class="cam main" onclick="swap('cam1')"></canvas>
+<canvas id="cam2" class="cam" onclick="swap('cam2')"></canvas>
+
+<script>
+  function swap(camID){
+    var x = document.getElementsByClassName("main");
+    x[0].classList.remove("main");
+    var cam = document.getElementById(camID);
+    cam.classList.add("main");
+  }
+</script>
 
 <!--wrapper for the whole gosh darn button pannel-->
 <div class="pendant">
