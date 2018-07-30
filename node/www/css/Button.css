@@ -1,63 +1,100 @@
-   .canvas{
-         float:left;
-         width: 45%;
-         margin: 15px 20px 15px 20px;
-      }
-      
-   .column {
-        float:left;
-        width: 100;
-        padding: 0px 10px 10px 10px;
-      }
+.pendant {
+   background-color: #777;
+   float: right;
+   height: 100%;
+   margin-top: -40px;
+}
+.camP {
+   width: 400px;
+   height: 250px;
+   margin: 75px auto 0;
+   display: block;
+   border: 5px solid #111;
+}
+canvas {
+   background-color:#ffffff;
+}
+.column {
+   float:left;
+   width: 100;
+   padding: 0px 10px 10px 10px;
+}
+.column1 {
+   float:left;
+   width: 100;
+   padding: 20px;
+   margin-left:2px;
+}
+.column2 {
+   float:left;
+   width: 100;
+   padding: 20px;
+}
+.row:after {
+   content: "";
+   display: table;
+   clear: both;
+}
+.rowTop {
+   padding: 15px 10px 10px 10px;
+   content: "";
+   display: table;
+   clear: both;
+}
+.button {
+   background-color:#d2d2d2;
+   border: none;
+   color: black;
+   padding: 4px 5px;
+   width: 60px;
+   text-align: center;
+   font-size: 10px;
+   margin: 1px 1px;
+   cursor: pointer;
+}
+.buttonTop {
+   padding: 8px 10px;
+   width: 96px;
+   text-align: center;
+   font-size: 10px;
+   margin: 1px 1px;
+   cursor: pointer;
+}
+.button1 {
+   padding: 8px 10px;
+   width: 60px;
+   height: 40px;
+   text-align: center;
+   font-size: 10px;
+   margin: 1px 1px;
+   cursor: pointer;
+}
+.btnimg {
+   background-repeat: no-repeat;
+   background-position: center;
+}
+.blue {
+   background-color: #0080FF;
+   color: black;
+}
+.blk {
+   background-color: #111;
+   color: #fff;
+}
+.notTop {
+   margin-left: 8px;
+}
+.cam {
+   position:fixed;
+   height:110px;
+   width:195px;
+   margin-top: 25px;
+   margin-left: 50px;
+}
 
-   .column1 {
-        float:left;
-        width: 100;
-        padding: 20px;
-        margin-left:10px;
-      }
-   .column2 {
-        float:left;
-        width: 100;
-        padding: 20px;
-
-      }
-   .row:after {
-        content: "";
-        display: table;
-        clear: both;
-      }
-   .rowTop{
-        padding: 15px 10px 10px 10px;
-        content: "";
-        display: table;
-        clear: both;
-      }
-   .button{
-        background-color:#d2d2d2;
-        border: none;
-        color: #333;
-        padding: 4px 5px;
-        width: 60px;
-        text-align: center;
-        font-size: 10px;
-        margin: 1px 1px;
-        cursor: pointer;
-      }
-   .buttonTop{
-       padding: 8px 10px;
-       width: 96px;
-       text-align: center;
-       font-size: 10px;
-       margin: 1px 1px;
-       cursor: pointer;
-      }
-   .button1{
-       padding: 8px 10px;
-       width: 60px;
-       height: 40px;
-       text-align: center;
-       font-size: 10px;
-       margin: 1px 1px;
-       cursor: pointer;
-      }
+.main {
+   position:fixed;
+   height:505px;
+   width:900px;
+   margin: 165px 50px 0;
+}

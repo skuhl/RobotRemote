@@ -28,6 +28,160 @@
     </ul>
   </div>
   <body>
+<script src="/js/jsmpeg.min.js"></script>
+<canvas ID="cam1"></canvas>
+<canvas ID="cam2"></canvas>
+<canvas ID="cam3"></canvas>
+
+<!--wrapper for the whole gosh darn button pannel-->
+<div class="column pendant">
+  <div class="rowTop"><!--top row of buttons-->
+    <button class="button buttonTop" onmousedown="ButtonPressed('F1')" onmouseup="ButtonReleased('F1')">F1</button> 
+    <button class="button buttonTop" onmousedown="ButtonPressed('F2')" onmouseup="ButtonReleased('F2')">F2</button>
+    <button class="button buttonTop" onmousedown="ButtonPressed('F3')" onmouseup="ButtonReleased('F3')">F3</button> 
+    <button class="button buttonTop" onmousedown="ButtonPressed('F4')" onmouseup="ButtonReleased('F4')">F4</button>
+    <button class="button buttonTop" onmousedown="ButtonPressed('F5')" onmouseup="ButtonReleased('F5')">F5</button> 
+  </div><!--end top row-->
+  <!--second row starts-->
+  <div class="row">
+    <div class="column">
+      <button class="button button1" onmousedown="ButtonPressed('STEP')" onmouseup="ButtonReleased('STEP')">STEP</button> 
+    </div>
+    <div class="column">
+      <button class="button" onmousedown="ButtonPressed('MENU')" onmouseup="ButtonReleased('MENU')">MENU</button>
+      <button class="button" onmousedown="ButtonPressed('SELECT')" onmouseup="ButtonReleased('SELECT')">SELECT</button> 
+      <button class="button" onmousedown="ButtonPressed('EDIT')" onmouseup="ButtonReleased('EDIT')">EDIT</button>
+      <button class="button" onmousedown="ButtonPressed('DATA')" onmouseup="ButtonReleased('DATA')">DATA</button>  
+      <button class="button" onmousedown="ButtonPressed('FCTN')" onmouseup="ButtonReleased('FCTN')">FCTN</button>
+    </div>
+    <div class="column">
+      <button class="button button1" onmousedown="ButtonPressed('SHIFT')" onmouseup="ButtonReleased('SHIFT')">SHIFT</button>
+    </div>
+  </div><!--second row ends-->
+  <!--Begin row w/ arrows-->
+  <div class="row">
+    <div class="column column1">
+      <button class="button" onmousedown="ButtonPressed('PREV')" onmouseup="ButtonReleased('PREV')">PREV</button> 
+    </div>
+    <div class="column2">
+      <button class="button" onmousedown="ButtonPressed('<')" onmouseup="ButtonReleased('<')"><</button> 
+    </div>
+    <div class="column">
+      <div class="row">
+        <button class="button" onmousedown="ButtonPressed('^')" onmouseup="ButtonReleased('^')">^</button> 
+      </div>
+      <div class="row">
+        <button class="button" onmousedown="ButtonPressed('v')" onmouseup="ButtonReleased('v')">v</button>
+      </div>
+    </div>
+    <div class="column2">
+      <button class="button" onmousedown="ButtonPressed('>')" onmouseup="ButtonReleased('>')">></button> 
+    </div>
+    <div class="column2">
+      <button class="button" onmousedown="ButtonPressed('NEXT')" onmouseup="ButtonReleased('NEXT')">NEXT</button> 
+    </div>
+  </div>
+  <!--botton block of buttons-->
+  <div class="row">
+    <!--Numpad button set-->
+    <div class="column">
+      <div class="row">
+        <button class="button" onmousedown="ButtonPressed('RESET')" onmouseup="ButtonReleased('RESET')">RESET</button> 
+        <button class="button" onmousedown="ButtonPressed('BKSPC')" onmouseup="ButtonReleased('BKSPC')">BKSPC</button> 
+        <button class="button" onmousedown="ButtonPressed('ITEM')" onmouseup="ButtonReleased('ITEM')">ITEM</button>
+      </div>
+      <div class="row">
+        <button class="button" onmousedown="ButtonPressed('7')" onmouseup="ButtonReleased('7')">7</button> 
+        <button class="button" onmousedown="ButtonPressed('8')" onmouseup="ButtonReleased('8')">8</button>
+        <button class="button" onmousedown="ButtonPressed('9')" onmouseup="ButtonReleased('9')">9</button>
+      </div>
+      <div class="row">
+        <button class="button" onmousedown="ButtonPressed('4')" onmouseup="ButtonReleased('4')">4</button> 
+        <button class="button" onmousedown="ButtonPressed('5')" onmouseup="ButtonReleased('5')">5</button>
+        <button class="button" onmousedown="ButtonPressed('6')" onmouseup="ButtonReleased('6')">6</button>
+      </div>
+      <div class="row">
+        <button class="button" onmousedown="ButtonPressed('1')" onmouseup="ButtonReleased('1')">1</button> 
+        <button class="button" onmousedown="ButtonPressed('2')" onmouseup="ButtonReleased('2')">2</button>
+        <button class="button" onmousedown="ButtonPressed('3')" onmouseup="ButtonReleased('3')">3</button>
+      </div>
+      <div class="row">
+        <button class="button" onmousedown="ButtonPressed('0')" onmouseup="ButtonReleased('0')">0</button> 
+        <button class="button" onmousedown="ButtonPressed('.')" onmouseup="ButtonReleased('.')">.</button>
+        <button class="button" onmousedown="ButtonPressed(',')" onmouseup="ButtonReleased(',')">,</button>
+      </div>
+      <div class="row">
+        <button class="button" onmousedown="ButtonPressed('-')" onmouseup="ButtonReleased('-')">-</button> 
+        <button class="button" onmousedown="ButtonPressed('POSH')" onmouseup="ButtonReleased('POSH')">POSH</button>
+        <button class="button" onmousedown="ButtonPressed('I/O')" onmouseup="ButtonReleased('I/O')">I/O</button>
+      </div>
+    </div><!--numpad set ends-->
+    <!--middle verticle button set-->
+    <div class="column">
+      <div class="row">
+        <button class="button" onmousedown="ButtonPressed('ENTER')" onmouseup="ButtonReleased('ENTER')">ENTER</button>
+      </div>
+      <div class="row">
+        <button class="button" onmousedown="ButtonPressed('TOOL1')" onmouseup="ButtonReleased('TOOL1')">TOOL1</button>
+      </div>
+      <div class="row">
+        <button class="button" onmousedown="ButtonPressed('TOOL2')" onmouseup="ButtonReleased('TOOL2')">TOOL2</button>
+      </div>
+      <div class="row">
+        <button class="button" onmousedown="ButtonPressed('MVMU')" onmouseup="ButtonReleased('MVMU')">MVMU</button>
+      </div>
+      <div class="row">
+        <button class="button" onmousedown="ButtonPressed('SETUP')" onmouseup="ButtonReleased('SETUP')">SETUP</button>
+      </div>
+      <div class="row">
+        <button class="button" onmousedown="ButtonPressed('STATUS')" onmouseup="ButtonReleased('STATUS')">STATUS</button>
+      </div>
+    </div><!--middle block ends-->
+    <!--Final block-->
+    <div class="column">
+      <div class="row">
+        <button class="button" onmousedown="ButtonPressed('HOLD')" onmouseup="ButtonReleased('HOLD')">HOLD</button> 
+        <button class="button" onmousedown="ButtonPressed('-X')" onmouseup="ButtonReleased('-X')">-X</button> 
+        <button class="button" onmousedown="ButtonPressed('+X')" onmouseup="ButtonReleased('+X')">+X</button>
+      </div>
+      <div class="row">
+        <button class="button"onmousedown="ButtonPressed('FWD')" onmouseup="ButtonReleased('FWD')">FWD</button>
+        <button class="button" onmousedown="ButtonPressed('-Y')" onmouseup="ButtonReleased('-Y')">-Y</button>
+        <button class="button" onmousedown="ButtonPressed('+Y')" onmouseup="ButtonReleased('+Y')">+Y</button>
+      </div>
+      <div class="row">
+        <button class="button" onmousedown="ButtonPressed('BWD')" onmouseup="ButtonReleased('BWD')">BWD</button> 
+        <button class="button" onmousedown="ButtonPressed('-Z')" onmouseup="ButtonReleased('-Z')">-Z</button>
+        <button class="button"onmousedown="ButtonPressed('+Z')" onmouseup="ButtonReleased('+Z')">+Z</button>
+      </div>
+      <div class="row">
+        <button class="button" onmousedown="ButtonPressed('COORD')" onmouseup="ButtonReleased('COORD')">COORD</button> 
+        <button class="button" onmousedown="ButtonPressed('-XR')" onmouseup="ButtonReleased('-XR')">-XR</button>
+        <button class="button" onmousedown="ButtonPressed('+XR')" onmouseup="ButtonReleased('+XR')">+XR</button>
+      </div>
+      <div class="row">
+        <button class="button" onmousedown="ButtonPressed('+%')" onmouseup="ButtonReleased('+%')">+%</button> 
+        <button class="button" onmousedown="ButtonPressed('-YR')" onmouseup="ButtonReleased('-YR')">-YR</button>
+        <button class="button" onmousedown="ButtonPressed('+YR')" onmouseup="ButtonReleased('+YR')">+YR</button>
+      </div>
+      <div class="row">
+        <button class="button" onmousedown="ButtonPressed('-%')" onmouseup="ButtonReleased('-%')">-%</button> 
+        <button class="button" onmousedown="ButtonPressed('-ZR')" onmouseup="ButtonReleased('-ZR')">-ZR</button>
+        <button class="button" onmousedown="ButtonPressed('+ZR')" onmouseup="ButtonReleased('+ZR')">+ZR</button>
+      </div>
+    </div><!--Final block ends-->
+  </div><!--Bottom row ends-->
+</div><!--end of controls-->
+
+<script src="/js/send_buttons.js"></script>
+<script>
+  document.addEventListener("keydown", keyDown); 
+  document.addEventListener("keyup", keyUp);
+  //Set's the port to listen for video arguments refer to cam number
+  document.addEventListener("DOMContentLoaded", function() {replacePort(1)});
+  document.addEventListener("DOMContentLoaded", function() {replacePort(2)});
+  document.addEventListener("DOMContentLoaded", function() {replacePort(3)});
+</script>
 
   </body>
 </html>
