@@ -9,6 +9,7 @@
    height: 250px;
    margin: 75px auto 0;
    display: block;
+   border: 5px solid #111;
 }
 canvas {
    background-color:#ffffff;
