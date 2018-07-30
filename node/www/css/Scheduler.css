@@ -1,14 +1,10 @@
 #my_req_table {
-    /*display: none;*/
-    border-collapse: collapse;
     margin: 20px auto 20px auto;
 }
 
 #req_table_div {
     display: inline-block;
-    box-sizing: border-box;
-    margin: 0 0 0 19%;
-    width: 80%;
+    width: 100%;
 
 }
 
@@ -18,21 +14,12 @@
 
 .request_table_element{
     text-align: center;
+    padding: 5px;
     vertical-align: center;
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
-}
-
-.delete_button {
-    width: 60px;
-    height: 20px;
-    background-color: #ffcd00;
-    border-radius: 30px;
-    border: 1px solid #f1d573;
-    cursor: pointer;
-    padding: 1.5px;
 }
 
 .request_table_row:nth-child(odd) {
@@ -52,30 +39,20 @@
    margin: 0 auto 0 auto;
 }
 
-#table_div {
-    display: contents;
-    box-sizing: border-box;
-    width: 80%;
-    margin: 0;
-    vertical-align: middle;
-}
-
 #schedule_area {
    padding-top: inherit;
+   display: contents;
+   display: inline-block;
+   width: 100%;
 }
 
 #schedule_table {
    border-collapse: collapse;
-   position: relative;
-   left: 50%;
-   top: 30%;
-   margin-top: 20px;
-   margin-left: -360px;
+   margin: 20px auto 20px auto
 }
 
 .schedule_table_element {
     text-align: center;
-    vertical-align: center;
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
@@ -123,7 +100,8 @@
     
 }
 
-#req_submit{
+#req_submit,
+.delete_button{
    float: none;
    display: block;
    width: 80px;
@@ -132,6 +110,9 @@
    border-radius: 30px;
    border: 1px solid #f1d573;
    cursor: pointer;
+}
+.delete_button {
+   margin:5px;
 }
 
 .submit_btn {
