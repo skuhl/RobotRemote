@@ -244,7 +244,7 @@ class RobotRemoteServer {
 				                    }
 				        
 				                    Promise.all(secret_promises).then( ()=>{
-				                        res.status(200).send(html_fetcher(__dirname + '/www/ControlPanel.html', req, {beforeHeader: ()=>{return '<title>Robot Remote - Control Panel</title>'}})); 
+				                        res.status(200).send(html_fetcher(__dirname + '/www/ControlPanel.html', req, {beforeHeader: ()=>{return '<title>Robot Remote - Control Panel</title>'}, removeBanner: true})); 
 				                    }).catch(function(err){
 				                        this.err_logger.error("Failed to connect to a camera server, " + err)
 				                        res.status(500).send('Unable to communicate with webcam!');    
