@@ -158,6 +158,7 @@ class RobotRemoteServer {
 
     initApp(){
         this._app = express();
+        this._http_app = express();
         //middleware
         this._session_store = new MySQLStore({
             host: this._options['mysql_host'],
@@ -174,12 +175,12 @@ class RobotRemoteServer {
         this._app.use(log4js.connectLogger(this.info_logger, {level: 'auto'}));
 
         this._app.use(session({
-            secret:'alkshflkasf',
+            secret:'alksjglksjgnvurlas,mxoeksfbndhkj',
             store: this._session_store,
             resave: false,
             saveUninitialized: false,
             unset: 'destroy',
-            cookie:{maxAge: 36000000}
+            cookie:{maxAge: 60*60*1000, secure: true, SameSite: true} // 1 hour
         }));
     }
 
@@ -213,6 +214,12 @@ class RobotRemoteServer {
 	                db_fetch.check_user_access(user.id).then(function(allow){
 	                	this.info_logger.info(allow);
 	                		if(allow){
+                                let cookie_options = {
+                                    maxAge: 10*1000, //Only lasts 10 seconds!
+                                    secure: true,
+                                    sameSite: true
+                                };
+                                
 	                			actuator_comm.getFreeActuator(self._actuators).then((act)=>{
                                 this.info_logger.info(act);
 				                //send client details (secret).
@@ -221,8 +228,8 @@ class RobotRemoteServer {
 				                    //send cookie containing client secret!
 				                    //TODO set up these options for cookie correctly
 				                    //(https only, age, when it expires, possibly session stuff)
-				                    res.cookie('act-url', act.ip + ":" + act.websock_port + "/")
-                                    res.cookie('act-secret', secret);
+				                    res.cookie('act-url', act.ip + ":" + act.websock_port + "/", cookie_options)
+                                    res.cookie('act-secret', secret, cookie_options);
                                     
 				                    let secret_promises = [];
 				                    for(let i = 0; i < act.webcams.length; i++){
@@ -230,8 +237,8 @@ class RobotRemoteServer {
 				                        //Currently all webcams share a secret. Changing this should be easy, if needed.
 				                        secret_promises.push(
 				                            act.webcams[i].setSecret(secret, allow*1000).then(()=>{
-				                                res.cookie("webcam-" + (i+1), (act.webcams[i].secure ? 'wss' : 'ws')+'://' + act.webcams[i].ip + ':' +  act.webcams[i].sock_port);
-				                                res.cookie("webcam"+ (i+1) + "-secret", secret);
+				                                res.cookie("webcam-" + (i+1), (act.webcams[i].secure ? 'wss' : 'ws')+'://' + act.webcams[i].ip + ':' +  act.webcams[i].sock_port, cookie_options);
+				                                res.cookie("webcam"+ (i+1) + "-secret", secret, cookie_options);
 				                            })
 				                        );
 				                    }
@@ -405,6 +412,12 @@ class RobotRemoteServer {
             }
             //emit admin page
             res.status(200).send(html_fetcher(__dirname + '/www/Admin.html', req));
+        }.bind(this));
+
+        //HTTP SERVER ROUTES
+        this._http_app.get('*', function(req, res){
+            //Redirect to secure domain
+            res.redirect(301, this._options['domain_name_secure'] + req.originalUrl);
         }.bind(this));
 
     }
@@ -1016,7 +1029,7 @@ class RobotRemoteServer {
             cert: this._server_cert
         };
 
-        this._http_server = http.createServer(this._app);
+        this._http_server = http.createServer(this._http_app);
         this._https_server = https.createServer(credentials, this._app);
     }
 
