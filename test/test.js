@@ -723,25 +723,281 @@ describe('Tests', function(){
                 assert(users.find(x => x.id == user.id).id === user.id);
             });
         });
-        //Where is reject login request?
+
+        //TODO Where is reject login request?
         describe('/admin/rejecttimeslotrequest/:id', function(){
-            
+            afterEach(async function(){
+                //We reseed the DB. This is done
+                //because this endpoint effects the database.
+                await seed.deleteAllRecords(pool);
+                await seed.seedDB(pool);
+            });
+
+            it('Rejects non-admin requests', async function(){
+                let sid = await test_utils.login(seed.SEED_USERS.find( x => x.approved == 1 && x.admin == 0), server._cacert);
+                
+                await assert.rejects(test_utils.attemptRequest(`/admin/rejecttimeslotrequest/${seed.SEED_TIMESLOTS[0].id}`, 'GET', 3001, {cookie: `connect.sid=${encodeURIComponent(sid)}`}, undefined, undefined,
+                undefined, server._cacert),
+                Error,
+                new Error('Accepted a non-admin request!'));
+
+            });
+
+            it('Rejects a request when not logged in', async function(){
+                //No cookie given; as if there is no session.
+                await assert.rejects(test_utils.attemptRequest(`/admin/rejecttimeslotrequest/${seed.SEED_TIMESLOTS[0].id}`, 'GET', 3001, undefined, undefined, undefined,
+                undefined, server._cacert),
+                Error,
+                new Error('Accepted a request when not logged in!'));
+            });
+
+            it('Rejects a request with a negative id', async function(){
+                let sid = await test_utils.login(seed.SEED_USERS.find( x => x.approved == 1 && x.admin == 1), server._cacert);
+                
+                await assert.rejects(test_utils.attemptRequest(`/admin/rejecttimeslotrequest/-1`, 'GET', 3001, {cookie: `connect.sid=${encodeURIComponent(sid)}`}, undefined, undefined,
+                undefined, server._cacert),
+                Error,
+                new Error('Accepted a request with a negative id!'));
+            });
+
+            it('Rejects a request with a non-numeric id', async function(){
+                let sid = await test_utils.login(seed.SEED_USERS.find( x => x.approved == 1 && x.admin == 1), server._cacert);
+                
+                await assert.rejects(test_utils.attemptRequest(`/admin/rejecttimeslotrequest/notanumber`, 'GET', 3001, {cookie: `connect.sid=${encodeURIComponent(sid)}`}, undefined, undefined,
+                undefined, server._cacert),
+                Error,
+                new Error('Accepted a request with a non-numeric id!'));
+            });
+
+            it('Rejects a request with an incorrect id', async function(){
+                let sid = await test_utils.login(seed.SEED_USERS.find( x => x.approved == 1 && x.admin == 1), server._cacert);
+                //we choose an ID which is the sum of all seeded ids. This is guaranteed to not be a current user.
+                await assert.rejects(test_utils.attemptRequest(`/admin/rejecttimeslotrequest/${seed.SEED_TIMESLOTS.reduce((acc, x) => typeof acc != 'number' ? acc.id + x.id : acc + x.id)}`, 'GET', 3001, {cookie: `connect.sid=${encodeURIComponent(sid)}`}, undefined, undefined,
+                undefined, server._cacert),
+                Error,
+                new Error('Accepted a request with an invalid id!'));
+            });
+
+            it('Accepts an admin request', async function(){
+                this.timeout(5000);
+                this.slow(2500);
+                let admin = seed.SEED_USERS.find( x => x.approved == 1 && x.admin == 1);
+                let sid = await test_utils.login(admin, server._cacert);
+                let res = await test_utils.attemptRequest(`/admin/rejecttimeslotrequest/${seed.SEED_TIMESLOTS[0].id}`, 'GET', 3001, {cookie: `connect.sid=${encodeURIComponent(sid)}`}, undefined, undefined,
+                undefined, server._cacert);
+            });
+
+            it('Correctly rejects the timeslot', async function(){
+                this.timeout(5000);
+                this.slow(2500);
+                let admin = seed.SEED_USERS.find( x => x.approved == 1 && x.admin == 1);
+                let sid = await test_utils.login(admin, server._cacert);
+
+                let timeslot_req = seed.SEED_TIMESLOTS[0];
+                let user = timeslot_req.user;
+
+                await test_utils.attemptRequest(`/admin/rejecttimeslotrequest/${timeslot_req.id}`, 'GET', 3001, {cookie: `connect.sid=${encodeURIComponent(sid)}`}, undefined, undefined,
+                undefined, server._cacert);
+
+                let timeslots = await test_utils.attemptRequest('/admin/timeslotrequests', 'GET', 3001, {cookie: `connect.sid=${encodeURIComponent(sid)}`}, undefined, undefined,
+                undefined, server._cacert);
+                timeslots = JSON.parse(timeslots.data);
+                timeslots = timeslots.approved.concat(timeslots.unapproved);
+
+                assert(timeslots.find(x => x.id = timeslot_req.id));
+            });
         });
 
         describe('/admin/accepttimeslotrequest/:id', function(){
-            
+            afterEach(async function(){
+                //We reseed the DB. This is done
+                //because this endpoint effects the database.
+                await seed.deleteAllRecords(pool);
+                await seed.seedDB(pool);
+            });
+
+            it('Rejects non-admin requests', async function(){
+                let sid = await test_utils.login(seed.SEED_USERS.find( x => x.approved == 1 && x.admin == 0), server._cacert);
+                
+                await assert.rejects(test_utils.attemptRequest(`/admin/accepttimeslotrequest/${seed.SEED_TIMESLOTS[0].id}`, 'GET', 3001, {cookie: `connect.sid=${encodeURIComponent(sid)}`}, undefined, undefined,
+                undefined, server._cacert),
+                Error,
+                new Error('Accepted a non-admin request!'));
+
+            });
+
+            it('Rejects a request when not logged in', async function(){
+                //No cookie given; as if there is no session.
+                await assert.rejects(test_utils.attemptRequest(`/admin/accepttimeslotrequest/${seed.SEED_TIMESLOTS[0].id}`, 'GET', 3001, undefined, undefined, undefined,
+                undefined, server._cacert),
+                Error,
+                new Error('Accepted a request when not logged in!'));
+            });
+
+            it('Rejects a request with a negative id', async function(){
+                let sid = await test_utils.login(seed.SEED_USERS.find( x => x.approved == 1 && x.admin == 1), server._cacert);
+                
+                await assert.rejects(test_utils.attemptRequest(`/admin/accepttimeslotrequest/-1`, 'GET', 3001, {cookie: `connect.sid=${encodeURIComponent(sid)}`}, undefined, undefined,
+                undefined, server._cacert),
+                Error,
+                new Error('Accepted a request with a negative id!'));
+            });
+
+            it('Rejects a request with a non-numeric id', async function(){
+                let sid = await test_utils.login(seed.SEED_USERS.find( x => x.approved == 1 && x.admin == 1), server._cacert);
+                
+                await assert.rejects(test_utils.attemptRequest(`/admin/accepttimeslotrequest/notanumber`, 'GET', 3001, {cookie: `connect.sid=${encodeURIComponent(sid)}`}, undefined, undefined,
+                undefined, server._cacert),
+                Error,
+                new Error('Accepted a request with a non-numeric id!'));
+            });
+
+            it('Rejects a request with an incorrect id', async function(){
+                let sid = await test_utils.login(seed.SEED_USERS.find( x => x.approved == 1 && x.admin == 1), server._cacert);
+                //we choose an ID which is the sum of all seeded ids. This is guaranteed to not be a current user.
+                await assert.rejects(test_utils.attemptRequest(`/admin/accepttimeslotrequest/${seed.SEED_TIMESLOTS.reduce((acc, x) => typeof acc != 'number' ? acc.id + x.id : acc + x.id)}`, 'GET', 3001, {cookie: `connect.sid=${encodeURIComponent(sid)}`}, undefined, undefined,
+                undefined, server._cacert),
+                Error,
+                new Error('Accepted a request with an invalid id!'));
+            });
+
+            it('Accepts an admin request', async function(){
+                this.timeout(5000);
+                this.slow(2500);
+                let admin = seed.SEED_USERS.find( x => x.approved == 1 && x.admin == 1);
+                let sid = await test_utils.login(admin, server._cacert);
+                let res = await test_utils.attemptRequest(`/admin/accepttimeslotrequest/${seed.SEED_TIMESLOTS[0].id}`, 'GET', 3001, {cookie: `connect.sid=${encodeURIComponent(sid)}`}, undefined, undefined,
+                undefined, server._cacert);
+            });
+
+            it('Correctly rejects the timeslot', async function(){
+                this.timeout(5000);
+                this.slow(2500);
+                let admin = seed.SEED_USERS.find( x => x.approved == 1 && x.admin == 1);
+                let sid = await test_utils.login(admin, server._cacert);
+
+                let timeslot_req = seed.SEED_TIMESLOTS[0];
+                let user = timeslot_req.user;
+
+                await test_utils.attemptRequest(`/admin/accepttimeslotrequest/${timeslot_req.id}`, 'GET', 3001, {cookie: `connect.sid=${encodeURIComponent(sid)}`}, undefined, undefined,
+                undefined, server._cacert);
+
+                let timeslots = await test_utils.attemptRequest('/admin/timeslotrequests', 'GET', 3001, {cookie: `connect.sid=${encodeURIComponent(sid)}`}, undefined, undefined,
+                undefined, server._cacert);
+                timeslots = JSON.parse(timeslots.data);
+                timeslots = timeslots.approved;
+
+                assert(timeslots.find(x => x.id = timeslot_req.id));
+            });
         });
 
         describe('/timeslotrequests', function(){
-            
+            it('Rejects a request when not logged in', async function(){
+                assert.rejects(test_utils.attemptRequest(`/timeslotrequests`, 'GET', 3001, {}, undefined, undefined,
+                undefined, server._cacert));
+            });
+
+            it('Accepts a normal user request', async function(){
+                this.timeout(5000);
+                this.slow(2500);
+                let user = seed.SEED_USERS.find( x => x.approved == 1 && x.admin == 0);
+                let sid = await test_utils.login(user, server._cacert);
+                let res = await test_utils.attemptRequest(`/timeslotrequests`, 'GET', 3001, {cookie: `connect.sid=${encodeURIComponent(sid)}`}, undefined, undefined,
+                undefined, server._cacert);
+                
+                let timeslots = JSON.parse(res.data);
+                timeslots = timeslots.mine.concat(timeslots.others);
+
+                for(timeslot of seed.SEED_TIMESLOTS){
+                    assert(timeslots.find(x => x.starttime === timeslot.start_time.toISOString() && 
+                    x.duration === timeslot.duration && 
+                    (x.accepted ? 1 : 0) === timeslot.approved) !== undefined);
+                }
+            });
         });
 
         describe('/requesttimeslot', function(){
-            
+            it('Rejects a request when not logged in', async function(){
+                assert.rejects(test_utils.attemptRequest(`/requesttimeslot`, 'GET', 3001, {}, undefined, undefined,
+                undefined, server._cacert),
+                Error,
+                new Error('Accepted a request from a user that was not logged in!'));
+            });
         });
 
         describe('/deletetimeslot/:id', function(){
-            
+            afterEach(async function(){
+                //We reseed the DB. This is done
+                //because this endpoint effects the database.
+                await seed.deleteAllRecords(pool);
+                await seed.seedDB(pool);
+            });
+
+            it('Rejects a request when not logged in', async function(){
+                //No cookie given; as if there is no session.
+                await assert.rejects(test_utils.attemptRequest(`/deletetimeslot/${seed.SEED_TIMESLOTS[0].id}`, 'GET', 3001, undefined, undefined, undefined,
+                undefined, server._cacert),
+                Error,
+                new Error('Accepted a request when not logged in!'));
+            });
+
+            it('Rejects a request with a negative id', async function(){
+                let sid = await test_utils.login(seed.SEED_USERS.find( x => x.approved == 1), server._cacert);
+                
+                await assert.rejects(test_utils.attemptRequest(`/deletetimeslot/-1`, 'GET', 3001, {cookie: `connect.sid=${encodeURIComponent(sid)}`}, undefined, undefined,
+                undefined, server._cacert),
+                Error,
+                new Error('Accepted a request with a negative id!'));
+            });
+
+            it('Rejects a request with a non-numeric id', async function(){
+                let sid = await test_utils.login(seed.SEED_USERS.find( x => x.approved == 1), server._cacert);
+                
+                await assert.rejects(test_utils.attemptRequest(`/deletetimeslot/notanumber`, 'GET', 3001, {cookie: `connect.sid=${encodeURIComponent(sid)}`}, undefined, undefined,
+                undefined, server._cacert),
+                Error,
+                new Error('Accepted a request with a non-numeric id!'));
+            });
+
+            it('Rejects a request with an incorrect id', async function(){
+                let timeslot = seed.SEED_TIMESLOTS[0];
+                let sid = await test_utils.login(timeslot.user, server._cacert);
+                //we choose an ID which is the sum of all seeded ids. This is guaranteed to not be an in-use id, unless there is only 1 seed value (there isn't).
+                await assert.rejects(test_utils.attemptRequest(`/deletetimeslot/${seed.SEED_TIMESLOTS.reduce((acc, x) => typeof acc != 'number' ? acc.id + x.id : acc + x.id)}`, 'GET', 3001, {cookie: `connect.sid=${encodeURIComponent(sid)}`}, undefined, undefined,
+                undefined, server._cacert),
+                Error,
+                new Error('Accepted a request with an invalid id!'));
+            });
+
+            it('Rejects a request with a valid id that doesn\'t belong to the current user.', async function(){
+                let timeslot = seed.SEED_TIMESLOTS[0];
+                let user = seed.SEED_USERS.find(x => x.id !== timeslot.user.id && x.approved === 1);
+                let sid = await test_utils.login(user, server._cacert);
+                
+                await assert.rejects(test_utils.attemptRequest(`/deletetimeslot/${timeslot.id}`, 'GET', 3001, {cookie: `connect.sid=${encodeURIComponent(sid)}`}, undefined, undefined,
+                undefined, server._cacert),
+                Error,
+                new Error('Accepted a request with a mismatched user!'));
+            });
+
+            it('Correctly deletes the timeslot', async function(){
+                this.timeout(5000);
+                this.slow(2500);
+                let timeslot = seed.SEED_TIMESLOTS[0];
+                let sid = await test_utils.login(timeslot.user, server._cacert);
+                let res = await test_utils.attemptRequest(`/deletetimeslot/${timeslot.id}`, 'GET', 3001, {cookie: `connect.sid=${encodeURIComponent(sid)}`}, undefined, undefined,
+                undefined, server._cacert);
+
+                let res2 = await test_utils.attemptRequest('/timeslotrequests', 'GET', 3001, {cookie: `connect.sid=${encodeURIComponent(sid)}`}, undefined, undefined,
+                undefined, server._cacert);
+
+                let timeslots = JSON.parse(res2.data);
+                timeslots = timeslots.mine.concat(timeslots.others);
+
+                assert(timeslots.find(x => x.starttime === timeslot.start_time.toISOString() && 
+                x.duration === timeslot.duration && 
+                (x.accepted ? 1 : 0) === timeslot.approved) === undefined);
+            });
         });
 
         describe('/Logout', function(){
