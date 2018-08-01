@@ -23,7 +23,7 @@ module.exports = {
         connection = await pool.getConnection();   
         try{
             if(num_requests <= 0 ){
-                var [res, field] = await connection.query('SELECT loginrequests.id, users.email, loginrequests.comment, loginrequests.date_requested FROM users INNER JOIN loginrequests ON users.loginreq_id = loginrequests.id WHERE email_validated=1', []);    
+                var [res, field] = await connection.query('SELECT loginrequests.id, users.email, loginrequests.comment, loginrequests.date_requested FROM users INNER JOIN loginrequests ON users.loginreq_id = loginrequests.id WHERE email_validated=1', []); 
             }else{
                 var [res, field] = await connection.query('SELECT loginrequests.id, users.email, loginrequests.comment, loginrequests.date_requested FROM users INNER JOIN loginrequests ON users.loginreq_id = loginrequests.id WHERE email_validated=1 LIMIT ? OFFSET ?', [num_requests, start_at]);
             }
@@ -49,7 +49,8 @@ module.exports = {
             if(num_requests <= 0 ){
                 var [res, field] = await connection.query('SELECT users.email, users.id, users.admin FROM users WHERE approved=1 ORDER BY email', []);    
             }else{
-                var [res, field] = await connection.query('SELECT users.email, users.id, users.admin FROM users WHERE approved=1 LIMIT ? OFFSET ? ORDER BY email', [num_requests, start_at]);
+                var [res, field] = await connection.query("SELECT users.email, users.id, users.admin FROM users"
+                														 + "WHERE approved=1 LIMIT ? OFFSET ? ORDER BY email", [num_requests, start_at]);
             }
         }finally{
             connection.release();
@@ -503,6 +504,43 @@ module.exports = {
             connection.release();
         }
         return secret;
+    },
+    
+    admin_timeslot_now: async function(email){
+    	let connection = await pool.getConnection();
+    	
+    	var user_id = await this.get_user_by_email(email, connection);
+    	var date = new Date(Date.now());
+    	try {
+            await connection.beginTransaction();
+
+            overlap_accepted = await this.does_request_overlap_accepted(date, 7199, connection);
+            
+            if(overlap_accepted){
+                throw {
+                    reason: 'Timeslot already taken!',
+                    client_reason: 'Requested timeslot overlaps one that\'s already taken!',
+                };
+            }
+
+            overlap_own = await this.does_request_overlap_own(date, 7199, user_id, connection);
+            
+            if(overlap_own){
+                throw {
+                    reason: 'Timeslot already taken!',
+                    client_reason: 'Requested timeslot overlaps one that\'s already taken!',
+                };
+            }
+            await connection.query("INSERT INTO timeslots (user_id, start_time, duration) VALUES (?, NOW(), 7199)", [user_id]);
+            await connection.commit();
+      }catch(e){
+            //Rollback, let error bubble up.
+            await connection.rollback();
+            throw e;
+    	}finally {
+    		connection.release();
+    	}
+    	return;
     },
     
     update_password: async function(email, secret, new_pass){

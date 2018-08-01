@@ -856,6 +856,19 @@ class RobotRemoteServer {
             }.bind(this));
 
         }.bind(this));
+        
+        this._app.post('/admintime', function(req, res){
+        		res.append('Cache-Control', "no-cache, no-store, must-revalidate");
+        		
+        		db_fetch.admin_timeslot_now(req.session.email).then(function(val) {
+                res.status(200).send("Success");
+
+            }.bind(this), function(err){
+                this.err_logger.error(err);
+                res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");
+            }.bind(this));
+            
+        }.bind(this));
 
         //This endpoint deletes the request with id,
         //only if the logged in user made it.

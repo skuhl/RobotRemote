@@ -1,11 +1,10 @@
-#request1,
-#request2,
+#request,
+#request,
 #users {
    text-align: center;
    font-weight: bold;
    font-size: 25px;
    margin-top:40px;
-
 }
 
 #request2 {
@@ -19,7 +18,7 @@
    margin: 20px auto 20px auto;
    left: 50%;
    table-layout: auto;
-   width: 1000px;
+   width: 800px;
    margin: 20px auto 20px auto;
 }
 
@@ -63,6 +62,18 @@ th {
    cursor: pointer;
    padding: 1.5px;
    margin: 5px;
+}
+
+#adminTimeSlot {
+   height: 40px;
+   margin: 0 auto 0 auto;
+   float: none;
+}
+
+#request_button {
+   display: flex;
+   align-items: center;
+   justify-content: center;
 }
 
 .admin_login_col-2,

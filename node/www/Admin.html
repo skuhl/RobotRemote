@@ -1,55 +1,60 @@
-<p id="request1">Login Requests</p>
-<div id="login_requests"></div>
-<p id="request2">Timeslot Requests</p>
-<div id="timeslot_requests"></div>
+<div class="content">
+  <script src="/js/admin_time_now.js"></script>
 
-<p style="display:none;" id="users">Current Users</p>
-<div style="display:none;" id="current_users"></div>
+  <div id="tab1">
+    <p id="request">Login Requests</p>
+    <div id="login_requests"></div>
+  </div>
 
-<div id="button_div">
-  <label class="switch">
-    <input type="checkbox" id="toggle" onclick="myFunction()">
-    <span class="slider round"></span>
-  </label>
-</div>
+  <div id="tab2">
+    <p id="request">Timeslot Requests</p>
+    <div id="timeslot_requests"></div>
+    <div id="request_button">
+      <button id="adminTimeSlot" onclick="AdminTimeNow();">Time Slot Now</button>
+    </div>
+  </div>
 
-<script src="/js/admin.js"></script>
-<script src="/js/get_users.js"></script>
-<script src="/js/paginate.js"></script>
+  <div id="tab3" style="display:none;">
+    <p id="users">Current Users</p>
+    <div id="current_users"></div>
+  </div>
 
-<script>
-function myFunction() {
-  // Get the checkbox
-  var checkBox = document.getElementById("toggle");
-  //headings
-  var title1 = document.getElementById("request1");
-  var title2 = document.getElementById("request2");
-  var title3 = document.getElementById("users");
-  //tables
-  var table1 = document.getElementById("login_requests");
-  var table2 = document.getElementById("timeslot_requests");
-  var table3 = document.getElementById("current_users");
-  
+  <div id="button_div">
+    <label class="switch">
+      <input type="checkbox" id="toggle" onclick="myFunction()">
+      <span class="slider round"></span>
+    </label>
+  </div>
 
-  // If the checkbox is checked, display the output text
-  if (checkBox.checked == true){
-    //hide requests
-    title1.style.display = 'none';
-    title2.style.display = 'none';
-    table1.style.display = 'none';
-    table2.style.display = 'none';
-    //show user list 
-    title3.style.display = 'block';
-    table3.style.display = 'block';
-  } else {
-    //hide user table
-    title3.style.display = 'none';
-    table3.style.display = 'none';
-    //show pending requests
-    title1.style.display = 'block';
-    title2.style.display = 'block';
-    table1.style.display = 'block';
-    table2.style.display = 'block';
+  <script src="/js/admin.js"></script>
+  <script src="/js/get_users.js"></script>
+  <script src="/js/paginate.js"></script>
+
+  <script>
+  function myFunction() {
+    // Get the checkbox
+    var checkBox = document.getElementById("toggle");
+    //headings
+    var title1 = document.getElementById("tab1");
+    var title2 = document.getElementById("tab2");
+    var title3 = document.getElementById("tab3");
+    
+
+    // If the checkbox is checked, display the output text
+    if (checkBox.checked == true){
+      //hide requests
+      title1.style.display = 'none';
+      title2.style.display = 'none';
+      //show user list 
+      title3.style.display = 'block';
+
+    } else {
+      //hide user table
+      title3.style.display = 'none';
+      //show pending requests
+      title1.style.display = 'block';
+      title2.style.display = 'block';
+    }
   }
-}
-</script>
+  </script>
+<div>
