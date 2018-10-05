@@ -69,8 +69,9 @@ let socketServer = new WebSocket.Server({
 });
 
 //startup modbus
+
 let plc = new PLCConnection(options['modbus_host'], options['modbus_port'], options['modbus_slave_num'],
-        options['pin_assignments'], options['modbus_timeout'], options['modbus_sleep_interval']);
+        options['pin_assignments'], options['modbus_timeout'], options['modbus_sleep_interval'], info_logger);
 
 //functions to make sure ws is alive.
 function heartbeat(){
@@ -225,6 +226,16 @@ wsServer.listen(options['websocket_port']);
 webserver_comm.listen(options['socket_port']);
 
 info_logger.info('Arm server listening for webserver on ' + options['socket_port']);
+
+process.on('unhandledRejection', function(reason, promise){
+    info_logger.error('Reject promise!');
+    info_logger.error(reason);
+    info_logger.error(promise);
+});
+
+process.on('warning', function(warning){
+    info_logger.error('warning: ', warning, warning.stack, warning.message, warning.name);
+});
 
 //SIGUSR2 must be used. SIGUSR1 is reserved for node.
 //This tells the parent process that the server is started.

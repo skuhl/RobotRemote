@@ -1,11 +1,11 @@
 const modbus = require('jsmodbus');
 const net = require('net');
-const Reconnect = require('node-net-reconnect');
 
 class Run {
-    constructor(run_start, run_length){
+    constructor(run_start, run_length, values){
         this._run_length = run_length;
         this._run_start = run_start;
+        this._values = values;
     }
 
     includesPin(pin){
@@ -20,72 +20,119 @@ class Run {
         return this._run_start;
     }
 
-    getValues(){
-        let vals = [];
-        for(let i = 0; i < this._run_length; i++) vals.push(1);
-        return vals;
+    get values(){
+        return this._values;
     }
 }
 
 module.exports = {
     PLCConnection: class {
-        constructor(host, port, slave_num, pin_assignments, conn_timeout, wait_interval){
-            let options = {
+        constructor(host, port, slave_num, pin_assignments, conn_timeout, wait_interval, logger){
+            this.socket_options = {
                 host: host,
-                port: port,
-                retryTime: wait_interval,
-                retryAlways: true
+                port: port
             };
-            
-            this._socket = new net.Socket();
-            this._recon = new Reconnect(this._socket, options);
-            this._client = new modbus.client.TCP(this._socket, slave_num);
+
+            this._wait_interval = wait_interval;
             this._pin_assignments = pin_assignments;
             this._runs = [];
+            this._logger = logger;
+            this._slave_num - slave_num;
+           
+            this._createSocket();
 
-            this._socket.on('connect', function(){
-                //write all the runs over the client connection.
-                for(let run of this._runs){
-                    this._client.writeMultipleCoils(run.run_start, run.getValues(), run.run_length);
+            this._emitInterval = null;
+
+            this._socket.connect(this.socket_options);
+        }
+
+        _emit(){
+            for(let run of this._runs){
+                //this._logger.debug('Run: ', run);
+                this._client.writeMultipleCoils(run.run_start, run.values, run.run_length);
+            }
+        }
+
+        _createSocket(){
+            this._socket = new net.Socket();
+            this._client = new modbus.client.TCP(this._socket, this._slave_num);
+
+            this._socket.on('ready', function(){
+                this._logger.debug('Got connection to socket, writing out to client.');
+                
+                this._emit();
+                
+                if(this._emitInterval === null){
+                    this._emitInterval = setInterval(this._emit.bind(this), this._wait_interval * 1000);
                 }
-                //Close the socket. This will be reopened by Reconnect in wait_interval milliseconds.
-                this._socket.end();
             }.bind(this));
 
-            this._socket.connect(options);
+            this._socket.on('close', function(){
+                if(this._emitInterval !== null){
+                    clearInterval(this._emitInterval);
+                }
+                this._emitInterval = null;
+                setTimeout(function(){
+                    this._logger.debug('Attempting to reconnect...');
+                    this._socket.connect(this.socket_options);
+                }.bind(this), 5000); // Wait 5 sec before trying again
+            }.bind(this));
+
+            this._socket.on('error', function(error){
+                this._logger.error(error);
+                this._destroySocket();
+                this._createSocket(); 
+            }.bind(this));
         }
-        
+
+        _destroySocket(){
+            this._socket.destroy();
+            this._socket = null;
+            this._client = null;
+        }
+
         setPressed(button_array){
             //TODO put back logging here?
+            /*
+            this._logger.debug('Pushed buttons: ');
+            this._logger.debug(button_array);
+            */
             this._runs = this._getRuns(button_array);
         }
         
         //returns an array of runs, from array of buttons
         _getRuns(button_array){
-            if(button_array.length <= 0){
-                return [];
-            }
-
-            let pins = button_array.map(x => this._pin_assignments[x]);
-            pins.sort((a, b) => a - b);
-            let last_pin = pins[0];
-            let run_start = pins[0];
             let runs = [];
-
-            for(let i = 1; i < pins.length; i++){    
-                if(last_pin + 1 != pins[i]){
-                    runs.push(new Run(run_start, last_pin - run_start + 1));
-                    run_start = pins[i];
+            let pin_values = Object.keys(this._pin_assignments).map(x => {
+                return {   
+                    value: button_array.includes(x) ? 1 : 0,
+                    pin: this._pin_assignments[x]
                 }
-                last_pin = pins[i];
+            });
+            
+            pin_values.sort((a, b) => a.pin - b.pin);
+            let last_pin = pin_values[0].pin;
+            let run_start = pin_values[0].pin;
+            let values = [ pin_values[0].value ];
+            
+            for(let i = 1; i < pin_values.length; i++){    
+                if(last_pin + 1 != pin_values[i].pin){
+                    runs.push(new Run(run_start, last_pin - run_start + 1, values));
+                    run_start = pin_values[i].pin;
+                    values = []
+                }
+
+                values.push(pin_values[i].value);
+                last_pin = pin_values[i].pin;
             }
+
             //final iteration, we always miss the last run in the above loop
-            runs.push(new Run(run_start, last_pin - run_start + 1));
+            runs.push(new Run(run_start, last_pin - run_start + 1, values));
+            
             return runs;
         }
 
         end(){
-            this._recon.end();
             this._socket.end();
         }
     }
