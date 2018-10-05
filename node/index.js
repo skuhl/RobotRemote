@@ -821,9 +821,8 @@ class RobotRemoteServer {
             }
 
             let date = new Date(req.body.start_time);
-            //TODO make this check more robust (Only works if 60 % time_quantum = 0)
-            //This should check that it starts on a time quantum
-            if((date.getMinutes() % time_quantum) != 0){
+            
+            if((date.getMinutes() % time_quantum) != 0 || (date.getSeconds() != 0)){
                 res.status(400).send('Requested time not a multiple of the time quantum');
                 return;
             }
