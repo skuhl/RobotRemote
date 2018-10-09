@@ -1,16 +1,27 @@
 <script src="/js/jsmpeg.min.js"></script>
-<canvas id="cam1" class="cam main" onclick="swap('cam1')"></canvas>
-<canvas id="cam2" class="cam" onclick="swap('cam2')"></canvas>
+
 
 <script>
   function swap(camID){
-    var x = document.getElementsByClassName("main");
-    x[0].classList.remove("main");
+    var x = document.getElementById("mainCamera").children;
+    console.log(x)
+    
+    document.getElementById("camera_preview").appendChild(x[0]);
+    /*document.getElementById("mainCamera").removeChild(x[0]);*/
     var cam = document.getElementById(camID);
-    cam.classList.add("main");
+    document.getElementById("mainCamera").appendChild(cam);
+    /*document.getElementById("camera_preview").removeChild(cam);*/
+    
   }
 </script>
-
+<div id="cameras">
+  <div id="camera_preview">
+      <canvas id="cam2" class="cam cam-thumb" onclick="swap('cam2')"></canvas>
+  </div>
+  <div id="mainCamera">
+      <canvas id="cam1" class="cam cam-main" onclick="swap('cam1')"></canvas>
+  </div>
+</div>
 <!--wrapper for the whole gosh darn button pannel-->
 <div class="pendant">
   <canvas class="camP" id="camP"></canvas>

@@ -1,9 +1,69 @@
-.pendant {
-   background-color: #777;
-   float: right;
-   height: 100%;
-   margin-top: -40px;
+/*
+Break points:
+35 till 1460
+40 till 1280
+45 till 1335
+50 till 1024
+55 till 932
+60 to 852
+less, and we don't support it
+...
+probably
+*/
+#cameras {
+    width: 40%;
+    display: inline-block;
+    margin: 0;
 }
+.pendant {
+    background-color: #777;
+    float: right;
+    height: 100%;
+    margin: -40px 0 0 0;
+    width: 60%;
+}
+
+@media (min-width: 932px){
+    .pendant {
+        width: 55%;
+    }
+    #cameras {
+        width: 45%;
+    }
+}
+@media (min-width: 1024px){
+    .pendant {
+        width: 50%;
+    }
+    #cameras {
+        width: 50%;
+    }
+}
+@media (min-width: 1134px){
+    .pendant {
+        width: 45%;
+    }
+    #cameras {
+        width: 55%;
+    }
+}
+@media (min-width: 1280px){
+    .pendant {
+        width: 40%;
+    }
+    #cameras {
+        width: 60%;
+    }
+}
+@media (min-width: 1460px){
+    .pendant {
+        width: 35%;
+    }
+    #cameras {
+        width: 65%;
+    }
+}
+
 .camP {
    width: 400px;
    height: 250px;
@@ -40,6 +100,7 @@ canvas {
    content: "";
    display: table;
    clear: both;
+   margin: auto;
 }
 .button {
    background-color:#d2d2d2;
@@ -82,19 +143,17 @@ canvas {
    color: #fff;
 }
 .notTop {
-   margin-left: 8px;
+   margin: auto;
+   display: table;
 }
-.cam {
-   position:fixed;
+#camera_preview > .cam {
+   display: inline-block;
    height:110px;
    width:195px;
    margin-top: 25px;
    margin-left: 50px;
 }
 
-.main {
-   position:fixed;
-   height:505px;
-   width:900px;
-   margin: 165px 50px 0;
+#mainCamera > .cam {
+   width:100%;
 }
