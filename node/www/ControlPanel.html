@@ -4,14 +4,9 @@
 <script>
   function swap(camID){
     var x = document.getElementById("mainCamera").children;
-    console.log(x)
-    
     document.getElementById("camera_preview").appendChild(x[0]);
-    /*document.getElementById("mainCamera").removeChild(x[0]);*/
     var cam = document.getElementById(camID);
     document.getElementById("mainCamera").appendChild(cam);
-    /*document.getElementById("camera_preview").removeChild(cam);*/
-    
   }
 </script>
 <div id="cameras">
