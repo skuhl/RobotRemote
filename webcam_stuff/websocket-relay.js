@@ -11,9 +11,9 @@ var fs = require('fs'),
 	https = require('https');
 const log4js_template = require('../common/log4jstemplate');
 
-//Q: why is this one with ` instead of ' ????
+
 if(process.argv.length < 3 || process.argv.length > 4){
-	info_logger.info(`Usage: node websocket-relay <settings_file> [<signal_pid>]`);
+	info_logger.info('Usage: node websocket-relay <settings_file> [<signal_pid>]');
 	process.exit(1);
 }
 

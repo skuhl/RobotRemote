@@ -11,7 +11,7 @@
 </script>
 <div id="cameras">
   <div id="camera_preview">
-      <canvas id="cam2" class="cam cam-thumb" onclick="swap('cam2')"></canvas>
+      
   </div>
   <div id="mainCamera">
       <canvas id="cam1" class="cam cam-main" onclick="swap('cam1')"></canvas>
@@ -19,7 +19,7 @@
 </div>
 <!--wrapper for the whole gosh darn button pannel-->
 <div class="pendant">
-  <canvas class="camP" id="camP"></canvas>
+  <canvas class="camP" id="cam2"></canvas>
   <div class="rowTop"><!--top row of buttons-->
     <button class="button buttonTop" onmousedown="ButtonPressed('F1')" onmouseup="ButtonReleased('F1')">F1</button> 
     <button class="button buttonTop" onmousedown="ButtonPressed('F2')" onmouseup="ButtonReleased('F2')">F2</button>
@@ -98,7 +98,7 @@
         </div>
         <div class="row">
           <button class="button" onmousedown="ButtonPressed('I/O')" onmouseup="ButtonReleased('I/O')">I/O</button>
-          <button class="button" onmousedown="ButtonPressed('POSH')" onmouseup="ButtonReleased('POSH')">POSH</button>
+          <button class="button" onmousedown="ButtonPressed('POSN')" onmouseup="ButtonReleased('POSN')">POSN</button>
           <button class="button blk" onmousedown="ButtonPressed('-')" onmouseup="ButtonReleased('-')">-</button> 
         </div>
       </div><!--numpad set ends-->

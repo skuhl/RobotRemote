@@ -1,5 +1,6 @@
 const https = require('https');
 const prompt = require('prompt');
+const {earliestStart, isValidDate} = require('../node/scheduler_generator');
 
 let db_passwords = null;
 
@@ -120,7 +121,24 @@ function extractData(res){
     });
 };
 
+function getNextSchedulableDate(){
+    let now = new Date();
+    let start = earliestStart(new Date());
+    while(!isValidDate(start)){
+        while(!isValidDate(start)){
+            start = earliestStart(new Date(start.getTime() + 24*60*60*1000));
+        }
+
+        while(start < now){
+            //TODO tie this directly to the time quantum
+            start = new Date(start.getTime() + 30*60*1000); 
+        }
+    }
+    return start;
+}
+
 //Export functions
 module.exports.attemptRequest = attemptRequest;
 module.exports.getDBPasswords = getDBPasswords;
+module.exports.getNextSchedulableDate = getNextSchedulableDate;
 module.exports.login = login;

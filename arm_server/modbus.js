@@ -97,6 +97,7 @@ module.exports = {
             this._logger.debug('Pushed buttons: ');
             this._logger.debug(button_array);
             */
+           
             this._runs = this._getRuns(button_array);
         }
         
@@ -111,6 +112,19 @@ module.exports = {
             });
             
             pin_values.sort((a, b) => a.pin - b.pin);
+
+            //Collapse same pins together. If 2 buttons are defined to be the same pin, this will cause issues otherwise.
+            pin_values = pin_values
+                .slice(0, -1) // Chop off the last element so we don't get index out of bounds exception
+                .filter((x, index) => { 
+                    if(x.pin == pin_values[index + 1].pin){
+                        pin_values[index + 1].value = (x.value == 1 || pin_values[index + 1].value == 1 ? 1 : 0) // Note, we mutate the next object, such that the values are combined.
+                        return false; 
+                    }
+                    return true;
+                })//Filter off elements who are duplicated in the array
+                .concat(pin_values.slice(-1));
+
             let last_pin = pin_values[0].pin;
             let run_start = pin_values[0].pin;
             let values = [ pin_values[0].value ];

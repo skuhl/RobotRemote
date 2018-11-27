@@ -271,7 +271,7 @@ class RobotRemoteServer {
                      * 
                      * Try warn instead? Not quite an error, but could be?
 	                 */
-	               this.err_logger.error(err);
+	                this.err_logger.error(err);
                 	this.err_logger.info('Unable to find any time slots for user: ' + req.session.email);
 						res.redirect(303, '/Scheduler.html');
 	            }.bind(this));
@@ -857,11 +857,10 @@ class RobotRemoteServer {
         }.bind(this));
         
         this._app.post('/admintime', function(req, res){
-        		res.append('Cache-Control', "no-cache, no-store, must-revalidate");
+        	res.append('Cache-Control', "no-cache, no-store, must-revalidate");
         		
-        		db_fetch.admin_timeslot_now(req.session.email).then(function(val) {
+        	db_fetch.admin_timeslot_now(req.session.email).then(function(val) {
                 res.status(200).send("Success");
-
             }.bind(this), function(err){
                 this.err_logger.error(err);
                 res.status(500).send(err.client_reason !== undefined ? err.client_reason : "Internal server error.");

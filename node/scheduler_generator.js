@@ -171,3 +171,5 @@ function GenerateGrid(elements){
 }
 
 module.exports.GenerateGrid = GenerateGrid;
+module.exports.earliestStart = earliest_start_GMT;
+module.exports.isValidDate = isValidDate;

@@ -66,11 +66,29 @@ function GetCookie(cookie){
 }
 
 function replacePort(num){
-    let secret = GetCookie("webcam" + num + "-secret");	//get the cookie with port password
-    let ws = GetCookie("webcam-" + num);						//get cookie with IP and port
-	let cam = document.getElementById("cam" + num);		//get the correct camera based on arg
+	if(num == 2){
+		//Ladies and gentleman, the biggest, dumbest hack of all time to crop the image!
+		//We literally change the webGL shader right before JSMpeg compiles it for camera 2.
+		//This is surely the worst way to do it; Something with JSMpeg could change, breaking this,
+		//or if your browser doesn't support WebGL, this won't even do anything,
+		//but that's life, I guess.
+		JSMpeg.Renderer.WebGL.SHADER.VERTEX_IDENTITY = [
+			"attribute vec2 vertex;",
+			"varying vec2 texCoord;",
+			"void main(){",
+				"texCoord = vec2(vertex.x * 0.6 + 0.2, vertex.y * 0.8 + 0.1);",
+				"gl_Position = vec4((vertex * 2.0 - 1.0) * vec2(1, -1), 0.0, 1.0);",
+			"}"
+		].join("\n");
+	}
+
+    var secret = GetCookie("webcam" + num + "-secret");	//get the cookie with port password
+    var ws = GetCookie("webcam-" + num);						//get cookie with IP and port
+	var cam = document.getElementById("cam" + num);		//get the correct camera based on arg
+	
 	if(ws == null || secret == null) return;
-    var player = new JSMpeg.Player(ws + "/" + encodeURIComponent(secret), {canvas:cam, autoplay: true});
+	
+	var player = new JSMpeg.Player(ws + "/" + encodeURIComponent(secret), {canvas:cam, autoplay: true});
 }
 
 function keyDown(event){ 
@@ -153,6 +171,9 @@ function keyDown(event){
 			break;
 		case 45: // - (dash)
 			ButtonPressed('-');
+			break;
+		case 32: /* Space */
+			ButtonPressed('DEADMAN');
 			break;
 		default:
 			break;
@@ -237,6 +258,9 @@ function keyUp(event){
 			break;
 		case 45: // - (dash)
 			ButtonReleased('-');
+			break;
+		case 32: /* Space */
+			ButtonReleased('DEADMAN');
 			break;
 		default:
 			break;

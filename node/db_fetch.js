@@ -109,13 +109,14 @@ module.exports = {
             We want start to be before NOW and start + duration to be later than now
         		start_time <= Date.now() && (start_time + duration) > Date.now()
         */
-            var [res, fields] = await connection.query("SELECT (TO_SECONDS(DATE_ADD(start_time, INTERVAL duration SECOND)) - TO_SECONDS(NOW())) AS time" +
-            																" FROM timeslots WHERE user_id=? AND (start_time <= NOW() AND DATE_ADD(start_time, INTERVAL duration SECOND)" +
-            																" > NOW())", [id]);
+            var [res, fields] = await connection.query("SELECT * " +
+                                                    " FROM timeslots WHERE user_id=? AND (start_time <= NOW() AND DATE_ADD(start_time, INTERVAL duration SECOND)" +
+                                                    " > NOW())", [id]);
+            if(res.length < 1) throw new Error('Didn\'t find user with the given id in the timeslots table.');
         }finally{
-        		connection.release();
-			}
-			return res[0]['time'];
+        	connection.release();
+		}
+			return res[0]['duration'] - (Date.now() - res[0]['start_time'].getTime()) / 1000;
     },
     /*Timeframe is between beginDate and endDate.*/
     user_get_timeslot_requests: async function(beginDate, endDate, user_id){
@@ -509,7 +510,7 @@ module.exports = {
     admin_timeslot_now: async function(email){
     	let connection = await pool.getConnection();
     	
-    	var user_id = await this.get_user_by_email(email, connection);
+    	var user_id = await this.get_user_by_email(email, connection).id;
     	var date = new Date(Date.now());
     	try {
             await connection.beginTransaction();

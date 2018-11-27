@@ -918,10 +918,126 @@ describe('Tests', function(){
 
         describe('/requesttimeslot', function(){
             it('Rejects a request when not logged in', async function(){
-                assert.rejects(test_utils.attemptRequest(`/requesttimeslot`, 'GET', 3001, {}, undefined, undefined,
+                await assert.rejects(test_utils.attemptRequest(`/requesttimeslot`, 'POST', 3001, {}, {start_time: test_utils.getNextSchedulableDate().getTime(), duration: 30 * 60 * 1000}, undefined,
                 undefined, server._cacert),
                 Error,
                 new Error('Accepted a request from a user that was not logged in!'));
+            });
+            
+            it('Rejects a timeslot starting before today', async function(){
+                let user = seed.SEED_USERS.find( x => x.approved == 1 && x.admin == 0);
+                let sid = await test_utils.login(user, server._cacert);
+                
+                await assert.rejects(test_utils.attemptRequest(`/requesttimeslot`, 'POST', 3001, {cookie: `connect.sid=${encodeURIComponent(sid)}`}, {start_time: Date.now() - 60*1000, duration: 30 * 60 * 1000}, undefined,
+                undefined, server._cacert),
+                Error,
+                new Error('Accepted a request that happened before today!'));
+            });
+
+            it('Rejects a timeslot starting within 24 hours', async function(){
+                let user = seed.SEED_USERS.find( x => x.approved == 1 && x.admin == 0);
+                let sid = await test_utils.login(user, server._cacert);
+                
+                await assert.rejects(test_utils.attemptRequest(`/requesttimeslot`, 'POST', 3001, {cookie: `connect.sid=${encodeURIComponent(sid)}`}, {start_time: Date.now() + 60*1000, duration: 30 * 60 * 1000}, undefined,
+                undefined, server._cacert),
+                Error,
+                new Error('Accepted a request that happens within 24 hours!'));
+            });
+
+            it('Rejects a timeslot with a duration greater than 2 hours', async function(){
+                let user = seed.SEED_USERS.find( x => x.approved == 1 && x.admin == 0);
+                let sid = await test_utils.login(user, server._cacert);
+                
+                await assert.rejects(test_utils.attemptRequest(`/requesttimeslot`, 'POST', 3001, {cookie: `connect.sid=${encodeURIComponent(sid)}`}, {start_time: test_utils.getNextSchedulableDate().getTime(), duration: 3 * 60 * 60 * 1000}, undefined,
+                undefined, server._cacert),
+                Error,
+                new Error('Accepted a request that has a duration of greater than 2 hours!'));
+            });
+
+            it('Rejects a timeslot starting off the time quantum', async function(){
+                let user = seed.SEED_USERS.find( x => x.approved == 1 && x.admin == 0);
+                let sid = await test_utils.login(user, server._cacert);
+                
+                await assert.rejects(test_utils.attemptRequest(`/requesttimeslot`, 'POST', 3001, {cookie: `connect.sid=${encodeURIComponent(sid)}`}, {start_time: new Date(test_utils.getNextSchedulableDate().getTime() + 1000).getTime(), duration: 30 * 60 * 1000}, undefined,
+                undefined, server._cacert),
+                Error,
+                new Error('Accepted a request that doesn\'t start on a time quantum!'));
+            });
+            
+            it('Rejects a timeslot starting over a week from now', async function(){
+                let user = seed.SEED_USERS.find( x => x.approved == 1 && x.admin == 0);
+                let sid = await test_utils.login(user, server._cacert);
+                
+                await assert.rejects(test_utils.attemptRequest(`/requesttimeslot`, 'POST', 3001, {cookie: `connect.sid=${encodeURIComponent(sid)}`}, {start_time: new Date(test_utils.getNextSchedulableDate().getTime() + 14 * 24 * 60 * 60 * 1000).getTime(), duration: 30 * 60 * 1000}, undefined,
+                undefined, server._cacert),
+                Error,
+                new Error('Accepted a request that occurs too far in the future!'));
+            });
+
+            it('Rejects a timeslot that conflicts with another timeslot (starts in the middle of it)', async function(){
+                let user = seed.SEED_USERS.find( x => x.approved == 1 && x.admin == 0);
+                let sid = await test_utils.login(user, server._cacert);
+                let timeslot = seed.SEED_TIMESLOTS.find(x => x.approved == 1);
+                
+                let new_timeslot_date = timeslot.start_time.getTime() + (timeslot.duration * 1000)/2;
+
+                await assert.rejects(test_utils.attemptRequest(`/requesttimeslot`, 'POST', 3001, {cookie: `connect.sid=${encodeURIComponent(sid)}`}, {start_time: new_timeslot_date, duration: timeslot.duration * 1000}, undefined,
+                undefined, server._cacert),
+                Error,
+                new Error('Accepted a request that confilicts with an approved timeslot!'));
+            });
+
+            it('Rejects a timeslot that conflicts with another timeslot (ends in the middle of it)', async function(){
+                let user = seed.SEED_USERS.find( x => x.approved == 1 && x.admin == 0);
+                let sid = await test_utils.login(user, server._cacert);
+                let timeslot = seed.SEED_TIMESLOTS.find(x => x.approved == 1 && x.start_time > new Date(Date.now() + 24*60*60*1000 + x.duration * 1000 / 2));
+                
+                let new_timeslot_date = timeslot.start_time.getTime() - (timeslot.duration * 1000)/2;
+
+                await assert.rejects(test_utils.attemptRequest(`/requesttimeslot`, 'POST', 3001, {cookie: `connect.sid=${encodeURIComponent(sid)}`}, {start_time: new_timeslot_date, duration: timeslot.duration * 1000}, undefined,
+                undefined, server._cacert),
+                Error,
+                new Error('Accepted a request that confilicts with an approved timeslot!'));
+            });
+
+            it('Rejects a timeslot that conflicts with another timeslot (starts and ends in the middle of it)', async function(){
+                let user = seed.SEED_USERS.find( x => x.approved == 1 && x.admin == 0);
+                let sid = await test_utils.login(user, server._cacert);
+                let timeslot = seed.SEED_TIMESLOTS.find(x => x.approved == 1 && (x.duration / 30 * 60) >= 4); // Either 4 or more time quantums
+                
+                let new_timeslot_date = timeslot.start_time.getTime() + 30 * 60 * 1000;
+                let new_timeslot_duration = ((timeslot.duration / 30 * 60) - 2) * 30 * 60 * 1000;
+                await assert.rejects(test_utils.attemptRequest(`/requesttimeslot`, 'POST', 3001, {cookie: `connect.sid=${encodeURIComponent(sid)}`}, {start_time: new_timeslot_date, duration: new_timeslot_duration}, undefined,
+                undefined, server._cacert),
+                Error,
+                new Error('Accepted a request that confilicts with an approved timeslot!'));
+            });
+
+            it('Correctly requests a timeslot', async function(){
+                let user = seed.SEED_USERS.find( x => x.approved == 1 && x.admin == 0);
+                let sid = await test_utils.login(user, server._cacert);
+
+                let timeslot_duration = 60 * 1000;
+                let now = Date.now();
+                let timeslot_start;
+
+                for(timeslot_start = test_utils.getNextSchedulableDate().getTime();
+                    timeslot_start < now + 7 * 24 * 60 * 60 * 1000;
+                    timeslot_start += 30 * 60 * 1000){
+                    
+                    if(seed.SEED_TIMESLOTS.find(
+                        x => ((x.start_time.getTime() <= timeslot_start && timeslot_start <= (x.start_time.getTime() + x.duration * 1000)) ||
+                        (x.start_time.getTime() <= (timeslot_start + timeslot_duration) && (timeslot_start + timeslot_duration) <= (x.start_time.getTime() + x.duration * 1000))) &&
+                        x.approved === true
+                    ) === undefined){
+                        break;
+                    }
+                }
+
+                if(timeslot_start >= now + 7 * 24 * 60 * 60 * 1000) throw new Error('Could not find a goot timeslot!');
+
+                await test_utils.attemptRequest(`/requesttimeslot`, 'POST', 3001, {cookie: `connect.sid=${encodeURIComponent(sid)}`}, {start_time: timeslot_start, duration: timeslot_duration}, undefined,
+                undefined, server._cacert);
             });
         });
 
