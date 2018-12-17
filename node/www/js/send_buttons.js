@@ -12,7 +12,8 @@ function SocketReady(){
 }
 
 function SocketError(err){
-	console.error('SEND BUTTONS: Socket encountered an error:' + err);
+	console.error('SEND BUTTONS: Socket encountered an error:');
+	console.error(err);
 }
 
 function SocketClose(){
@@ -76,7 +77,7 @@ function replacePort(num){
 			"attribute vec2 vertex;",
 			"varying vec2 texCoord;",
 			"void main(){",
-				"texCoord = vec2(vertex.x * 0.6 + 0.2, vertex.y * 0.8 + 0.1);",
+				"texCoord = vec2(vertex.x * 0.75 + 0.125, vertex.y * 0.9 + 0.05);",
 				"gl_Position = vec4((vertex * 2.0 - 1.0) * vec2(1, -1), 0.0, 1.0);",
 			"}"
 		].join("\n");
