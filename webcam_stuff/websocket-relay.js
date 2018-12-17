@@ -165,8 +165,7 @@ if(options['ssl']){
 	var wsServer = https.createServer(https_options);
 }else{
 	var commServer = http.createServer(webserver_comm).listen(options["webserver_listen_port"]);
-	https_options.requestCert = false;
-	var wsServer = https.createServer(https_options);
+	var wsServer = http.createServer();
 }
 
 wsServer.on('upgrade', function(request, socket, head){

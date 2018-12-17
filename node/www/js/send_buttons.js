@@ -25,7 +25,7 @@ function UpdatePresses(){
 }
 
 var InitSocket = function(){
-    socket = new WebSocket('wss://' + GetCookie('act-url') + encodeURIComponent(GetCookie('act-secret')));
+    socket = new WebSocket('ws://' + GetCookie('act-url') + encodeURIComponent(GetCookie('act-secret')));
     socket.onopen = SocketReady;
     socket.onmessage = SocketMessage;
     socket.onerror = SocketError;

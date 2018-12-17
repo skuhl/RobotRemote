@@ -180,7 +180,7 @@ class RobotRemoteServer {
             resave: false,
             saveUninitialized: false,
             unset: 'destroy',
-            cookie:{maxAge: 60*60*1000, secure: true, SameSite: true} // 1 hour
+            cookie:{maxAge: 60*60*1000, secure: false, SameSite: true} // 1 hour
         }));
     }
 
@@ -204,11 +204,13 @@ class RobotRemoteServer {
                 res.redirect(303, '/Login.html');
                 return;
             }
-        
+
+            /*
             if(!req.secure){
                 res.redirect(301, self._options['domain_name_secure'] + req.originalUrl);
                 return;
             }
+            */
             
             db_fetch.get_user_by_email(req.session.email).then(function(user){
 	                db_fetch.check_user_access(user.id).then(function(allow){
@@ -216,7 +218,7 @@ class RobotRemoteServer {
 	                		if(allow){
                                 let cookie_options = {
                                     maxAge: 10*1000, //Only lasts 10 seconds!
-                                    secure: true,
+                                    secure: false,
                                     sameSite: true
                                 };
                                 
@@ -417,7 +419,7 @@ class RobotRemoteServer {
         //HTTP SERVER ROUTES
         this._http_app.get('*', function(req, res){
             //Redirect to secure domain
-            res.redirect(301, this._options['domain_name_secure'] + req.originalUrl);
+            res.redirect(301, this._options['domain_name'] + req.originalUrl);
         }.bind(this));
 
     }
@@ -898,7 +900,7 @@ class RobotRemoteServer {
             res.append('Cache-Control', "no-cache, no-store, must-revalidate");
             
             user_auth.email_verify(req.query.email, req.query.email_tok).then(function(){
-                let admin_link = this._options['domain_name_secure'] + "/admin/Admin.html";
+                let admin_link = this._options['domain_name'] + "/admin/Admin.html";
                 
                 mail.mail_to_admins( __dirname + '/Emails/admin_new_user.txt', {}).then(function(){
                     this.info_logger.info('Sent email to admins!');
@@ -1040,13 +1042,13 @@ class RobotRemoteServer {
             cert: this._server_cert
         };
 
-        this._http_server = http.createServer(this._http_app);
-        this._https_server = https.createServer(credentials, this._app);
+        this._http_server = http.createServer(this._app);
+       // this._https_server = https.createServer(credentials, this._app);
     }
 
     listen(){
         this._http_server.listen(this._options['http_port']);
-        this._https_server.listen(this._options['https_port']);
+        //this._https_server.listen(this._options['https_port']);
     }
 
     //Returns a promise, resolving when the server is succesfully closed down.

@@ -1,5 +1,5 @@
 const crypto = require('crypto');
-const https = require('https');
+const http = require('http');
 
 module.exports = {
     //Class for an actuator server.
@@ -25,7 +25,7 @@ module.exports = {
                     }
                 ));
 
-                let req = https.request({
+                let req = http.request({
                     host: this.ip,
                     port: this.port,
                     method: 'POST',
@@ -60,7 +60,7 @@ module.exports = {
 
         getStatus(){
             return new Promise((resolve, reject)=>{
-                let req = https.request({
+                let req = http.request({
                     host: this.ip,
                     port: this.port,
                     method: 'GET',

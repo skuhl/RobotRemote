@@ -1,4 +1,4 @@
-const https = require('https');
+const http = require('http');
 const WebSocket = require('ws');
 const fs = require('fs');
 const PLCConnection = require('./modbus').PLCConnection;
@@ -139,7 +139,7 @@ function read_all_data(readable, encoding, byte_cap){
 };
 
 //HTTPS server for communicating with webserver
-let webserver_comm = https.createServer(https_options, function(req, res){
+let webserver_comm = http.createServer(function(req, res){
     if(req.url === '/set_secret' && req.method === 'POST'){
         //Set secret with timeout
         read_all_data(req, 'utf8').then((data)=>{
@@ -187,7 +187,7 @@ https_options.requestCert = false;
 https_options.ca = undefined;
 https_options.rejectUnauthorized = undefined;
 
-let wsServer = https.createServer(https_options);
+let wsServer = http.createServer();
 
 wsServer.on('upgrade', function(request, socket, head){
     info_logger.info('Attempting to upgrade to websocket...');
