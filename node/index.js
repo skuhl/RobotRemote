@@ -74,19 +74,9 @@ class RobotRemoteServer {
         }
     
         //load ssl stuff into mem.
-        this._client_key = fs.readFileSync(get_file_relative_dirname(this._options['client_key_file']));
-        this._client_cert = fs.readFileSync(get_file_relative_dirname(this._options['client_cert_file']));
         this._server_key = fs.readFileSync(get_file_relative_dirname(this._options['server_key_file']));
         this._server_cert = fs.readFileSync(get_file_relative_dirname(this._options['server_cert_file']));
         this._cacert = fs.readFileSync(get_file_relative_dirname(this._options['ca_file']));
-
-        this._secure_context = tls.createSecureContext({
-            key: this._client_key,
-            cert: this._client_cert,
-            ca: this._cacert,
-            rejectUnauthorized: true,
-            requestCert: true
-        });
     
         //initialize mysqljs stuff.
         this._mysql_pool = mysql.createPool({

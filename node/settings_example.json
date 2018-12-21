@@ -21,8 +21,6 @@
             ]
         }
     ],
-    "client_cert_file": "cert/client_cert.pem",
-    "client_key_file":"cert/client_key.pem",
     "server_cert_file": "cert/server_cert.pem",
     "server_key_file": "cert/server_key.pem",
     "ca_file":"cert/cacert.pem",
